@@ -1,0 +1,40 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm *)",
+      "Bash(npx tsc*)",
+      "Bash(npx eslint*)",
+      "Bash(npx vitest*)",
+      "Bash(npx playwright*)",
+      "Bash(git diff*)",
+      "Bash(git status)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Read(./**)",
+      "Write(./src/**)",
+      "Write(./.claude/**)",
+      "Write(./CLAUDE.md)"
+    ],
+    "deny": [
+      "Write(./node_modules/**)",
+      "Write(./.env*)",
+      "Bash(rm -rf*)",
+      "Bash(git push*)",
+      "Bash(git reset --hard*)"
+    ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx tsc --noEmit 2>&1 | tail -30",
+            "description": "Typecheck once at the end of each Claude response"
+          }
+        ]
+      }
+    ]
+  }
+}
+
