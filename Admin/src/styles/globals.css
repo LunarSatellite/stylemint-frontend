@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary:        #00D98A;
+  --primary-dark:   #00B872;
+  --primary-light:  #00FFA3;
+  --accent:         #0FE88C;
+
+  --bg-primary:     #0A16
+  12;
+  --bg-secondary:   #0F1E1A;
+  --bg-card:        #132420;
+  --bg-elevated:    #1A332C;
+
+  --surface-1:      rgba(255, 255, 255, 0.02);
+  --surface-2:      rgba(255, 255, 255, 0.04);
+  --surface-3:      rgba(255, 255, 255, 0.07);
+  --surface-border: rgba(255, 255, 255, 0.06);
+
+  --text-primary:   #FFFFFF;
+  --text-secondary: #B8E6D5;
+  --text-muted:     #7A9B8E;
+
+  --border-primary: rgba(0, 217, 138, 0.2);
+  --border-subtle:  rgba(184, 230, 213, 0.1);
+  --glow-primary:   rgba(0, 217, 138, 0.25);
+  --shadow-soft:    0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Thin scrollbar for sidebar nav */
+.sm-nav-scroll::-webkit-scrollbar        { width: 3px; }
+.sm-nav-scroll::-webkit-scrollbar-track  { background: transparent; }
+.sm-nav-scroll::-webkit-scrollbar-thumb  { background: rgba(0,217,138,0.18); border-radius: 99px; }
+.sm-nav-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,217,138,0.35); }
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-width: 1280px;
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
