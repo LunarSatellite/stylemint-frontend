@@ -18,8 +18,12 @@ description: |
 Creator-facing SPA. Consumes `/v1/creator/*`. Creator role required for all routes.
 
 **Before writing any code**, read the relevant reference file:
+- Architecture (overview, data flow, patterns) → `references/architecture.md`
+- Auth (JWT, store, guards, login/logout, interceptors) → `references/auth.md`
 - Folder layout + route tree → `references/folder-structure.md`
 - Query keys + staleTime + invalidation map → `references/query-keys.md`
+- Mutations (hooks, optimistic updates, error cases) → `references/mutation.md`
+- Page authoring (lazy, loaders, ErrorBoundary, 3-layer split) → `references/page.md`
 - Error codes + messages → `references/error-codes.md`
 - Enums (wire format integers) → `references/enums.md`
 - Design tokens (CSS variables) → `references/design-tokens.md`
@@ -284,4 +288,6 @@ schema.ts committed to git — never regenerate in CI
 Switch on errorCode — never on HTTP status number
 Never hardcode hex colors — use CSS variables from design tokens
 Never use dangerouslySetInnerHTML — no exceptions
+Never import Radix UI directly in feature components — use src/components/ui/ wrappers
+All pages are lazy-loaded — no page code in the initial bundle
 ```

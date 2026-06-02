@@ -18,12 +18,16 @@ Read the relevant reference file first:
 
 | Topic | Path |
 |---|---|
+| Architecture (overview, data flow, patterns) | `.claude/stylemint-creator-fe/references/architecture.md` |
+| Auth (JWT, store, guards, login/logout, interceptors) | `.claude/stylemint-creator-fe/references/auth.md` |
 | Folder layout + route tree | `.claude/stylemint-creator-fe/references/folder-structure.md` |
 | Query keys + staleTime + invalidation | `.claude/stylemint-creator-fe/references/query-keys.md` |
 | Error codes | `.claude/stylemint-creator-fe/references/error-codes.md` |
 | Enums | `.claude/stylemint-creator-fe/references/enums.md` |
 | Design tokens | `.claude/stylemint-creator-fe/references/design-tokens.md` |
 | Component authoring | `.claude/stylemint-creator-fe/references/component-patterns.md` |
+| Page authoring (lazy, loaders, ErrorBoundary, 3-layer split) | `.claude/stylemint-creator-fe/references/page.md` |
+| Mutations (hooks, optimistic updates, error cases) | `.claude/stylemint-creator-fe/references/mutation.md` |
 | State management | `.claude/stylemint-creator-fe/references/state-management.md` |
 | Forms (RHF + Zod) | `.claude/stylemint-creator-fe/references/form-patterns.md` |
 | Testing | `.claude/stylemint-creator-fe/references/testing-guide.md` |
