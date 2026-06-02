@@ -1,3 +1,8 @@
+export const OtpDestinationType = {
+  Email: 1,
+  Phone: 2,
+} as const
+
 export const CampaignGoal = {
   DriveFirstPurchase:     1,
   ReintroduceDormant:     2,

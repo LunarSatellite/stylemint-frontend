@@ -135,6 +135,43 @@ All in `.claude/references/` — read the relevant one before writing code:
 
 ---
 
+## Pre-code checklist — run this before writing anything
+
+1. **Read CLAUDE.md** — already done if you're reading this
+2. **Read the relevant `.claude/references/` file** for the task (see table below)
+3. **Check `.claude/BE/swagger.json`** for any backend questions — never rely on schema.ts alone
+4. **Confirm the correct file location** using `folder-structure.md` before creating any file
+5. **Define API types in `schema.ts` first** — never inline in pages or features
+6. **Every catch block must show an error** — never swallow silently, always have a fallback
+
+Skipping any of these steps causes structural mistakes and convention violations.
+
+---
+
+## Answering backend questions — mandatory search order
+
+When asked whether an endpoint, field, or API behaviour exists, **always search in this order**:
+
+1. `.claude/BE/swagger.json` — the authoritative API contract. Check this **first**, every time.
+2. `.claude/references/*.md` — project reference docs
+3. `src/api/schema.ts` — generated file, may be outdated. Check this **last**.
+
+Never declare an endpoint missing until you have searched `swagger.json` and found nothing there.
+`schema.ts` being out of date is normal — it is not proof that an endpoint does not exist.
+
+---
+
+## API types — where they live
+
+| Type | File |
+|---|---|
+| Request bodies, response DTOs, backend enums | `src/api/schema.ts` |
+| Frontend-only utility types, UI prop shapes | `src/lib/types.ts` |
+
+All backend types go in `schema.ts`. Never define API shapes inline in pages or features.
+
+---
+
 ## Non-negotiable rules
 
 - `dangerouslySetInnerHTML` — never

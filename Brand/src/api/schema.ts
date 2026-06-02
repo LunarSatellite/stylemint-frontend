@@ -327,6 +327,83 @@ export interface GoalTemplateVersionDto {
   rowVersion:    string | null
 }
 
+// ── Auth ─────────────────────────────────────────────────────────────────────
+
+/** 1=Email 2=Phone */
+export type OtpDestinationType = 1 | 2
+
+/** POST /v1/auth/login */
+export interface LoginVm {
+  identifierType: OtpDestinationType
+  identifier:     string | null
+  password:       string | null
+  deviceId:       string | null
+}
+
+/** Response from POST /v1/auth/login */
+export interface AuthResponseVm {
+  accountId:        string
+  sessionId:        string
+  accessToken:      string | null
+  accessExpiresUtc: string
+  refreshToken:     string | null
+  refreshExpiresUtc: string
+  tokenType:        string | null
+}
+
+// ── Registration ─────────────────────────────────────────────────────────────
+
+/** POST /v1/registration/start */
+export interface StartRegistrationVm {
+  displayName:    string | null
+  email:          string | null
+  phoneE164:      string | null
+  countryDialCode: string | null
+  locale:         string | null
+  timezone:       string | null
+}
+
+/** Response from POST /v1/registration/start */
+export interface StartRegistrationResult {
+  accountId:           string
+  emailId:             string
+  phoneId:             string
+  emailOtpExpiresUtc:  string
+  phoneOtpExpiresUtc:  string
+  emailOtpCode:        string | null
+  phoneOtpCode:        string | null
+  resumed:             boolean
+}
+
+/** POST /v1/registration/{accountId}/verify-email */
+export interface VerifyEmailVm {
+  email: string | null
+  code:  string | null
+}
+
+/** POST /v1/registration/{accountId}/set-password */
+export interface SetPasswordVm {
+  password: string | null
+}
+
+/** POST /v1/registration/{accountId}/accept-terms */
+export interface AcceptTermsVm {
+  consentVersion: string | null
+  ipAddress:      string | null
+  userAgent:      string | null
+}
+
+/** Response from POST /v1/registration/{accountId}/accept-terms */
+export interface RegistrationStatusDto {
+  accountId:            string
+  emailVerified:        boolean
+  phoneVerified:        boolean
+  hasPassword:          boolean
+  termsAccepted:        boolean
+  isComplete:           boolean
+  termsConsentVersion:  string | null
+}
+
 // ── Vendor Policy ─────────────────────────────────────────────────────────────
 
 export interface VendorBrandStudioPolicyDto {
