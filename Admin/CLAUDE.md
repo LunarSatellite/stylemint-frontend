@@ -3,6 +3,16 @@
 Internal desktop SPA for Style Mint operators. Consumes `/v1/admin/*`.
 Desktop only — 1280px minimum width. No mobile support.
 
+---
+
+## CLAUDE.md vs Memory
+
+**CLAUDE.md** is primary — rules, invariants, and conventions go here. Loaded every conversation, checked into git, seen by the whole team. Hard constraints I must follow.
+
+**Memory** is secondary — captures mistakes made, feedback given, and the *why* behind rules. Personal to the user, not the project. A backup reinforcement layer.
+
+Rule: if something is worth enforcing → **put it in CLAUDE.md**. Memory alone is not sufficient for project rules.
+
 **Before writing any code**, read the relevant reference file:
 - Architecture + design decisions → `.claude/references/architecture.md` ← start here
 - Performance patterns + bundle config → `.claude/references/performance.md`
@@ -231,6 +241,9 @@ Two levels — page and feature widget. Never wrap AppShell itself.
 - `auth.token_reuse_detected` → security warning redirect, not expired message
 - After login: check `hasTotp` — if false, redirect `/settings/mfa/setup` before anything
 - `schema.ts` committed to git — never regenerate in CI
+- Never create manual API type files anywhere — all API shapes come from `schema.ts` via `components['schemas']['...']`
+- `src/types/` is for frontend-only types (UI state, component props) — never API DTOs or anything that mirrors a backend contract
+- If the backend Swagger is unavailable, flag it and wait — never work around it by writing manual types
 - Never import Radix primitives in features — only via `src/components/ui/`
 - Permissions checked via `permissions.*()` — never inline role string checks
 - KYC and moderation `staleTime` is 10 000 ms — do not increase
@@ -239,6 +252,33 @@ Two levels — page and feature widget. Never wrap AppShell itself.
 - Never `dangerouslySetInnerHTML` anywhere
 - Audit log `payloadJson` renders as text, never HTML
 - Never hardcode hex colors — use CSS variables from design tokens
+
+### Enums
+- Never use magic numbers for enum values — always use constants (`KycState.Pending` not `1`)
+- Never re-declare enum values locally — always import from `@/lib/enums`
+
+### Query keys + staleTime
+- Never construct query key arrays inline — always use `qk.*()` from `src/api/queryKeys.ts`
+- `staleTime: 0` is forbidden on any query — minimum is 10 000 ms for KYC/moderation, 30 000 ms default
+- Never call `invalidateQueries` without a specific key — always use the narrowest `qk.*()` key
+
+### Performance
+- Every page in `router.tsx` must be lazy-loaded with `lazy()` + `Suspense` — no exceptions
+- Never add `React.memo`, `useMemo`, or `useCallback` without React DevTools Profiler evidence
+- All filter and search inputs must use `useDebounce(300)` before passing values to a query
+
+### Error handling
+- Never auto-retry on 429 — read `Retry-After`, disable the button, let the user re-trigger
+- `validation.multiple_errors` → call `form.setError()` per field — never a generic toast
+- All unhandled mutation errors must call `showErrorToast(err)` — never silent, never `console.error`
+
+### Component boundaries
+- `useQuery` or `useMutation` inside a presentation component is forbidden — containers only
+- Server data must never be stored in Zustand — TanStack Query is the only server-state store
+
+### Imports + folder rules
+- All internal imports use the `@/` alias — never relative paths like `../../`
+- No barrel `index.ts` inside `features/` — import directly from the file
 
 ---
 

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useModerationQueue } from '@/api/queries/useModerationQueue'
-import type { ModerationQueueFilter } from '@/types/moderation'
+import type { components } from '@/api/schema'
+
+type ModerationQueueFilter = components['schemas']['ModerationQueueParams']
 import { ModerationQueueView } from './ModerationQueueView'
 
 const PAGE_SIZE = 20

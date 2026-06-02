@@ -1,4 +1,7 @@
-import type { ModerationItem, ModerationQueuePage } from '@/types/moderation'
+import type { components } from '@/api/schema'
+
+type ModerationItem      = components['schemas']['ModerationItemDto']
+type ModerationQueuePage = components['schemas']['ModerationItemDtoPagedList']
 
 export const mockModerationItems: ModerationItem[] = [
   {

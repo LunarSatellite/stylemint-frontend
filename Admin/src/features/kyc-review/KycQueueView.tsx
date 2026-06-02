@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { AlertTriangle, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
-import type { KycReviewItem, KycQueueFilter } from '@/types/kyc'
+import type { components } from '@/api/schema'
+
+type KycReviewItem  = components['schemas']['KycReviewItemDto']
+type KycQueueFilter = components['schemas']['KycQueueParams']
 import { KycReviewState, KycDecision, KycApplicantKind } from '@/lib/enums'
 import {
   KycReviewStateLabel, KycDecisionLabel,

@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { ModerationItem, DecideModerationRequest } from '@/types/moderation'
+import type { components } from '@/api/schema'
+
+type ModerationItem          = components['schemas']['ModerationItemDto']
+type DecideModerationRequest = components['schemas']['DecideModerationVm']
 
 type Vars = { id: string } & DecideModerationRequest
 

@@ -1,7 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { AssignKycRequest, KycReviewItem } from '@/types/kyc'
+import type { components } from '@/api/schema'
+
+type KycReviewItem   = components['schemas']['KycReviewItemDto']
+type AssignKycRequest = components['schemas']['AssignKycVm']
 
 type Vars = { id: string } & AssignKycRequest
 

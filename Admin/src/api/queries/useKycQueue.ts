@@ -1,7 +1,10 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { KycQueueFilter, KycQueuePage } from '@/types/kyc'
+import type { components } from '@/api/schema'
+
+type KycQueueFilter = components['schemas']['KycQueueParams']
+type KycQueuePage   = components['schemas']['KycReviewItemDtoPagedList']
 
 export function useKycQueue(filter: KycQueueFilter) {
   return useQuery<KycQueuePage>({

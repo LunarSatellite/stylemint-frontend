@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Clock, CalendarCheck, User, Loader2 } from 'lucide-react'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { ModerationItem } from '@/types/moderation'
+import type { components } from '@/api/schema'
+
+type ModerationItem = components['schemas']['ModerationItemDto']
 import { ModerationItemState, ModerationSource, ModerationTargetKind, ModerationAction } from '@/lib/enums'
 import {
   ModerationItemStateLabel,

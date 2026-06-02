@@ -1,4 +1,7 @@
-import type { KycReviewItem, KycQueuePage } from '@/types/kyc'
+import type { components } from '@/api/schema'
+
+type KycReviewItem = components['schemas']['KycReviewItemDto']
+type KycQueuePage  = components['schemas']['KycReviewItemDtoPagedList']
 
 export const mockKycItems: KycReviewItem[] = [
   {

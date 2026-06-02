@@ -4,7 +4,9 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft, Clock, CalendarCheck, User, AlertTriangle, Loader2 } from 'lucide-react'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { KycReviewItem } from '@/types/kyc'
+import type { components } from '@/api/schema'
+
+type KycReviewItem = components['schemas']['KycReviewItemDto']
 import { KycReviewState, KycDecision } from '@/lib/enums'
 import {
   KycReviewStateLabel, KycDecisionLabel,

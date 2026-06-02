@@ -1,5 +1,7 @@
-import type { KycQueueFilter } from '@/types/kyc'
-import type { ModerationQueueFilter } from '@/types/moderation'
+import type { components } from '@/api/schema'
+
+type KycQueueFilter        = components['schemas']['KycQueueParams']
+type ModerationQueueFilter = components['schemas']['ModerationQueueParams']
 
 type AuditFilter  = Record<string, unknown>
 type AdminFilter  = Record<string, unknown>

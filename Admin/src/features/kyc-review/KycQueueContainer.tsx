@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useKycQueue } from '@/api/queries/useKycQueue'
-import type { KycQueueFilter } from '@/types/kyc'
+import type { components } from '@/api/schema'
+
+type KycQueueFilter = components['schemas']['KycQueueParams']
 import { KycQueueView } from './KycQueueView'
 
 const PAGE_SIZE = 20

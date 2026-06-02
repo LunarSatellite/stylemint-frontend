@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react'
-import type { ModerationItem, ModerationQueueFilter } from '@/types/moderation'
+import type { components } from '@/api/schema'
+
+type ModerationItem        = components['schemas']['ModerationItemDto']
+type ModerationQueueFilter = components['schemas']['ModerationQueueParams']
 import { ModerationItemState, ModerationTargetKind, ModerationSource } from '@/lib/enums'
 import {
   ModerationItemStateLabel,
