@@ -38,79 +38,96 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ display:'flex', height:'100vh', minWidth:1280 }}>
+    <div className="flex h-screen min-w-[1280px]">
 
-      {/* ── Left panel: phone mockup animation ── */}
-      <div style={{ width:'60%', flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:28, background:'radial-gradient(ellipse at 40% 50%, #0F1E1A 0%, #0A1612 100%)' }}>
-
-        <div style={{ textAlign:'center' }}>
-          <div style={{ fontSize:13, fontWeight:700, letterSpacing:3, textTransform:'uppercase', color:'#7A9B8E', marginBottom:6 }}>
+      {/* Left panel */}
+      <div
+        className="flex w-[60%] shrink-0 flex-col items-center justify-center gap-7"
+        style={{ background: 'radial-gradient(ellipse at 40% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%)' }}
+      >
+        <div className="text-center">
+          <p className="mb-1.5 text-[13px] font-bold uppercase tracking-[3px] text-text-muted">
             Powering the creator economy
-          </div>
-          <div style={{ fontSize:15, color:'#B8E6D5', opacity:0.65 }}>
+          </p>
+          <p className="text-[15px] text-text-secondary opacity-65">
             One platform. Brands and creators, in sync.
-          </div>
+          </p>
         </div>
 
         <PhoneMockupAnimation />
 
-        <div style={{ display:'flex', gap:36 }}>
+        <div className="flex gap-9">
           {[
-            { v:'2.4K+', l:'Creators' },
-            { v:'180+',  l:'Brands'   },
-            { v:'$4.2M', l:'GMV'      },
+            { v: '2.4K+', l: 'Creators' },
+            { v: '180+',  l: 'Brands'   },
+            { v: '$4.2M', l: 'GMV'      },
           ].map((s) => (
-            <div key={s.l} style={{ textAlign:'center' }}>
-              <div style={{ fontSize:17, fontWeight:800, color:'#00D98A' }}>{s.v}</div>
-              <div style={{ fontSize:12, color:'#7A9B8E' }}>{s.l}</div>
+            <div key={s.l} className="text-center">
+              <div className="text-[17px] font-extrabold text-primary">{s.v}</div>
+              <div className="text-[12px] text-text-muted">{s.l}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Divider */}
-      <div style={{ width:1, background:'rgba(255,255,255,0.06)', flexShrink:0 }} />
+      <div className="w-px shrink-0 bg-[var(--surface-border)]" />
 
-      {/* ── Right panel: login form ── */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#0A1612', gap:28 }}>
+      {/* Right panel */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-7 bg-bg-primary">
 
-        {/* Logo — above the card, matching screenshot layout */}
-        <div style={{ display:'flex', alignItems:'center', gap:16 }}>
-          {/* Icon box */}
-          <div style={{ width:64, height:64, borderRadius:14, background:'#0F2A1E', border:'1px solid rgba(0,217,138,0.18)', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 0 24px rgba(0,217,138,0.12)', flexShrink:0 }}>
+        {/* Logo */}
+        <div className="flex items-center gap-4">
+          <div
+            className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[14px] border"
+            style={{
+              background:   'var(--bg-secondary)',
+              borderColor:  'var(--border-primary)',
+              boxShadow:    '0 0 24px var(--glow-primary)',
+            }}
+          >
             <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
-              {/* S shape: two arcs */}
               <path d="M8 19 C8 12 11 7 19 7 C27 7 30 12 30 16 C30 21 27 23 19 23"
-                    stroke="#00D98A" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
+                    stroke="var(--primary)" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
               <path d="M30 22 C30 29 27 31 19 31 C11 31 8 26 8 22 C8 17 11 15 19 15"
-                    stroke="#00D98A" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
-              {/* Glow layers */}
+                    stroke="var(--primary)" strokeWidth="2.8" strokeLinecap="round" fill="none"/>
               <path d="M8 19 C8 12 11 7 19 7 C27 7 30 12 30 16 C30 21 27 23 19 23"
-                    stroke="#00D98A" strokeWidth="7" strokeLinecap="round" fill="none" strokeOpacity="0.07"/>
+                    stroke="var(--primary)" strokeWidth="7" strokeLinecap="round" fill="none" strokeOpacity="0.07"/>
               <path d="M30 22 C30 29 27 31 19 31 C11 31 8 26 8 22 C8 17 11 15 19 15"
-                    stroke="#00D98A" strokeWidth="7" strokeLinecap="round" fill="none" strokeOpacity="0.07"/>
-              <circle cx="19" cy="19" r="2.2" fill="#00D98A"/>
+                    stroke="var(--primary)" strokeWidth="7" strokeLinecap="round" fill="none" strokeOpacity="0.07"/>
+              <circle cx="19" cy="19" r="2.2" fill="var(--primary)"/>
             </svg>
           </div>
-          {/* Name + subtitle */}
           <div>
-            <div style={{ fontSize:28, fontWeight:800, color:'#ffffff', letterSpacing:'-0.3px', lineHeight:1.15 }}>StyleMint</div>
-            <div style={{ fontSize:13, color:'#7A9B8E', fontWeight:500, marginTop:3, letterSpacing:'0.02em' }}>AI-Powered Analytics</div>
+            <div className="text-[28px] font-extrabold leading-[1.15] tracking-[-0.3px] text-text-primary">
+              StyleMint
+            </div>
+            <div className="mt-[3px] text-[13px] font-medium tracking-[0.02em] text-text-muted">
+              AI-Powered Analytics
+            </div>
           </div>
         </div>
 
         {/* Card */}
-        <div style={{ width:'100%', maxWidth:400, background:'#132420', border:'1px solid rgba(255,255,255,0.07)', borderRadius:18, padding:'36px 32px', boxShadow:'0 4px 32px rgba(0,0,0,0.45)', position:'relative' }}>
+        <div
+          className="relative w-full max-w-[400px] rounded-[18px] border px-8 py-9 shadow-soft"
+          style={{ background: 'var(--bg-card)', borderColor: 'var(--surface-3)' }}
+        >
           {/* Shimmer top edge */}
-          <div style={{ position:'absolute', top:0, left:'10%', right:'10%', height:1, background:'linear-gradient(90deg, transparent, rgba(0,217,138,0.4), transparent)', borderRadius:99 }} />
+          <div
+            className="absolute inset-x-[10%] top-0 h-px rounded-full"
+            style={{ background: 'linear-gradient(90deg, transparent, var(--border-primary), transparent)' }}
+          />
 
-          <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:18 }}>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
 
             {/* Email */}
-            <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-              <label style={{ fontSize:13, fontWeight:600, color:'#B8E6D5' }}>Email address</label>
-              <div style={{ position:'relative' }}>
-                <Mail size={15} color="#4A7A6A" style={{ position:'absolute', left:13, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}/>
+            <div className="flex flex-col gap-[7px]">
+              <label className="text-[13px] font-semibold text-text-secondary">
+                Email address
+              </label>
+              <div className="relative">
+                <Mail size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input
                   type="email"
                   value={email}
@@ -118,23 +135,27 @@ export default function LoginPage() {
                   placeholder="@stylemint.com"
                   autoComplete="email"
                   required
-                  style={{ width:'100%', background:'#1A332C', border:'1px solid rgba(184,230,213,0.1)', borderRadius:10, padding:'11px 14px 11px 38px', fontSize:13, color:'#ffffff', outline:'none', transition:'border-color 0.18s' }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(0,217,138,0.45)' }}
-                  onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(184,230,213,0.1)' }}
+                  className="w-full rounded-[10px] border bg-bg-elevated py-[11px] pl-[38px] pr-[14px] text-[13px] text-text-primary outline-none transition-colors duration-[180ms] placeholder:text-text-muted focus:border-[var(--border-primary)]"
+                  style={{ borderColor: 'var(--border-subtle)' }}
                 />
               </div>
             </div>
 
             {/* Password */}
-            <div style={{ display:'flex', flexDirection:'column', gap:7 }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-                <label style={{ fontSize:13, fontWeight:600, color:'#B8E6D5' }}>Password</label>
-                <button type="button" style={{ fontSize:12, color:'#00D98A', background:'none', border:'none', cursor:'pointer', padding:0, fontWeight:500 }}>
+            <div className="flex flex-col gap-[7px]">
+              <div className="flex items-center justify-between">
+                <label className="text-[13px] font-semibold text-text-secondary">
+                  Password
+                </label>
+                <button
+                  type="button"
+                  className="cursor-pointer border-none bg-transparent p-0 text-[12px] font-medium text-primary"
+                >
                   Forgot password?
                 </button>
               </div>
-              <div style={{ position:'relative' }}>
-                <Lock size={15} color="#4A7A6A" style={{ position:'absolute', left:13, top:'50%', transform:'translateY(-50%)', pointerEvents:'none' }}/>
+              <div className="relative">
+                <Lock size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                 <input
                   type={showPw ? 'text' : 'password'}
                   value={password}
@@ -142,31 +163,31 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   autoComplete="current-password"
                   required
-                  style={{ width:'100%', background:'#1A332C', border:'1px solid rgba(184,230,213,0.1)', borderRadius:10, padding:'11px 42px 11px 38px', fontSize:13, color:'#ffffff', outline:'none', transition:'border-color 0.18s' }}
-                  onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(0,217,138,0.45)' }}
-                  onBlur={(e)  => { e.currentTarget.style.borderColor = 'rgba(184,230,213,0.1)' }}
+                  className="w-full rounded-[10px] border bg-bg-elevated py-[11px] pl-[38px] pr-[42px] text-[13px] text-text-primary outline-none transition-colors duration-[180ms] placeholder:text-text-muted focus:border-[var(--border-primary)]"
+                  style={{ borderColor: 'var(--border-subtle)' }}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPw(p => !p)}
-                  style={{ position:'absolute', right:11, top:'50%', transform:'translateY(-50%)', background:'none', border:'none', cursor:'pointer', color:'#4A7A6A', padding:3, display:'flex', alignItems:'center' }}
+                  onClick={() => setShowPw((p) => !p)}
+                  className="absolute right-[11px] top-1/2 flex -translate-y-1/2 cursor-pointer items-center border-none bg-transparent p-[3px] text-text-muted"
                 >
-                  {showPw ? <EyeOff size={15}/> : <Eye size={15}/>}
+                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                 </button>
               </div>
             </div>
 
             {error && (
-              <div style={{ background:'rgba(248,113,113,0.07)', border:'1px solid rgba(248,113,113,0.2)', borderRadius:8, padding:'9px 13px', fontSize:13, color:'#f87171' }}>
+              <div
+                className="rounded-lg border px-[13px] py-[9px] text-[13px] text-red-400"
+                style={{ background: 'rgba(248,113,113,0.07)', borderColor: 'rgba(248,113,113,0.2)' }}
+              >
                 {error}
               </div>
             )}
 
             <button
               type="submit"
-              style={{ background:'#00D98A', color:'#0A1612', fontWeight:700, fontSize:14, padding:'13px', borderRadius:10, border:'none', cursor:'pointer', marginTop:2, transition:'background 0.18s' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#00B872' }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = '#00D98A' }}
+              className="mt-0.5 cursor-pointer rounded-[10px] border-none bg-primary py-[13px] text-[14px] font-bold text-bg-primary transition-colors duration-[180ms] hover:bg-primary-dark"
             >
               Sign in
             </button>

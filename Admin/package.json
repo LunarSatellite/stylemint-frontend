@@ -11,7 +11,7 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "playwright test",
-    "codegen": "openapi-typescript http://localhost:5020/swagger/v1/swagger.json -o src/api/schema.ts",
+    "codegen": "openapi-typescript .claude/BE/swagger.json -o src/api/schema.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0"
   },
   "dependencies": {
@@ -41,8 +41,8 @@
     "recharts": "^2.12.7",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
-    "zustand": "^5.0.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@playwright/test": "^1.47.2",
@@ -55,11 +55,17 @@
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
     "jsdom": "^25.0.1",
+    "msw": "^2.14.6",
     "openapi-typescript": "^7.4.0",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.12",
     "typescript": "^5.5.3",
     "vite": "^5.4.8",
     "vitest": "^2.1.1"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
   }
 }

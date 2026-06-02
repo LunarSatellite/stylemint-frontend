@@ -1,20 +1,27 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
+import type { ModerationItem, DecideModerationRequest } from '@/types/moderation'
 
-type ModDecideVars = { id: string; state: number; reason?: string }
+type Vars = { id: string } & DecideModerationRequest
 
-export function useModerationDecide(options?: { onSuccess?: () => void; onError?: (e: unknown) => void }) {
+export function useModerationDecide(options?: {
+  onSuccess?: (data: ModerationItem) => void
+  onError?:  (e: unknown) => void
+}) {
   const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (vars: ModDecideVars) => {
-      const { data } = await api.post(`/v1/admin/moderation/${vars.id}/decide`, vars)
+  return useMutation<ModerationItem, unknown, Vars>({
+    mutationFn: async ({ id, action, decisionNote }) => {
+      const { data } = await api.post<ModerationItem>(
+        `/v1/admin/moderation/${id}/decide`,
+        { action, decisionNote },
+      )
       return data
     },
-    onSuccess: (_d, vars) => {
+    onSuccess: (data, vars) => {
       qc.invalidateQueries({ queryKey: qk.moderation.detail(vars.id) })
       qc.invalidateQueries({ queryKey: ['mod', 'queue'], exact: false })
-      options?.onSuccess?.()
+      options?.onSuccess?.(data)
     },
     onError: options?.onError,
   })

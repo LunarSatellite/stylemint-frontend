@@ -1,13 +1,45 @@
 import { useState } from 'react'
 import { useModerationQueue } from '@/api/queries/useModerationQueue'
-import { useDebounce } from '@/hooks/use-debounce'
+import type { ModerationQueueFilter } from '@/types/moderation'
 import { ModerationQueueView } from './ModerationQueueView'
 
+const PAGE_SIZE = 20
+
 export function ModerationQueueContainer() {
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search)
-  const { data, isLoading, isError } = useModerationQueue({ page, pageSize: 20, search: debouncedSearch })
-  if (isError) return <div className="text-red-400 p-4">Failed to load moderation queue.</div>
-  return <ModerationQueueView data={data?.items ?? []} total={data?.total ?? 0} page={page} pageSize={20} search={search} isLoading={isLoading} onPageChange={setPage} onSearchChange={setSearch} />
+  const [filter, setFilter] = useState<ModerationQueueFilter>({
+    pageNumber: 1,
+    pageSize:   PAGE_SIZE,
+  })
+
+  const { data, isLoading, isError } = useModerationQueue(filter)
+
+  function setPage(pageNumber: number) {
+    setFilter(f => ({ ...f, pageNumber }))
+  }
+
+  function setFilterField<K extends keyof ModerationQueueFilter>(key: K, value: ModerationQueueFilter[K]) {
+    setFilter(f => ({ ...f, [key]: value, pageNumber: 1 }))
+  }
+
+  if (isError) return (
+    <div className="rounded-lg border border-red-400/20 bg-red-400/[0.08] px-4 py-4 text-red-400">
+      Failed to load moderation queue.
+    </div>
+  )
+
+  return (
+    <ModerationQueueView
+      data={data?.items ?? []}
+      totalCount={data?.totalCount ?? 0}
+      pageNumber={filter.pageNumber}
+      pageSize={PAGE_SIZE}
+      totalPages={data?.totalPages ?? 1}
+      hasNext={data?.hasNext ?? false}
+      hasPrevious={data?.hasPrevious ?? false}
+      filter={filter}
+      isLoading={isLoading}
+      onPageChange={setPage}
+      onFilterChange={setFilterField}
+    />
+  )
 }

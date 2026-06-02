@@ -1,20 +1,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
+import type { DecideKycRequest, KycReviewItem } from '@/types/kyc'
 
-type KycDecideVars = { id: string; state: number; reason?: string }
+type Vars = { id: string } & DecideKycRequest
 
-export function useKycDecide(options?: { onSuccess?: () => void; onError?: (e: unknown) => void }) {
+export function useKycDecide(options?: { onSuccess?: (data: KycReviewItem) => void; onError?: (e: unknown) => void }) {
   const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async (vars: KycDecideVars) => {
-      const { data } = await api.post(`/v1/admin/kyc/${vars.id}/decide`, vars)
+  return useMutation<KycReviewItem, unknown, Vars>({
+    mutationFn: async ({ id, ...body }) => {
+      const { data } = await api.post<KycReviewItem>(`/v1/admin/kyc/${id}/decide`, body)
       return data
     },
-    onSuccess: (_d, vars) => {
+    onSuccess: (data, vars) => {
       qc.invalidateQueries({ queryKey: qk.kyc.detail(vars.id) })
       qc.invalidateQueries({ queryKey: ['kyc', 'queue'], exact: false })
-      options?.onSuccess?.()
+      options?.onSuccess?.(data)
     },
     onError: options?.onError,
   })

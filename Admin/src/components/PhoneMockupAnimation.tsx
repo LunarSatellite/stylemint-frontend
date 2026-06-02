@@ -10,93 +10,109 @@ const STYLES = `
 .pma-pdot    { animation:pma-pdot 1.4s infinite }
 `
 
-const G  = '#00D98A'
-const DK = '#0A1612'
-const DKC= '#132420'
-const WS = '#B8E6D5'
-const WM = '#7A9B8E'
-const PU = '#a78bfa'
-const AM = '#fbbf24'
-const CO = '#f87171'
-const BL = '#60a5fa'
+const G   = '#00D98A'
+const DK  = '#0A1612'
+const DKC = '#132420'
+const WM  = '#7A9B8E'
+const PU  = '#a78bfa'
+const AM  = '#fbbf24'
+const CO  = '#f87171'
+const BL  = '#60a5fa'
 
-/* ── Primitives ────────────────────────────────────── */
+/* ── Primitives ─────────────────────────────────────────────────────────────── */
 
 function Topbar({ gemBg, init, name, pillBg, pillTxt, dotBg, label }: {
-  gemBg:string; init:string; name:string; pillBg:string; pillTxt:string; dotBg:string; label:string
+  gemBg: string; init: string; name: string
+  pillBg: string; pillTxt: string; dotBg: string; label: string
 }) {
   return (
-    <div style={{ display:'flex', alignItems:'center', padding:'0 14px', marginBottom:4, flexShrink:0 }}>
-      <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-        <div style={{ width:26, height:26, borderRadius:6, background:gemBg, display:'flex', alignItems:'center', justifyContent:'center' }}>
-          <span style={{ fontSize:12, fontWeight:800, color:'#fff' }}>{init}</span>
+    <div className="mb-1 flex shrink-0 items-center px-[14px]">
+      <div className="flex items-center gap-1.5">
+        <div
+          className="flex h-[26px] w-[26px] items-center justify-center rounded-[6px]"
+          style={{ background: gemBg }}
+        >
+          <span className="text-[12px] font-extrabold text-white">{init}</span>
         </div>
-        <span style={{ fontSize:13, fontWeight:800, color:'#fff' }}>{name}</span>
+        <span className="text-[13px] font-extrabold text-white">{name}</span>
       </div>
-      <div style={{ marginLeft:'auto', display:'flex', alignItems:'center', gap:4, background:pillBg, borderRadius:8, padding:'2px 8px' }}>
-        <div className="pma-pdot" style={{ width:5, height:5, borderRadius:'50%', background:dotBg }} />
-        <span style={{ fontSize:10, fontWeight:700, color:pillTxt }}>{label}</span>
+      <div
+        className="ml-auto flex items-center gap-1 rounded-[8px] px-2 py-[2px]"
+        style={{ background: pillBg }}
+      >
+        <div className="pma-pdot h-[5px] w-[5px] rounded-full" style={{ background: dotBg }} />
+        <span className="text-[10px] font-bold" style={{ color: pillTxt }}>{label}</span>
       </div>
     </div>
   )
 }
 
-function SL({ text }: { text:string }) {
-  return <div style={{ fontSize:10, fontWeight:700, letterSpacing:2, textTransform:'uppercase', color:WM, padding:'0 14px', marginBottom:3, flexShrink:0 }}>{text}</div>
+function SL({ text }: { text: string }) {
+  return (
+    <div className="mb-[3px] shrink-0 px-[14px] text-[10px] font-bold uppercase tracking-[2px] text-text-muted">
+      {text}
+    </div>
+  )
 }
 
-/* ── Brand screens ─────────────────────────────────── */
+/* ── Brand screens ──────────────────────────────────────────────────────────── */
 
 function BrandHome() {
   const brands = [
-    { e:'🌿', n:'NaturalKit', c:'Skincare',  ac:G  },
-    { e:'💎', n:'Luxora',     c:'Luxury',    ac:PU },
-    { e:'☕', n:'BrewRoots',  c:'Beverages', ac:AM },
-    { e:'🏡', n:'ZenHome',   c:'Home',      ac:BL },
-    { e:'⚡', n:'FitFuel',   c:'Fitness',   ac:CO },
+    { e: '🌿', n: 'NaturalKit', c: 'Skincare',  ac: G  },
+    { e: '💎', n: 'Luxora',     c: 'Luxury',    ac: PU },
+    { e: '☕', n: 'BrewRoots',  c: 'Beverages', ac: AM },
+    { e: '🏡', n: 'ZenHome',   c: 'Home',      ac: BL },
+    { e: '⚡', n: 'FitFuel',   c: 'Fitness',   ac: CO },
   ]
   const prods = [
-    { e:'👗', n:'Linen Set',   p:'$89'  },
-    { e:'💄', n:'Velvet Lip',  p:'$34'  },
-    { e:'🌿', n:'Green Serum', p:'$67'  },
-    { e:'🧴', n:'Hydra Cream', p:'$45'  },
-    { e:'👟', n:'Trail Pro',   p:'$129' },
-    { e:'☕', n:'Cold Brew',   p:'$28'  },
+    { e: '👗', n: 'Linen Set',   p: '$89'  },
+    { e: '💄', n: 'Velvet Lip',  p: '$34'  },
+    { e: '🌿', n: 'Green Serum', p: '$67'  },
+    { e: '🧴', n: 'Hydra Cream', p: '$45'  },
+    { e: '👟', n: 'Trail Pro',   p: '$129' },
+    { e: '☕', n: 'Cold Brew',   p: '$28'  },
   ]
   const stats = [
-    { v:'$48.2K', l:'Revenue'   },
-    { v:'1.2K',   l:'Creators'  },
-    { v:'94%',    l:'Fulfilled' },
+    { v: '$48.2K', l: 'Revenue'   },
+    { v: '1.2K',   l: 'Creators'  },
+    { v: '94%',    l: 'Fulfilled' },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       <Topbar gemBg={G} init="B" name="Brand Studio" pillBg="rgba(0,217,138,.1)" pillTxt={G} dotBg={G} label="LIVE" />
-      <div style={{ height:100, overflow:'hidden', padding:'0 14px', marginBottom:3, flexShrink:0 }}>
+      <div className="mb-[3px] h-[100px] shrink-0 overflow-hidden px-[14px]">
         <div className="pma-bscroll">
-          {[...brands,...brands].map((b,i) => (
-            <div key={i} style={{ width:84, height:96, borderRadius:12, background:DKC, flexShrink:0, borderTop:`2px solid ${b.ac}`, padding:'8px 7px 6px', display:'flex', flexDirection:'column', alignItems:'center', gap:2 }}>
-              <div style={{ width:34, height:34, borderRadius:8, background:'rgba(255,255,255,.05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18 }}>{b.e}</div>
-              <span style={{ fontSize:10, fontWeight:700, color:WS, textAlign:'center', lineHeight:1.2 }}>{b.n}</span>
-              <span style={{ fontSize:8, color:WM }}>{b.c}</span>
+          {[...brands, ...brands].map((b, i) => (
+            <div
+              key={i}
+              className="flex shrink-0 flex-col items-center gap-0.5 rounded-[12px] px-[7px] pb-[6px] pt-2"
+              style={{ width: 84, height: 96, background: DKC, borderTop: `2px solid ${b.ac}` }}
+            >
+              <div className="flex h-[34px] w-[34px] items-center justify-center rounded-[8px] bg-white/[0.05] text-[18px]">
+                {b.e}
+              </div>
+              <span className="text-center text-[10px] font-bold leading-[1.2] text-text-secondary">{b.n}</span>
+              <span className="text-[8px] text-text-muted">{b.c}</span>
             </div>
           ))}
         </div>
       </div>
       <SL text="Top products" />
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:4, padding:'0 14px', marginBottom:3, flexShrink:0 }}>
-        {prods.map((p,i) => (
-          <div key={i} style={{ background:DKC, border:'1px solid rgba(255,255,255,.06)', borderRadius:8, padding:'5px 4px', display:'flex', flexDirection:'column', alignItems:'center', gap:1 }}>
-            <span style={{ fontSize:18 }}>{p.e}</span>
-            <span style={{ fontSize:10, fontWeight:600, color:WS, textAlign:'center', lineHeight:1.2 }}>{p.n}</span>
-            <span style={{ fontSize:10, fontWeight:700, color:G }}>{p.p}</span>
+      <div className="mb-[3px] grid shrink-0 grid-cols-3 gap-1 px-[14px]">
+        {prods.map((p, i) => (
+          <div key={i} className="flex flex-col items-center gap-[1px] rounded-[8px] border border-white/[0.06] bg-bg-card px-1 py-[5px]">
+            <span className="text-[18px]">{p.e}</span>
+            <span className="text-center text-[10px] font-semibold leading-[1.2] text-text-secondary">{p.n}</span>
+            <span className="text-[10px] font-bold text-primary">{p.p}</span>
           </div>
         ))}
       </div>
-      <div style={{ display:'flex', gap:4, padding:'0 14px', flexShrink:0 }}>
-        {stats.map((s,i) => (
-          <div key={i} style={{ flex:1, background:DKC, border:'1px solid rgba(255,255,255,.06)', borderRadius:8, padding:'5px 4px', textAlign:'center' }}>
-            <div style={{ fontSize:13, fontWeight:800, color:'#fff' }}>{s.v}</div>
-            <div style={{ fontSize:8, color:WM }}>{s.l}</div>
+      <div className="flex shrink-0 gap-1 px-[14px]">
+        {stats.map((s, i) => (
+          <div key={i} className="flex-1 rounded-[8px] border border-white/[0.06] bg-bg-card px-1 py-[5px] text-center">
+            <div className="text-[13px] font-extrabold text-white">{s.v}</div>
+            <div className="text-[8px] text-text-muted">{s.l}</div>
           </div>
         ))}
       </div>
@@ -106,26 +122,36 @@ function BrandHome() {
 
 function BrandBriefs() {
   const briefs = [
-    { t:'Summer Glow', st:'Locked', sBg:'rgba(0,217,138,.12)', sC:G,  g:'Drive awareness for SPF range',     m:'50 creators · 3mo', roi:'4.2×' },
-    { t:'Urban Fit Q3',st:'Draft',  sBg:'rgba(251,191,36,.12)',sC:AM, g:'Gym wear launch campaign',            m:'30 creators · $12K', roi:'—'   },
-    { t:'Brew & Chill', st:'Locked', sBg:'rgba(0,217,138,.12)', sC:G, g:'Lifestyle content for cold brew',    m:'25 creators · 2mo', roi:'3.8×' },
-    { t:'Home Stories', st:'Retired',sBg:'rgba(255,255,255,.06)',sC:WM,g:'Home decor showcase',               m:'40 creators · 4mo', roi:'2.1×' },
+    { t: 'Summer Glow', st: 'Locked', sBg: 'rgba(0,217,138,.12)', sC: G,  g: 'Drive awareness for SPF range',   m: '50 creators · 3mo', roi: '4.2×' },
+    { t: 'Urban Fit Q3',st: 'Draft',  sBg: 'rgba(251,191,36,.12)',sC: AM, g: 'Gym wear launch campaign',          m: '30 creators · $12K', roi: '—'   },
+    { t: 'Brew & Chill', st: 'Locked', sBg: 'rgba(0,217,138,.12)', sC: G, g: 'Lifestyle content for cold brew',  m: '25 creators · 2mo', roi: '3.8×' },
+    { t: 'Home Stories', st: 'Retired',sBg: 'rgba(255,255,255,.06)',sC: WM,g: 'Home decor showcase',             m: '40 creators · 4mo', roi: '2.1×' },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       <Topbar gemBg={G} init="B" name="Brand Studio" pillBg="rgba(251,191,36,.1)" pillTxt={AM} dotBg={AM} label="BRIEFS" />
       <SL text="Campaign briefs" />
-      <div style={{ display:'flex', flexDirection:'column', gap:3, padding:'0 14px' }}>
-        {briefs.map((b,i) => (
-          <div key={i} id={`brand-brief-${i}`} style={{ background:DKC, border:'1px solid rgba(255,255,255,.06)', borderRadius:10, padding:'7px 10px', opacity:0, transform:'translateY(10px)' }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:2 }}>
-              <span style={{ fontSize:12, fontWeight:700, color:WS }}>{b.t}</span>
-              <span style={{ fontSize:9, fontWeight:700, color:b.sC, background:b.sBg, padding:'1px 6px', borderRadius:4 }}>{b.st}</span>
+      <div className="flex flex-col gap-[3px] px-[14px]">
+        {briefs.map((b, i) => (
+          <div
+            key={i}
+            id={`brand-brief-${i}`}
+            className="rounded-[10px] border border-white/[0.06] bg-bg-card px-[10px] py-[7px]"
+            style={{ opacity: 0, transform: 'translateY(10px)' }}
+          >
+            <div className="mb-[2px] flex items-center justify-between">
+              <span className="text-[12px] font-bold text-text-secondary">{b.t}</span>
+              <span
+                className="rounded-[4px] px-[6px] py-[1px] text-[9px] font-bold"
+                style={{ color: b.sC, background: b.sBg }}
+              >
+                {b.st}
+              </span>
             </div>
-            <div style={{ fontSize:10, color:WM, marginBottom:3 }}>{b.g}</div>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <span style={{ fontSize:9, color:WM }}>{b.m}</span>
-              <span style={{ fontSize:11, fontWeight:800, color:G }}>{b.roi}</span>
+            <div className="mb-[3px] text-[10px] text-text-muted">{b.g}</div>
+            <div className="flex items-center justify-between">
+              <span className="text-[9px] text-text-muted">{b.m}</span>
+              <span className="text-[11px] font-extrabold text-primary">{b.roi}</span>
             </div>
           </div>
         ))}
@@ -136,51 +162,80 @@ function BrandBriefs() {
 
 function BrandAnalytics() {
   const kpis = [
-    { v:'$124K',  l:'Revenue', d:'+18%' },
-    { v:'8.4K',   l:'Orders',  d:'+12%' },
-    { v:'$14.76', l:'AOV',     d:'+5%'  },
+    { v: '$124K',  l: 'Revenue', d: '+18%' },
+    { v: '8.4K',   l: 'Orders',  d: '+12%' },
+    { v: '$14.76', l: 'AOV',     d: '+5%'  },
   ]
-  const bh = [35,50,45,60,70,75,100]
-  const bc = ['rgba(0,217,138,.35)','rgba(0,217,138,.42)','rgba(0,217,138,.48)','rgba(0,217,138,.52)','rgba(0,217,138,.58)','rgba(0,217,138,.65)',G]
+  const bh = [35, 50, 45, 60, 70, 75, 100]
+  const bc = ['rgba(0,217,138,.35)','rgba(0,217,138,.42)','rgba(0,217,138,.48)','rgba(0,217,138,.52)','rgba(0,217,138,.58)','rgba(0,217,138,.65)', G]
   const days = ['M','T','W','T','F','S','S']
   const creators = [
-    { in:'JL', gr:'linear-gradient(135deg,#00D98A,#00B872)', h:'@jordanlux', r:'$8.4K' },
-    { in:'SK', gr:'linear-gradient(135deg,#a78bfa,#7c3aed)', h:'@softkit',   r:'$6.2K' },
-    { in:'MV', gr:'linear-gradient(135deg,#fbbf24,#f59e0b)', h:'@minivera',  r:'$4.8K' },
+    { in: 'JL', gr: 'linear-gradient(135deg,#00D98A,#00B872)', h: '@jordanlux', r: '$8.4K' },
+    { in: 'SK', gr: 'linear-gradient(135deg,#a78bfa,#7c3aed)', h: '@softkit',   r: '$6.2K' },
+    { in: 'MV', gr: 'linear-gradient(135deg,#fbbf24,#f59e0b)', h: '@minivera',  r: '$4.8K' },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden', gap:5 }}>
+    <div className="flex flex-1 flex-col gap-[5px] overflow-hidden">
       <Topbar gemBg={G} init="B" name="Brand Studio" pillBg="rgba(96,165,250,.1)" pillTxt={BL} dotBg={BL} label="30d" />
       <SL text="Analytics overview" />
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:4, padding:'0 14px', flexShrink:0 }}>
-        {kpis.map((k,i) => (
-          <div key={i} id={`brand-kpi-${i}`} style={{ background:DKC, border:'1px solid rgba(255,255,255,.06)', borderRadius:8, padding:'6px 7px', opacity:0, transform:'translateY(8px)' }}>
-            <div style={{ fontSize:14, fontWeight:800, color:'#fff', lineHeight:1 }}>{k.v}</div>
-            <div style={{ fontSize:8, color:WM, margin:'2px 0' }}>{k.l}</div>
-            <div style={{ fontSize:9, fontWeight:700, color:G }}>{k.d}</div>
+      <div className="grid shrink-0 grid-cols-3 gap-1 px-[14px]">
+        {kpis.map((k, i) => (
+          <div
+            key={i}
+            id={`brand-kpi-${i}`}
+            className="rounded-[8px] border border-white/[0.06] bg-bg-card px-[7px] py-[6px]"
+            style={{ opacity: 0, transform: 'translateY(8px)' }}
+          >
+            <div className="text-[14px] font-extrabold leading-[1] text-white">{k.v}</div>
+            <div className="my-[2px] text-[8px] text-text-muted">{k.l}</div>
+            <div className="text-[9px] font-bold text-primary">{k.d}</div>
           </div>
         ))}
       </div>
-      <div id="brand-chart-card" style={{ margin:'3px 14px 0', background:DKC, border:'1px solid rgba(255,255,255,.06)', borderRadius:10, padding:'7px 10px', flexShrink:0, opacity:0, transform:'translateY(8px)' }}>
-        <div style={{ fontSize:11, fontWeight:700, color:WS, marginBottom:5 }}>Weekly Revenue</div>
-        <div style={{ display:'flex', alignItems:'flex-end', height:58, gap:4 }}>
-          {bh.map((h,i) => (
-            <div key={i} style={{ flex:1, display:'flex', alignItems:'flex-end', height:'100%' }}>
-              <div id={`brand-bar-${i}`} style={{ width:'100%', height:`${h}%`, borderRadius:'3px 3px 0 0', background:bc[i], transform:'scaleY(0)', transformOrigin:'bottom' }} />
+      <div
+        id="brand-chart-card"
+        className="mx-[14px] mt-[3px] shrink-0 rounded-[10px] border border-white/[0.06] bg-bg-card px-[10px] py-[7px]"
+        style={{ opacity: 0, transform: 'translateY(8px)' }}
+      >
+        <div className="mb-[5px] text-[11px] font-bold text-text-secondary">Weekly Revenue</div>
+        <div className="flex h-[58px] items-end gap-1">
+          {bh.map((h, i) => (
+            <div key={i} className="flex h-full flex-1 items-end">
+              <div
+                id={`brand-bar-${i}`}
+                className="w-full rounded-[3px_3px_0_0]"
+                style={{ height: `${h}%`, background: bc[i], transform: 'scaleY(0)', transformOrigin: 'bottom' }}
+              />
             </div>
           ))}
         </div>
-        <div style={{ display:'flex', gap:4, marginTop:3 }}>
-          {days.map((d,i) => <div key={i} style={{ flex:1, textAlign:'center', fontSize:8, color:WM }}>{d}</div>)}
+        <div className="mt-[3px] flex gap-1">
+          {days.map((d, i) => (
+            <div key={i} className="flex-1 text-center text-[8px] text-text-muted">{d}</div>
+          ))}
         </div>
       </div>
-      <div id="brand-creators-card" style={{ margin:'3px 14px 0', background:DKC, border:'1px solid rgba(255,255,255,.06)', borderRadius:10, padding:'7px 10px', flexShrink:0, opacity:0, transform:'translateY(8px)' }}>
-        <div style={{ fontSize:11, fontWeight:700, color:WS, marginBottom:4 }}>Top Creators</div>
-        {creators.map((c,i) => (
-          <div key={i} id={`brand-creator-row-${i}`} style={{ display:'flex', alignItems:'center', gap:7, marginBottom: i<2 ? 3 : 0, opacity:0, transform:'translateY(8px)' }}>
-            <div style={{ width:22, height:22, borderRadius:'50%', background:c.gr, display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, fontWeight:700, color:'#fff', flexShrink:0 }}>{c.in}</div>
-            <span style={{ fontSize:11, color:WS, flex:1 }}>{c.h}</span>
-            <span style={{ fontSize:10, fontWeight:700, color:G }}>{c.r}</span>
+      <div
+        id="brand-creators-card"
+        className="mx-[14px] mt-[3px] shrink-0 rounded-[10px] border border-white/[0.06] bg-bg-card px-[10px] py-[7px]"
+        style={{ opacity: 0, transform: 'translateY(8px)' }}
+      >
+        <div className="mb-1 text-[11px] font-bold text-text-secondary">Top Creators</div>
+        {creators.map((c, i) => (
+          <div
+            key={i}
+            id={`brand-creator-row-${i}`}
+            className="flex items-center gap-[7px]"
+            style={{ marginBottom: i < 2 ? 3 : 0, opacity: 0, transform: 'translateY(8px)' }}
+          >
+            <div
+              className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white"
+              style={{ background: c.gr }}
+            >
+              {c.in}
+            </div>
+            <span className="flex-1 text-[11px] text-text-secondary">{c.h}</span>
+            <span className="text-[10px] font-bold text-primary">{c.r}</span>
           </div>
         ))}
       </div>
@@ -189,30 +244,40 @@ function BrandAnalytics() {
 }
 
 function BrandActivity() {
-  type Row = { ic:string; ib:string; t:string; s:string; badge:string|null; bBg?:string; bC?:string; ts?:string }
+  type Row = { ic: string; ib: string; t: string; s: string; badge: string|null; bBg?: string; bC?: string; ts?: string }
   const rows: Row[] = [
-    { ic:'✅', ib:'rgba(0,217,138,.15)',  t:'Summer Glow approved', s:'45 new applicants',          badge:'LIVE',   bBg:'rgba(0,217,138,.12)',   bC:G  },
-    { ic:'💰', ib:'rgba(251,191,36,.15)', t:'Payout processed',     s:'$3.2K to 12 creators',        badge:null,     ts:'2h ago'                       },
-    { ic:'📋', ib:'rgba(96,165,250,.15)', t:'Brief draft saved',    s:'Urban Fit Q3 campaign',        badge:'DRAFT',  bBg:'rgba(251,191,36,.12)',  bC:AM },
-    { ic:'🚫', ib:'rgba(248,113,113,.15)',t:'Creator flagged',      s:'@crloco · policy violation',   badge:'REVIEW', bBg:'rgba(248,113,113,.12)', bC:CO },
-    { ic:'📦', ib:'rgba(167,139,250,.15)',t:'Sample sent',          s:'NaturalKit SPF Kit',            badge:null,     ts:'5h ago'                       },
-    { ic:'⭐', ib:'rgba(251,191,36,.15)', t:'Top performer',        s:'@jordanlux hit 50K views',      badge:null,     ts:'1d ago'                       },
+    { ic: '✅', ib: 'rgba(0,217,138,.15)',  t: 'Summer Glow approved', s: '45 new applicants',        badge: 'LIVE',   bBg: 'rgba(0,217,138,.12)',   bC: G  },
+    { ic: '💰', ib: 'rgba(251,191,36,.15)', t: 'Payout processed',     s: '$3.2K to 12 creators',      badge: null,     ts: '2h ago'                       },
+    { ic: '📋', ib: 'rgba(96,165,250,.15)', t: 'Brief draft saved',    s: 'Urban Fit Q3 campaign',      badge: 'DRAFT',  bBg: 'rgba(251,191,36,.12)',  bC: AM },
+    { ic: '🚫', ib: 'rgba(248,113,113,.15)',t: 'Creator flagged',      s: '@crloco · policy violation', badge: 'REVIEW', bBg: 'rgba(248,113,113,.12)', bC: CO },
+    { ic: '📦', ib: 'rgba(167,139,250,.15)',t: 'Sample sent',          s: 'NaturalKit SPF Kit',          badge: null,     ts: '5h ago'                       },
+    { ic: '⭐', ib: 'rgba(251,191,36,.15)', t: 'Top performer',        s: '@jordanlux hit 50K views',    badge: null,     ts: '1d ago'                       },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       <Topbar gemBg={G} init="B" name="Brand Studio" pillBg="rgba(0,217,138,.1)" pillTxt={G} dotBg={G} label="LIVE" />
       <SL text="Recent activity" />
-      <div style={{ display:'flex', flexDirection:'column', gap:3, padding:'0 14px' }}>
-        {rows.map((r,i) => (
-          <div key={i} id={`brand-activity-${i}`} style={{ display:'flex', alignItems:'center', gap:8, background:DKC, border:'1px solid rgba(255,255,255,.06)', borderRadius:9, padding:'7px 9px', opacity:0, transform:'translateX(-10px)' }}>
-            <div style={{ width:30, height:30, borderRadius:8, background:r.ib, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, flexShrink:0 }}>{r.ic}</div>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:11, fontWeight:600, color:WS, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{r.t}</div>
-              <div style={{ fontSize:9, color:WM, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{r.s}</div>
+      <div className="flex flex-col gap-[3px] px-[14px]">
+        {rows.map((r, i) => (
+          <div
+            key={i}
+            id={`brand-activity-${i}`}
+            className="flex items-center gap-2 rounded-[9px] border border-white/[0.06] bg-bg-card px-[9px] py-[7px]"
+            style={{ opacity: 0, transform: 'translateX(-10px)' }}
+          >
+            <div
+              className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-[8px] text-[15px]"
+              style={{ background: r.ib }}
+            >
+              {r.ic}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="overflow-hidden text-ellipsis whitespace-nowrap text-[11px] font-semibold text-text-secondary">{r.t}</div>
+              <div className="overflow-hidden text-ellipsis whitespace-nowrap text-[9px] text-text-muted">{r.s}</div>
             </div>
             {r.badge
-              ? <span style={{ fontSize:9, fontWeight:700, color:r.bC, background:r.bBg, padding:'1px 6px', borderRadius:4, flexShrink:0 }}>{r.badge}</span>
-              : <span style={{ fontSize:9, color:WM, flexShrink:0 }}>{r.ts}</span>
+              ? <span className="shrink-0 rounded-[4px] px-[6px] py-[1px] text-[9px] font-bold" style={{ color: r.bC, background: r.bBg }}>{r.badge}</span>
+              : <span className="shrink-0 text-[9px] text-text-muted">{r.ts}</span>
             }
           </div>
         ))}
@@ -221,41 +286,46 @@ function BrandActivity() {
   )
 }
 
-/* ── Creator screens ───────────────────────────────── */
+/* ── Creator screens ─────────────────────────────────────────────────────────── */
 
 function CreatorReels() {
   const reels = [
-    { in:'JL', gr:'linear-gradient(135deg,#00D98A,#00B872)', nm:'@jordanlux', tm:'2h ago', th:'🌞', ti:'Summer Glow SPF',  pr:'🌿 NaturalKit · $67',  vw:'24K', ht:'1.8K', ea:'$420' },
-    { in:'SK', gr:'linear-gradient(135deg,#a78bfa,#7c3aed)', nm:'@softkit',   tm:'5h ago', th:'🌿', ti:'Morning Routine',  pr:'🏡 ZenHome · $45',     vw:'18K', ht:'2.1K', ea:'$290' },
-    { in:'MV', gr:'linear-gradient(135deg,#fbbf24,#f59e0b)', nm:'@minivera',  tm:'1d ago', th:'⚡', ti:'Fit Check',        pr:'⚡ FitFuel · $129',    vw:'31K', ht:'3.4K', ea:'$560' },
+    { in: 'JL', gr: 'linear-gradient(135deg,#00D98A,#00B872)', nm: '@jordanlux', tm: '2h ago', th: '🌞', ti: 'Summer Glow SPF',  pr: '🌿 NaturalKit · $67',  vw: '24K', ht: '1.8K', ea: '$420' },
+    { in: 'SK', gr: 'linear-gradient(135deg,#a78bfa,#7c3aed)', nm: '@softkit',   tm: '5h ago', th: '🌿', ti: 'Morning Routine',  pr: '🏡 ZenHome · $45',     vw: '18K', ht: '2.1K', ea: '$290' },
+    { in: 'MV', gr: 'linear-gradient(135deg,#fbbf24,#f59e0b)', nm: '@minivera',  tm: '1d ago', th: '⚡', ti: 'Fit Check',        pr: '⚡ FitFuel · $129',    vw: '31K', ht: '3.4K', ea: '$560' },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       <Topbar gemBg={PU} init="A" name="Creator Studio" pillBg="rgba(167,139,250,.1)" pillTxt={PU} dotBg={PU} label="CREATOR" />
       <SL text="My reels" />
-      <div style={{ flex:1, overflow:'hidden', padding:'0 14px' }}>
-        <div className="pma-cscroll" style={{ display:'flex', flexDirection:'column', gap:4 }}>
-          {[...reels,...reels].map((r,i) => (
-            <div key={i} style={{ background:DKC, border:'1px solid rgba(167,139,250,.1)', borderRadius:13, padding:'7px 9px', flexShrink:0 }}>
-              <div style={{ display:'flex', alignItems:'center', marginBottom:4 }}>
-                <div style={{ width:22, height:22, borderRadius:'50%', background:r.gr, display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, fontWeight:700, color:'#fff', flexShrink:0 }}>{r.in}</div>
-                <span style={{ fontSize:11, fontWeight:700, color:WS, marginLeft:6 }}>{r.nm}</span>
-                <span style={{ fontSize:9, color:WM, marginLeft:'auto' }}>{r.tm}</span>
+      <div className="flex-1 overflow-hidden px-[14px]">
+        <div className="pma-cscroll flex flex-col gap-1">
+          {[...reels, ...reels].map((r, i) => (
+            <div key={i} className="shrink-0 rounded-[13px] border border-[rgba(167,139,250,.1)] bg-bg-card px-[9px] py-[7px]">
+              <div className="mb-1 flex items-center">
+                <div
+                  className="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-white"
+                  style={{ background: r.gr }}
+                >
+                  {r.in}
+                </div>
+                <span className="ml-1.5 text-[11px] font-bold text-text-secondary">{r.nm}</span>
+                <span className="ml-auto text-[9px] text-text-muted">{r.tm}</span>
               </div>
-              <div style={{ display:'flex', gap:8, height:68, marginBottom:4 }}>
-                <div style={{ width:62, height:68, borderRadius:8, background:'rgba(255,255,255,.05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:30, position:'relative', flexShrink:0 }}>
+              <div className="mb-1 flex h-[68px] gap-2">
+                <div className="relative flex h-[68px] w-[62px] shrink-0 items-center justify-center rounded-[8px] bg-white/[0.05] text-[30px]">
                   {r.th}
-                  <div style={{ position:'absolute', width:17, height:17, borderRadius:'50%', background:'rgba(255,255,255,.9)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:8, color:'#000' }}>▶</div>
+                  <div className="absolute flex h-[17px] w-[17px] items-center justify-center rounded-full bg-white/90 text-[8px] text-black">▶</div>
                 </div>
-                <div style={{ flex:1, display:'flex', flexDirection:'column', justifyContent:'center', gap:4 }}>
-                  <span style={{ fontSize:11, fontWeight:600, color:WS }}>{r.ti}</span>
-                  <span style={{ fontSize:10, fontWeight:700, color:G, background:'rgba(0,217,138,.08)', border:'1px solid rgba(0,217,138,.2)', borderRadius:5, padding:'2px 6px', alignSelf:'flex-start' }}>{r.pr}</span>
+                <div className="flex flex-1 flex-col justify-center gap-1">
+                  <span className="text-[11px] font-semibold text-text-secondary">{r.ti}</span>
+                  <span className="self-start rounded-[5px] border border-primary/20 bg-primary/[0.08] px-1.5 py-[2px] text-[10px] font-bold text-primary">{r.pr}</span>
                 </div>
               </div>
-              <div style={{ display:'flex', alignItems:'center', fontSize:10, color:WM }}>
-                <span>👁 <strong style={{ color:WS }}>{r.vw}</strong></span>
-                <span style={{ marginLeft:9 }}>❤ <strong style={{ color:WS }}>{r.ht}</strong></span>
-                <span style={{ marginLeft:'auto', fontWeight:800, color:G }}>{r.ea}</span>
+              <div className="flex items-center text-[10px] text-text-muted">
+                <span>👁 <strong className="text-text-secondary">{r.vw}</strong></span>
+                <span className="ml-[9px]">❤ <strong className="text-text-secondary">{r.ht}</strong></span>
+                <span className="ml-auto font-extrabold text-primary">{r.ea}</span>
               </div>
             </div>
           ))}
@@ -267,26 +337,31 @@ function CreatorReels() {
 
 function CreatorBriefs() {
   const briefs = [
-    { br:'🌿', bn:'NaturalKit', st:'Locked', sBg:'rgba(0,217,138,.12)', sC:G,  hk:'Create SPF lifestyle content for summer campaign',     cm:'$40–60/reel', cd:'Weekly'    },
-    { br:'☕', bn:'BrewRoots',  st:'Draft',  sBg:'rgba(251,191,36,.12)', sC:AM, hk:'Aesthetic morning routine featuring cold brew',          cm:'$35–50/reel', cd:'2× / week' },
-    { br:'⚡', bn:'FitFuel',   st:'Locked', sBg:'rgba(0,217,138,.12)', sC:G,  hk:'High-energy gym content showcasing pre-workout formula', cm:'$50–80/reel', cd:'3× / week' },
+    { br: '🌿', bn: 'NaturalKit', st: 'Locked', sBg: 'rgba(0,217,138,.12)', sC: G,  hk: 'Create SPF lifestyle content for summer campaign',     cm: '$40–60/reel', cd: 'Weekly'    },
+    { br: '☕', bn: 'BrewRoots',  st: 'Draft',  sBg: 'rgba(251,191,36,.12)', sC: AM, hk: 'Aesthetic morning routine featuring cold brew',          cm: '$35–50/reel', cd: '2× / week' },
+    { br: '⚡', bn: 'FitFuel',   st: 'Locked', sBg: 'rgba(0,217,138,.12)', sC: G,  hk: 'High-energy gym content showcasing pre-workout formula', cm: '$50–80/reel', cd: '3× / week' },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       <Topbar gemBg={PU} init="A" name="Creator Studio" pillBg="rgba(251,191,36,.1)" pillTxt={AM} dotBg={AM} label="BRIEFS" />
       <SL text="Brand briefs for me" />
-      <div style={{ display:'flex', flexDirection:'column', gap:3, padding:'0 14px' }}>
-        {briefs.map((b,i) => (
-          <div key={i} id={`creator-brief-${i}`} style={{ background:DKC, border:'1px solid rgba(167,139,250,.1)', borderRadius:10, padding:'7px 10px', opacity:0, transform:'translateY(10px)' }}>
-            <div style={{ display:'flex', alignItems:'center', marginBottom:3 }}>
-              <div style={{ width:22, height:22, borderRadius:5, background:'rgba(255,255,255,.05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:13, marginRight:6, flexShrink:0 }}>{b.br}</div>
-              <span style={{ fontSize:11, fontWeight:700, color:WS }}>{b.bn}</span>
-              <span style={{ marginLeft:'auto', fontSize:9, fontWeight:700, color:b.sC, background:b.sBg, padding:'1px 6px', borderRadius:4 }}>{b.st}</span>
+      <div className="flex flex-col gap-[3px] px-[14px]">
+        {briefs.map((b, i) => (
+          <div
+            key={i}
+            id={`creator-brief-${i}`}
+            className="rounded-[10px] border border-[rgba(167,139,250,.1)] bg-bg-card px-[10px] py-[7px]"
+            style={{ opacity: 0, transform: 'translateY(10px)' }}
+          >
+            <div className="mb-[3px] flex items-center">
+              <div className="mr-1.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] bg-white/[0.05] text-[13px]">{b.br}</div>
+              <span className="text-[11px] font-bold text-text-secondary">{b.bn}</span>
+              <span className="ml-auto rounded-[4px] px-[6px] py-[1px] text-[9px] font-bold" style={{ color: b.sC, background: b.sBg }}>{b.st}</span>
             </div>
-            <div style={{ fontSize:10, color:WM, lineHeight:1.4, marginBottom:3 }}>{b.hk}</div>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <span style={{ fontSize:11, fontWeight:700, color:G }}>{b.cm}</span>
-              <span style={{ fontSize:9, color:WM }}>{b.cd}</span>
+            <div className="mb-[3px] text-[10px] leading-[1.4] text-text-muted">{b.hk}</div>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-primary">{b.cm}</span>
+              <span className="text-[9px] text-text-muted">{b.cd}</span>
             </div>
           </div>
         ))}
@@ -297,50 +372,74 @@ function CreatorBriefs() {
 
 function CreatorEarnings() {
   const kpis = [
-    { v:'$2,840', l:'Total May', d:'+23%' },
-    { v:'$189',   l:'Avg/Reel',  d:'+15%' },
+    { v: '$2,840', l: 'Total May', d: '+23%' },
+    { v: '$189',   l: 'Avg/Reel',  d: '+15%' },
   ]
-  const bh = [30,45,40,55,65,72,100]
-  const bc = ['rgba(167,139,250,.40)','rgba(167,139,250,.48)','rgba(167,139,250,.52)','rgba(167,139,250,.58)','rgba(167,139,250,.64)','rgba(167,139,250,.70)',PU]
+  const bh = [30, 45, 40, 55, 65, 72, 100]
+  const bc = ['rgba(167,139,250,.40)','rgba(167,139,250,.48)','rgba(167,139,250,.52)','rgba(167,139,250,.58)','rgba(167,139,250,.64)','rgba(167,139,250,.70)', PU]
   const days = ['M','T','W','T','F','S','S']
   const brands = [
-    { i:'🌿', n:'NaturalKit', e:'$1,240' },
-    { i:'⚡', n:'FitFuel',    e:'$890'   },
-    { i:'🏡', n:'ZenHome',   e:'$710'   },
+    { i: '🌿', n: 'NaturalKit', e: '$1,240' },
+    { i: '⚡', n: 'FitFuel',    e: '$890'   },
+    { i: '🏡', n: 'ZenHome',   e: '$710'   },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden', gap:5 }}>
+    <div className="flex flex-1 flex-col gap-[5px] overflow-hidden">
       <Topbar gemBg={PU} init="A" name="Creator Studio" pillBg="rgba(0,217,138,.1)" pillTxt={G} dotBg={G} label="MAY" />
       <SL text="Earnings overview" />
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:4, padding:'0 14px', flexShrink:0 }}>
-        {kpis.map((k,i) => (
-          <div key={i} id={`creator-kpi-${i}`} style={{ background:DKC, border:'1px solid rgba(167,139,250,.1)', borderRadius:8, padding:'6px 8px', opacity:0, transform:'translateY(8px)' }}>
-            <div style={{ fontSize:15, fontWeight:800, color:'#fff', lineHeight:1 }}>{k.v}</div>
-            <div style={{ fontSize:8, color:WM, margin:'2px 0' }}>{k.l}</div>
-            <div style={{ fontSize:9, fontWeight:700, color:G }}>{k.d}</div>
+      <div className="grid shrink-0 grid-cols-2 gap-1 px-[14px]">
+        {kpis.map((k, i) => (
+          <div
+            key={i}
+            id={`creator-kpi-${i}`}
+            className="rounded-[8px] border border-[rgba(167,139,250,.1)] bg-bg-card px-2 py-[6px]"
+            style={{ opacity: 0, transform: 'translateY(8px)' }}
+          >
+            <div className="text-[15px] font-extrabold leading-[1] text-white">{k.v}</div>
+            <div className="my-[2px] text-[8px] text-text-muted">{k.l}</div>
+            <div className="text-[9px] font-bold text-primary">{k.d}</div>
           </div>
         ))}
       </div>
-      <div id="creator-chart-card" style={{ margin:'3px 14px 0', background:DKC, border:'1px solid rgba(167,139,250,.1)', borderRadius:10, padding:'7px 10px', flexShrink:0, opacity:0, transform:'translateY(8px)' }}>
-        <div style={{ fontSize:11, fontWeight:700, color:WS, marginBottom:5 }}>Commission Trend</div>
-        <div style={{ display:'flex', alignItems:'flex-end', height:58, gap:4 }}>
-          {bh.map((h,i) => (
-            <div key={i} style={{ flex:1, display:'flex', alignItems:'flex-end', height:'100%' }}>
-              <div id={`creator-bar-${i}`} style={{ width:'100%', height:`${h}%`, borderRadius:'3px 3px 0 0', background:bc[i], transform:'scaleY(0)', transformOrigin:'bottom' }} />
+      <div
+        id="creator-chart-card"
+        className="mx-[14px] mt-[3px] shrink-0 rounded-[10px] border border-[rgba(167,139,250,.1)] bg-bg-card px-[10px] py-[7px]"
+        style={{ opacity: 0, transform: 'translateY(8px)' }}
+      >
+        <div className="mb-[5px] text-[11px] font-bold text-text-secondary">Commission Trend</div>
+        <div className="flex h-[58px] items-end gap-1">
+          {bh.map((h, i) => (
+            <div key={i} className="flex h-full flex-1 items-end">
+              <div
+                id={`creator-bar-${i}`}
+                className="w-full rounded-[3px_3px_0_0]"
+                style={{ height: `${h}%`, background: bc[i], transform: 'scaleY(0)', transformOrigin: 'bottom' }}
+              />
             </div>
           ))}
         </div>
-        <div style={{ display:'flex', gap:4, marginTop:3 }}>
-          {days.map((d,i) => <div key={i} style={{ flex:1, textAlign:'center', fontSize:8, color:WM }}>{d}</div>)}
+        <div className="mt-[3px] flex gap-1">
+          {days.map((d, i) => (
+            <div key={i} className="flex-1 text-center text-[8px] text-text-muted">{d}</div>
+          ))}
         </div>
       </div>
-      <div id="creator-earnings-card" style={{ margin:'3px 14px 0', background:DKC, border:'1px solid rgba(167,139,250,.1)', borderRadius:10, padding:'7px 10px', flexShrink:0, opacity:0, transform:'translateY(8px)' }}>
-        <div style={{ fontSize:11, fontWeight:700, color:WS, marginBottom:4 }}>Earnings by Brand</div>
-        {brands.map((b,i) => (
-          <div key={i} id={`creator-earnings-row-${i}`} style={{ display:'flex', alignItems:'center', gap:7, marginBottom: i<2 ? 3 : 0, opacity:0, transform:'translateY(8px)' }}>
-            <div style={{ width:20, height:20, borderRadius:4, background:'rgba(255,255,255,.05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:11, flexShrink:0 }}>{b.i}</div>
-            <span style={{ fontSize:11, color:WS, flex:1 }}>{b.n}</span>
-            <span style={{ fontSize:10, fontWeight:700, color:PU }}>{b.e}</span>
+      <div
+        id="creator-earnings-card"
+        className="mx-[14px] mt-[3px] shrink-0 rounded-[10px] border border-[rgba(167,139,250,.1)] bg-bg-card px-[10px] py-[7px]"
+        style={{ opacity: 0, transform: 'translateY(8px)' }}
+      >
+        <div className="mb-1 text-[11px] font-bold text-text-secondary">Earnings by Brand</div>
+        {brands.map((b, i) => (
+          <div
+            key={i}
+            id={`creator-earnings-row-${i}`}
+            className="flex items-center gap-[7px]"
+            style={{ marginBottom: i < 2 ? 3 : 0, opacity: 0, transform: 'translateY(8px)' }}
+          >
+            <div className="flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-[4px] bg-white/[0.05] text-[11px]">{b.i}</div>
+            <span className="flex-1 text-[11px] text-text-secondary">{b.n}</span>
+            <span className="text-[10px] font-bold" style={{ color: PU }}>{b.e}</span>
           </div>
         ))}
       </div>
@@ -350,30 +449,35 @@ function CreatorEarnings() {
 
 function CreatorPartners() {
   const partners = [
-    { i:'🌿', n:'NaturalKit', c:'Skincare',  st:'Active',  sBg:'rgba(0,217,138,.12)',  sC:G,  re:'12', sa:'890', cm:'$1,240' },
-    { i:'☕', n:'BrewRoots',  c:'Beverages', st:'Active',  sBg:'rgba(0,217,138,.12)',  sC:G,  re:'8',  sa:'450', cm:'$680'   },
-    { i:'⚡', n:'FitFuel',   c:'Fitness',   st:'Pending', sBg:'rgba(251,191,36,.12)', sC:AM, re:'0',  sa:'—',   cm:'—'      },
-    { i:'💎', n:'Luxora',    c:'Luxury',    st:'Active',  sBg:'rgba(0,217,138,.12)',  sC:G,  re:'5',  sa:'320', cm:'$510'   },
+    { i: '🌿', n: 'NaturalKit', c: 'Skincare',  st: 'Active',  sBg: 'rgba(0,217,138,.12)',  sC: G,  re: '12', sa: '890', cm: '$1,240' },
+    { i: '☕', n: 'BrewRoots',  c: 'Beverages', st: 'Active',  sBg: 'rgba(0,217,138,.12)',  sC: G,  re: '8',  sa: '450', cm: '$680'   },
+    { i: '⚡', n: 'FitFuel',   c: 'Fitness',   st: 'Pending', sBg: 'rgba(251,191,36,.12)', sC: AM, re: '0',  sa: '—',   cm: '—'      },
+    { i: '💎', n: 'Luxora',    c: 'Luxury',    st: 'Active',  sBg: 'rgba(0,217,138,.12)',  sC: G,  re: '5',  sa: '320', cm: '$510'   },
   ]
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, overflow:'hidden' }}>
+    <div className="flex flex-1 flex-col overflow-hidden">
       <Topbar gemBg={PU} init="A" name="Creator Studio" pillBg="rgba(167,139,250,.1)" pillTxt={PU} dotBg={PU} label="LIVE" />
       <SL text="Brand partnerships" />
-      <div style={{ display:'flex', flexDirection:'column', gap:3, padding:'0 14px' }}>
-        {partners.map((p,i) => (
-          <div key={i} id={`creator-partner-${i}`} style={{ background:DKC, border:'1px solid rgba(167,139,250,.1)', borderRadius:10, padding:'7px 10px', opacity:0, transform:'translateX(10px)' }}>
-            <div style={{ display:'flex', alignItems:'center', marginBottom:3 }}>
-              <div style={{ width:28, height:28, borderRadius:7, background:'rgba(255,255,255,.05)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, marginRight:7, flexShrink:0 }}>{p.i}</div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontSize:11, fontWeight:700, color:WS }}>{p.n}</div>
-                <div style={{ fontSize:8, color:WM }}>{p.c}</div>
+      <div className="flex flex-col gap-[3px] px-[14px]">
+        {partners.map((p, i) => (
+          <div
+            key={i}
+            id={`creator-partner-${i}`}
+            className="rounded-[10px] border border-[rgba(167,139,250,.1)] bg-bg-card px-[10px] py-[7px]"
+            style={{ opacity: 0, transform: 'translateX(10px)' }}
+          >
+            <div className="mb-[3px] flex items-center">
+              <div className="mr-[7px] flex h-[28px] w-[28px] shrink-0 items-center justify-center rounded-[7px] bg-white/[0.05] text-[16px]">{p.i}</div>
+              <div className="flex-1">
+                <div className="text-[11px] font-bold text-text-secondary">{p.n}</div>
+                <div className="text-[8px] text-text-muted">{p.c}</div>
               </div>
-              <span style={{ fontSize:9, fontWeight:700, color:p.sC, background:p.sBg, padding:'1px 6px', borderRadius:4 }}>{p.st}</span>
+              <span className="rounded-[4px] px-[6px] py-[1px] text-[9px] font-bold" style={{ color: p.sC, background: p.sBg }}>{p.st}</span>
             </div>
-            <div style={{ display:'flex', gap:10 }}>
-              <span style={{ fontSize:10, color:WM }}><strong style={{ color:WS }}>{p.re}</strong> Reels</span>
-              <span style={{ fontSize:10, color:WM }}><strong style={{ color:WS }}>{p.sa}</strong> Sales</span>
-              <span style={{ fontSize:10, color:WM }}>Com: <strong style={{ color:WS }}>{p.cm}</strong></span>
+            <div className="flex gap-[10px]">
+              <span className="text-[10px] text-text-muted"><strong className="text-text-secondary">{p.re}</strong> Reels</span>
+              <span className="text-[10px] text-text-muted"><strong className="text-text-secondary">{p.sa}</strong> Sales</span>
+              <span className="text-[10px] text-text-muted">Com: <strong className="text-text-secondary">{p.cm}</strong></span>
             </div>
           </div>
         ))}
@@ -382,7 +486,7 @@ function CreatorPartners() {
   )
 }
 
-/* ── Phone frame ───────────────────────────────────── */
+/* ── Phone frame ─────────────────────────────────────────────────────────────── */
 
 function PhoneFrame({ side, border, active, screens, icons, labels }: {
   side: string; border: string; active: string
@@ -390,37 +494,52 @@ function PhoneFrame({ side, border, active, screens, icons, labels }: {
   icons:   [string, string, string, string]
   labels:  [string, string, string, string]
 }) {
-  const isCreator = side === 'creator'
-  const orb = isCreator ? 'rgba(167,139,250,' : 'rgba(0,217,138,'
+  const orb = side === 'creator' ? 'rgba(167,139,250,' : 'rgba(0,217,138,'
   return (
-    <div style={{ width:300, height:572, borderRadius:44, background:DK, border:`2px solid ${border}`, position:'relative', overflow:'hidden', flexShrink:0 }}>
+    <div
+      className="relative overflow-hidden shrink-0 rounded-[44px]"
+      style={{ width: 300, height: 572, background: DK, border: `2px solid ${border}` }}
+    >
       {/* Mesh grid */}
-      <div style={{ position:'absolute', inset:0, zIndex:1, pointerEvents:'none', backgroundImage:'linear-gradient(rgba(0,217,138,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,217,138,.022) 1px,transparent 1px)', backgroundSize:'18px 18px' }} />
+      <div
+        className="pointer-events-none absolute inset-0 z-[1]"
+        style={{ backgroundImage: 'linear-gradient(rgba(0,217,138,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(0,217,138,.022) 1px,transparent 1px)', backgroundSize: '18px 18px' }}
+      />
       {/* Orbs */}
-      <div style={{ position:'absolute', top:-50, left:-38, width:152, height:152, borderRadius:'50%', background:`${orb}0.07)`, zIndex:2, pointerEvents:'none' }} />
-      <div style={{ position:'absolute', bottom:-38, right:-24, width:114, height:114, borderRadius:'50%', background:`${orb}0.05)`, zIndex:2, pointerEvents:'none' }} />
+      <div className="pointer-events-none absolute z-[2] rounded-full" style={{ top: -50, left: -38, width: 152, height: 152, background: `${orb}0.07)` }} />
+      <div className="pointer-events-none absolute z-[2] rounded-full" style={{ bottom: -38, right: -24, width: 114, height: 114, background: `${orb}0.05)` }} />
       {/* Notch */}
-      <div style={{ position:'absolute', top:12, left:'50%', transform:'translateX(-50%)', width:68, height:15, borderRadius:8, background:'#000', zIndex:30 }} />
+      <div className="absolute left-1/2 top-3 z-[30] h-[15px] w-[68px] -translate-x-1/2 rounded-[8px] bg-black" />
       {/* Screens */}
       {screens.map((scr, i) => (
         <div
           key={i}
           id={`${side}-screen-${i}`}
-          style={{ position:'absolute', inset:0, zIndex:10, opacity: i === 0 ? 1 : 0, transition:'opacity 0.4s ease', overflow:'hidden', paddingTop:36, paddingBottom:62, display:'flex', flexDirection:'column', boxSizing:'border-box' }}
+          className="absolute inset-0 z-[10] flex flex-col overflow-hidden box-border transition-opacity duration-[400ms] ease-[ease]"
+          style={{ opacity: i === 0 ? 1 : 0, paddingTop: 36, paddingBottom: 62 }}
         >
           {scr}
         </div>
       ))}
-      {/* Progress bar — hidden but kept for JS timing */}
-      <div style={{ display:'none' }}>
-        <div id={`${side}-progress`} style={{ width:0 }} />
+      {/* Progress bar hidden — kept for JS timing */}
+      <div className="hidden">
+        <div id={`${side}-progress`} style={{ width: 0 }} />
       </div>
       {/* Navbar */}
-      <div style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:25, background:DK, borderTop:'1px solid rgba(255,255,255,.06)', display:'flex', justifyContent:'space-around', padding:'7px 8px 11px' }}>
+      <div
+        className="absolute bottom-0 left-0 right-0 z-[25] flex justify-around border-t border-white/[0.06] px-2 pb-[11px] pt-[7px]"
+        style={{ background: DK }}
+      >
         {icons.map((ic, i) => (
-          <div key={i} id={`${side}-tab-${i}`} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:3, cursor:'pointer', padding:'0 5px' }}>
-            <i id={`${side}-tab-icon-${i}`} className={`ti ${ic}`} style={{ fontSize:20, color: i === 0 ? active : WM, transform: i === 0 ? 'scale(1.15)' : 'scale(1)' }} />
-            <span id={`${side}-tab-label-${i}`} style={{ fontSize:8, fontWeight:600, color: i === 0 ? active : WM }}>{labels[i]}</span>
+          <div key={i} id={`${side}-tab-${i}`} className="flex cursor-pointer flex-col items-center gap-[3px] px-[5px]">
+            <i
+              id={`${side}-tab-icon-${i}`}
+              className={`ti ${ic}`}
+              style={{ fontSize: 20, color: i === 0 ? active : WM, transform: i === 0 ? 'scale(1.15)' : 'scale(1)' }}
+            />
+            <span id={`${side}-tab-label-${i}`} className="text-[8px] font-semibold" style={{ color: i === 0 ? active : WM }}>
+              {labels[i]}
+            </span>
           </div>
         ))}
       </div>
@@ -428,7 +547,7 @@ function PhoneFrame({ side, border, active, screens, icons, labels }: {
   )
 }
 
-/* ── Main export ───────────────────────────────────── */
+/* ── Main export ─────────────────────────────────────────────────────────────── */
 
 export function PhoneMockupAnimation() {
   useEffect(() => {
@@ -571,7 +690,7 @@ export function PhoneMockupAnimation() {
   }, [])
 
   return (
-    <div style={{ display:'flex', alignItems:'center', gap:20 }}>
+    <div className="flex items-center gap-5">
       <style>{STYLES}</style>
       <PhoneFrame
         side="brand"
@@ -581,7 +700,10 @@ export function PhoneMockupAnimation() {
         icons={['ti-home', 'ti-file-text', 'ti-chart-bar', 'ti-bell']}
         labels={['Home', 'Briefs', 'Analytics', 'Activity']}
       />
-      <div style={{ width:32, height:32, borderRadius:'50%', background:DKC, border:'1px solid rgba(255,255,255,.1)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:9, fontWeight:800, color:WM, flexShrink:0 }}>
+      <div
+        className="flex shrink-0 items-center justify-center rounded-full border border-white/[0.1] text-[9px] font-extrabold text-text-muted"
+        style={{ width: 32, height: 32, background: DKC }}
+      >
         vs
       </div>
       <PhoneFrame

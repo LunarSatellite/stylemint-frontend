@@ -1,27 +1,45 @@
 import { useState } from 'react'
 import { useKycQueue } from '@/api/queries/useKycQueue'
-import { showErrorToast } from '@/api/errors'
-import { useDebounce } from '@/hooks/use-debounce'
+import type { KycQueueFilter } from '@/types/kyc'
 import { KycQueueView } from './KycQueueView'
 
-export function KycQueueContainer() {
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search)
-  const { data, isLoading, isError } = useKycQueue({ page, pageSize: 20, search: debouncedSearch })
+const PAGE_SIZE = 20
 
-  if (isError) return <div className="text-red-400 p-4">Failed to load KYC queue.</div>
+export function KycQueueContainer() {
+  const [filter, setFilter] = useState<KycQueueFilter>({
+    pageNumber: 1,
+    pageSize:   PAGE_SIZE,
+  })
+
+  const { data, isLoading, isError } = useKycQueue(filter)
+
+  function setPage(pageNumber: number) {
+    setFilter(f => ({ ...f, pageNumber }))
+  }
+
+  function setFilterField<K extends keyof KycQueueFilter>(key: K, value: KycQueueFilter[K]) {
+    setFilter(f => ({ ...f, [key]: value, pageNumber: 1 }))
+  }
+
+  if (isError) return (
+    <div className="rounded-lg border border-red-400/20 bg-red-400/[0.08] px-4 py-4 text-red-400">
+      Failed to load KYC queue.
+    </div>
+  )
 
   return (
     <KycQueueView
       data={data?.items ?? []}
-      total={data?.total ?? 0}
-      page={page}
-      pageSize={20}
-      search={search}
+      totalCount={data?.totalCount ?? 0}
+      pageNumber={filter.pageNumber}
+      pageSize={PAGE_SIZE}
+      totalPages={data?.totalPages ?? 1}
+      hasNext={data?.hasNext ?? false}
+      hasPrevious={data?.hasPrevious ?? false}
+      filter={filter}
       isLoading={isLoading}
       onPageChange={setPage}
-      onSearchChange={setSearch}
+      onFilterChange={setFilterField}
     />
   )
 }
