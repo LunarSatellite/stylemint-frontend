@@ -130,6 +130,8 @@ All in `.claude/references/` — read the relevant one before writing code:
 | `testing.md` | writing tests, adding MSW handlers, setting up Playwright |
 | `performance.md` | adding a new list/table, touching imports, configuring Vite chunks |
 | `component-conventions.md` | creating a component, typing props, applying branded IDs |
+| `form-patterns.md` | building any form — RHF+Zod wiring, dirtyFields PATCH, field error display, rate-limit disable |
+| `mutation.md` | writing any mutation hook — rowVersion, concurrency_conflict, errorCode switch, invalidation, onSettled |
 
 ---
 
