@@ -4,7 +4,6 @@ import { AppShell } from '@/layouts/AppShell'
 import { RequireAuth, RequireVendorRole, RequireAdminRole } from '@/auth/guards'
 
 const LoginPage            = lazy(() => import('@/pages/LoginPage'))
-const RegisterPage         = lazy(() => import('@/pages/RegisterPage'))
 const BriefListPage        = lazy(() => import('@/pages/BriefListPage'))
 const BriefCreatePage      = lazy(() => import('@/pages/BriefCreatePage'))
 const BriefEditorPage      = lazy(() => import('@/pages/BriefEditorPage'))
@@ -23,14 +22,6 @@ export const router = createBrowserRouter([
     element: (
       <Suspense>
         <LoginPage />
-      </Suspense>
-    ),
-  },
-  {
-    path: '/register',
-    element: (
-      <Suspense>
-        <RegisterPage />
       </Suspense>
     ),
   },
