@@ -23,6 +23,10 @@ export function QRLoginPanel() {
           0%,100% { opacity: 1 }
           50%     { opacity: 0.3 }
         }
+        @keyframes blink {
+          0%,100% { opacity: 1 }
+          50%     { opacity: 0.3 }
+        }
         @keyframes cardIn {
           from { opacity: 0; transform: translateY(30px) scale(0.96) }
           to   { opacity: 1; transform: none }
@@ -118,7 +122,15 @@ export function QRLoginPanel() {
                 }}
               >S</div>
               <div>
-                <div className="text-[13px] font-extrabold text-white tracking-[.3px]">StyleMint</div>
+                <div
+                className="text-[13px] font-extrabold tracking-[.3px] inline-block"
+                style={{
+                  background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}
+              >StyleMint</div>
                 <div className="text-[9px] font-semibold text-[#7A9B8E] tracking-[.5px] uppercase mt-px">Brand Studio</div>
               </div>
             </div>
@@ -139,7 +151,6 @@ export function QRLoginPanel() {
             {/* label row */}
             <div className="flex items-center justify-between mb-3.5">
               <span className="text-[8px] font-bold text-[#7A9B8E] tracking-[2.5px] uppercase">Scan to Access</span>
-              <span className="text-[8px] font-bold text-[#00D98A] bg-[rgba(0,217,138,0.08)] border border-[rgba(0,217,138,0.18)] rounded px-[7px] py-[2px]">v2.4</span>
             </div>
 
             {/* QR frame outer */}

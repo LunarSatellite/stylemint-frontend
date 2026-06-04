@@ -495,7 +495,15 @@ export function BrandShowcase() {
                 style={{ background: 'linear-gradient(135deg,#00D98A,#00B872)' }}
               >S</div>
               <div>
-                <div className="text-sm font-extrabold text-[var(--tp)]">StyleMint</div>
+                <div
+                  className="text-sm font-extrabold inline-block"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >StyleMint</div>
                 <div className="text-[9px] text-[var(--tm)]">Brand Studio Platform</div>
               </div>
             </div>
@@ -910,7 +918,15 @@ export function BrandShowcase() {
               {/* welcome */}
               <div className="px-4 pb-2.5 flex-shrink-0">
                 <div className="text-[10px] text-[var(--tm)]">Welcome back,</div>
-                <div className="text-[17px] font-extrabold text-white">StyleMint</div>
+                <div
+                  className="text-[17px] font-extrabold inline-block"
+                  style={{
+                    background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >StyleMint</div>
               </div>
 
               {/* scroll area */}

@@ -12,6 +12,12 @@ const AnalyticsPage        = lazy(() => import('@/pages/AnalyticsPage'))
 const ProductAnalyticsPage = lazy(() => import('@/pages/ProductAnalyticsPage'))
 const CreatorAnalyticsPage = lazy(() => import('@/pages/CreatorAnalyticsPage'))
 const ActivityPage         = lazy(() => import('@/pages/ActivityPage'))
+const ProductsPage         = lazy(() => import('@/pages/ProductsPage'))
+const PartnershipsPage     = lazy(() => import('@/pages/PartnershipsPage'))
+const MatchesPage          = lazy(() => import('@/pages/MatchesPage'))
+const SubOrdersPage        = lazy(() => import('@/pages/SubOrdersPage'))
+const RecipesPage          = lazy(() => import('@/pages/RecipesPage'))
+const InquiriesPage        = lazy(() => import('@/pages/InquiriesPage'))
 const GoalTemplatesPage    = lazy(() => import('@/pages/GoalTemplatesPage'))
 const VendorPolicyPage     = lazy(() => import('@/pages/VendorPolicyPage'))
 const NotFoundPage         = lazy(() => import('@/pages/NotFoundPage'))
@@ -65,6 +71,30 @@ export const router = createBrowserRouter([
       {
         path: '/activity',
         element: <RequireVendorRole><ActivityPage /></RequireVendorRole>,
+      },
+      {
+        path: '/products',
+        element: <RequireVendorRole><ProductsPage /></RequireVendorRole>,
+      },
+      {
+        path: '/partnerships',
+        element: <RequireVendorRole><PartnershipsPage /></RequireVendorRole>,
+      },
+      {
+        path: '/matches',
+        element: <RequireVendorRole><MatchesPage /></RequireVendorRole>,
+      },
+      {
+        path: '/sub-orders',
+        element: <RequireVendorRole><SubOrdersPage /></RequireVendorRole>,
+      },
+      {
+        path: '/recipes',
+        element: <RequireVendorRole><RecipesPage /></RequireVendorRole>,
+      },
+      {
+        path: '/inquiries',
+        element: <RequireVendorRole><InquiriesPage /></RequireVendorRole>,
       },
       {
         path: '/admin/goal-templates',

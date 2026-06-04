@@ -7,7 +7,18 @@ export default function LoginPage() {
     <div className="flex min-h-screen bg-[var(--bg-primary)]">
 
       {/* ── Left — Animated Showcase ── */}
-      <div className="hidden lg:flex w-1/2 flex-col items-center justify-center p-10 overflow-hidden relative">
+      <div
+        className="hidden lg:flex w-1/2 flex-col items-center justify-center p-10 overflow-hidden relative"
+        style={{
+          background: `
+            radial-gradient(ellipse 80% 60% at 50% 0%,   rgba(0,217,138,0.18) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 50% at 0%  60%,  rgba(0,255,163,0.12) 0%, transparent 55%),
+            radial-gradient(ellipse 50% 40% at 100% 80%, rgba(0,184,114,0.10) 0%, transparent 50%),
+            radial-gradient(ellipse 70% 40% at 50% 100%, rgba(0,217,138,0.14) 0%, transparent 55%),
+            linear-gradient(160deg, #071510 0%, #040e0a 40%, #030d08 100%)
+          `,
+        }}
+      >
         <BrandShowcase />
 
         {/* Phase toggle */}
