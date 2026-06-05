@@ -43,6 +43,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Login widget keyframes */
+@keyframes rotGlow { to { transform: rotate(360deg); } }
+@keyframes scan {
+  0%   { top: -2px; opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 0.3; }
+  100% { top: 100%; opacity: 0; }
+}
+@keyframes pingDot {
+  0%, 100% { transform: scale(1);   opacity: 1; }
+  50%       { transform: scale(1.5); opacity: 0.4; }
+}
+@keyframes gradShift {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
