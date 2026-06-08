@@ -351,6 +351,42 @@ export interface AuthResponseVm {
   tokenType:        string | null
 }
 
+// ── QR Login ──────────────────────────────────────────────────────────────────
+
+/** 1=BrandStudio 2=CreatorStudio */
+export type QrTargetApp = 1 | 2
+
+/** POST /v1/auth/qr/create */
+export interface QrCreateRequest {
+  targetApp:         QrTargetApp
+  deviceFingerprint: string
+  devicePlatform?:   number
+  deviceModel?:      string
+  deviceOsVersion?:  string
+}
+
+/** Response from POST /v1/auth/qr/create */
+export interface QrCreateResponse {
+  publicToken:  string
+  clientSecret: string
+  qrPayload:    string
+  expiresUtc:   string
+}
+
+/** POST /v1/auth/qr/exchange */
+export interface QrExchangeRequest {
+  publicToken:  string
+  clientSecret: string
+}
+
+export type QrSessionStatus = 'Pending' | 'Scanned' | 'Approved' | 'Consumed' | 'Rejected' | 'Expired'
+
+/** Response from POST /v1/auth/qr/exchange */
+export interface QrExchangeResponse {
+  status: QrSessionStatus
+  auth:   AuthResponseVm | null
+}
+
 // ── Registration ─────────────────────────────────────────────────────────────
 
 /** POST /v1/registration/start */

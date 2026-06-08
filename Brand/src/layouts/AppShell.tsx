@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   TrendingUp,
   Zap,
+  Wallet,
   ScrollText,
   Wand2,
   Sparkles,
@@ -23,6 +24,7 @@ import {
   Store,
   Boxes,
   ShieldCheck,
+  BadgeDollarSign,
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useAuth } from '@/auth/store'
@@ -41,6 +43,7 @@ const prefetchMap: Record<string, () => Promise<unknown>> = {
   '/sub-orders':  () => import('@/pages/SubOrdersPage'),
   '/recipes':     () => import('@/pages/RecipesPage'),
   '/inquiries':   () => import('@/pages/InquiriesPage'),
+  '/earnings':    () => import('@/pages/EarningsPage'),
 }
 
 function NavItem({
@@ -275,6 +278,10 @@ export function AppShell() {
             <NavItem to="/dashboard" icon={LayoutDashboard} label="Dashboard" collapsed={collapsed} />
             <NavItem to="/analytics" icon={TrendingUp}      label="Analytics" collapsed={collapsed} />
             <NavItem to="/activity"  icon={Zap}             label="Activity"  collapsed={collapsed} />
+          </SectionGroup>
+
+          <SectionGroup icon={BadgeDollarSign} iconColor="text-yellow-400" label="Finance" collapsed={collapsed}>
+            <NavItem to="/earnings" icon={Wallet} label="Earnings" collapsed={collapsed} />
           </SectionGroup>
 
           <SectionGroup icon={Rocket} iconColor="text-orange-400" label="Campaign" collapsed={collapsed}>

@@ -18,6 +18,7 @@ const MatchesPage          = lazy(() => import('@/pages/MatchesPage'))
 const SubOrdersPage        = lazy(() => import('@/pages/SubOrdersPage'))
 const RecipesPage          = lazy(() => import('@/pages/RecipesPage'))
 const InquiriesPage        = lazy(() => import('@/pages/InquiriesPage'))
+const EarningsPage         = lazy(() => import('@/pages/EarningsPage'))
 const GoalTemplatesPage    = lazy(() => import('@/pages/GoalTemplatesPage'))
 const VendorPolicyPage     = lazy(() => import('@/pages/VendorPolicyPage'))
 const NotFoundPage         = lazy(() => import('@/pages/NotFoundPage'))
@@ -95,6 +96,10 @@ export const router = createBrowserRouter([
       {
         path: '/inquiries',
         element: <RequireVendorRole><InquiriesPage /></RequireVendorRole>,
+      },
+      {
+        path: '/earnings',
+        element: <RequireVendorRole><EarningsPage /></RequireVendorRole>,
       },
       {
         path: '/admin/goal-templates',
