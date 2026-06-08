@@ -1,4 +1,5 @@
 import LoginOverviewWidget from './LoginOverviewWidget'
+import { QRLoginPanel } from '@/features/auth/QRLoginPanel'
 
 export default function LoginPage() {
   return (
@@ -200,14 +201,8 @@ export default function LoginPage() {
                       <div className="absolute bottom-0 right-0 w-[22px] h-[22px] border-b-2 border-r-2 border-[#00D98A] rounded-br-[5px]" />
                     </div>
 
-                    {/* blank QR area */}
-                    <div
-                      className="w-[310px] h-[260px] rounded-xl border border-dashed border-[rgba(0,217,138,0.18)] flex flex-col items-center justify-center gap-2.5 relative z-[2] mx-auto"
-                      style={{ background: 'linear-gradient(145deg, rgba(0,217,138,0.04), rgba(0,0,0,0.2))' }}
-                    >
-                      <i className="ti ti-qrcode text-[32px] text-[rgba(0,217,138,0.25)]" />
-                      <span className="text-[9px] font-bold text-[rgba(0,217,138,0.25)] tracking-[2px] uppercase">QR Code</span>
-                    </div>
+                    {/* QR login panel */}
+                    <QRLoginPanel />
                   </div>
                 </div>
               </div>
