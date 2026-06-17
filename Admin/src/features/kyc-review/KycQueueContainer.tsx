@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useKycQueue } from '@/api/queries/useKycQueue'
-import type { components } from '@/api/schema'
 
-type KycQueueFilter = components['schemas']['KycQueueParams']
+type KycQueueFilter = NonNullable<import('@/api/schema').paths['/v1/admin/kyc/queue']['get']['parameters']['query']>
 import { KycQueueView } from './KycQueueView'
 
 const PAGE_SIZE = 20
@@ -33,7 +32,7 @@ export function KycQueueContainer() {
     <KycQueueView
       data={data?.items ?? []}
       totalCount={data?.totalCount ?? 0}
-      pageNumber={filter.pageNumber}
+      pageNumber={filter.pageNumber ?? 1}
       pageSize={PAGE_SIZE}
       totalPages={data?.totalPages ?? 1}
       hasNext={data?.hasNext ?? false}

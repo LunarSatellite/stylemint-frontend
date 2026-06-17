@@ -1,7 +1,7 @@
-import type { components } from '@/api/schema'
+import type { paths } from '@/api/schema'
 
-type KycQueueFilter        = components['schemas']['KycQueueParams']
-type ModerationQueueFilter = components['schemas']['ModerationQueueParams']
+type KycQueueFilter        = NonNullable<paths['/v1/admin/kyc/queue']['get']['parameters']['query']>
+type ModerationQueueFilter = NonNullable<paths['/v1/admin/moderation/queue']['get']['parameters']['query']>
 
 type AuditFilter  = Record<string, unknown>
 type AdminFilter  = Record<string, unknown>
@@ -23,7 +23,10 @@ export const qk = {
   flags:   ()                => ['flags'] as const,
   flag:    (key: string)     => ['flags', key] as const,
   config:  ()                => ['config'] as const,
-  admins:  (f: AdminFilter)  => ['admins', f] as const,
-  admin:   (id: string)      => ['admins', id] as const,
-  payouts: (f: PayoutFilter) => ['payouts', f] as const,
+  admins:          (f: AdminFilter)  => ['admins', f] as const,
+  admin:           (id: string)      => ['admins', id] as const,
+  adminSessions:   (id: string)      => ['admins', id, 'sessions'] as const,
+  payouts:         (f: PayoutFilter) => ['payouts', f] as const,
+  payout:          (id: string)      => ['payouts', id] as const,
+  privacyDashboard: ()               => ['privacy-dashboard'] as const,
 }

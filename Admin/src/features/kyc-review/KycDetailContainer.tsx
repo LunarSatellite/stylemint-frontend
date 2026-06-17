@@ -6,7 +6,7 @@ import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
 import type { components } from '@/api/schema'
 
-type KycReviewItem = components['schemas']['KycReviewItemDto']
+type KycReviewItem = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.KycReviewItemDto']
 import { KycReviewState, KycDecision } from '@/lib/enums'
 import {
   KycReviewStateLabel, KycDecisionLabel,
@@ -98,7 +98,7 @@ export function KycDetailContainer({ id }: { id: string }) {
     <div className="px-4 py-4 text-red-400">KYC item not found.</div>
   )
 
-  const overdue   = item.state !== KycReviewState.Decided && isOverdue(item.dueByUtc)
+  const overdue   = item.state !== KycReviewState.Decided && isOverdue(item.dueByUtc!)
   const canDecide = item.state === KycReviewState.InReview
 
   return (
@@ -121,7 +121,7 @@ export function KycDetailContainer({ id }: { id: string }) {
           <span className="font-mono text-[12px] text-[#4A7A6A]">{item.id}</span>
         </div>
         <div className="flex items-center gap-[10px]">
-          <StateChip state={item.state} />
+          <StateChip state={item.state!} />
           {overdue && (
             <span className="inline-flex items-center gap-[5px] rounded-full border border-red-400/20 bg-red-400/[0.08] px-[10px] py-[3px] text-[12px] font-semibold text-red-400">
               <AlertTriangle size={11} /> Overdue
@@ -138,9 +138,9 @@ export function KycDetailContainer({ id }: { id: string }) {
           <h2 className="m-0 text-[14px] font-bold text-text-primary">Application Info</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Applicant Kind"    value={KycApplicantKindLabel[item.applicantKind]} />
-            <Field label="Account ID"        value={<span className="font-mono text-[12px]">{item.accountId.slice(0, 12)}…</span>} />
-            <Field label="Application ID"    value={<span className="font-mono text-[12px]">{item.applicationId.slice(0, 12)}…</span>} />
+            <Field label="Applicant Kind"    value={KycApplicantKindLabel[item.applicantKind!]} />
+            <Field label="Account ID"        value={<span className="font-mono text-[12px]">{item.accountId!.slice(0, 12)}…</span>} />
+            <Field label="Application ID"    value={<span className="font-mono text-[12px]">{item.applicationId!.slice(0, 12)}…</span>} />
             <Field label="Assigned Reviewer" value={
               item.assignedReviewerId
                 ? <span className="font-mono text-[12px]">{item.assignedReviewerId.slice(0, 12)}…</span>
@@ -155,7 +155,7 @@ export function KycDetailContainer({ id }: { id: string }) {
               label="Submitted"
               value={
                 <span className="flex items-center gap-[5px]">
-                  <Clock size={12} className="text-[#4A7A6A]" /> {formatDate(item.submittedUtc)}
+                  <Clock size={12} className="text-[#4A7A6A]" /> {formatDate(item.submittedUtc!)}
                 </span>
               }
             />
@@ -166,7 +166,7 @@ export function KycDetailContainer({ id }: { id: string }) {
                   {overdue
                     ? <AlertTriangle size={12} />
                     : <CalendarCheck size={12} className="text-[#4A7A6A]" />}
-                  {formatDate(item.dueByUtc)}
+                  {formatDate(item.dueByUtc!)}
                 </span>
               }
             />
@@ -205,7 +205,7 @@ export function KycDetailContainer({ id }: { id: string }) {
             </div>
           )}
 
-          {canDecide && <KycDecisionForm id={item.id} rowVersion={item.rowVersion} />}
+          {canDecide && <KycDecisionForm id={item.id!} rowVersion={item.rowVersion ?? null} />}
 
           {item.state === KycReviewState.Pending && (
             <div className={`${cardCls} flex flex-col items-center gap-4 text-center`}>
@@ -216,7 +216,7 @@ export function KycDetailContainer({ id }: { id: string }) {
               </p>
               <button
                 disabled={assign.isPending || !adminId}
-                onClick={() => assign.mutate({ id: item.id, reviewerAdminId: adminId! })}
+                onClick={() => assign.mutate({ id: item.id!, reviewerAdminId: adminId! })}
                 className={`flex items-center gap-2 rounded-[10px] border-none px-6 py-[11px] text-[13px] font-bold transition-all duration-[180ms] ${
                   assign.isPending || !adminId
                     ? 'cursor-not-allowed bg-bg-elevated text-[#4A7A6A]'

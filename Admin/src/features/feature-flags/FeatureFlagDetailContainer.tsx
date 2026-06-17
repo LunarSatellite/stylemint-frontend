@@ -13,8 +13,8 @@ export function FeatureFlagDetailContainer({ flagKey }: { flagKey: string }) {
     <div className="bg-bg-card border border-[var(--surface-border)] rounded-lg p-6 space-y-4 max-w-lg">
       <h2 className="text-text-primary font-mono font-medium">{flagKey}</h2>
       <div className="flex gap-3">
-        <Button className="bg-primary hover:bg-primary-dark text-bg-primary" onClick={() => upsert.mutate({ key: flagKey, enabled: true })} disabled={upsert.isPending}>Enable</Button>
-        <Button variant="outline" onClick={() => upsert.mutate({ key: flagKey, enabled: false })} disabled={upsert.isPending}>Disable</Button>
+        <Button className="bg-primary hover:bg-primary-dark text-bg-primary" onClick={() => upsert.mutate({ key: flagKey, defaultEnabled: true })} disabled={upsert.isPending}>Enable</Button>
+        <Button variant="outline" onClick={() => upsert.mutate({ key: flagKey, defaultEnabled: false })} disabled={upsert.isPending}>Disable</Button>
       </div>
     </div>
   )

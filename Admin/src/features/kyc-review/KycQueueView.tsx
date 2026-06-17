@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import { AlertTriangle, ChevronLeft, ChevronRight, Filter } from 'lucide-react'
 import type { components } from '@/api/schema'
 
-type KycReviewItem  = components['schemas']['KycReviewItemDto']
-type KycQueueFilter = components['schemas']['KycQueueParams']
+type KycReviewItem  = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.KycReviewItemDto']
+type KycQueueFilter = NonNullable<import('@/api/schema').paths['/v1/admin/kyc/queue']['get']['parameters']['query']>
 import { KycReviewState, KycDecision, KycApplicantKind } from '@/lib/enums'
 import {
   KycReviewStateLabel, KycDecisionLabel,
@@ -196,23 +196,23 @@ export function KycQueueView({
                 >
                   <td className="px-4 py-[14px]">
                     <span className="font-mono text-[12px] text-text-secondary">
-                      {item.accountId.slice(0, 8)}…
+                      {item.accountId!.slice(0, 8)}…
                     </span>
                   </td>
                   <td className="px-4 py-[14px]">
-                    <KindBadge kind={item.applicantKind} />
+                    <KindBadge kind={item.applicantKind!} />
                   </td>
                   <td className="px-4 py-[14px]">
-                    <StateBadge state={item.state} />
+                    <StateBadge state={item.state!} />
                   </td>
                   <td className="px-4 py-[14px]">
-                    <DecisionBadge decision={item.decision} />
+                    <DecisionBadge decision={item.decision ?? null} />
                   </td>
                   <td className="px-4 py-[14px]">
-                    <DueDateCell dueByUtc={item.dueByUtc} />
+                    <DueDateCell dueByUtc={item.dueByUtc!} />
                   </td>
                   <td className="whitespace-nowrap px-4 py-[14px] text-[13px] text-text-muted">
-                    {formatDateShort(item.submittedUtc)}
+                    {formatDateShort(item.submittedUtc!)}
                   </td>
                   <td className="px-4 py-[14px] text-right">
                     <Link

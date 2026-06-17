@@ -18,8 +18,9 @@ const IssueRefundPage      = lazy(() => import('@/pages/IssueRefundPage'))
 const AdminAccountsPage    = lazy(() => import('@/pages/AdminAccountsPage'))
 const AdminDetailPage      = lazy(() => import('@/pages/AdminDetailPage'))
 const MySessionsPage       = lazy(() => import('@/pages/MySessionsPage'))
-const MfaSetupPage         = lazy(() => import('@/pages/MfaSetupPage'))
-const NotFoundPage         = lazy(() => import('@/pages/NotFoundPage'))
+const MfaSetupPage          = lazy(() => import('@/pages/MfaSetupPage'))
+const PrivacyDashboardPage  = lazy(() => import('@/pages/PrivacyDashboardPage'))
+const NotFoundPage          = lazy(() => import('@/pages/NotFoundPage'))
 
 function Page({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<div className="p-6 text-text-muted">Loading…</div>}>{children}</Suspense>
@@ -45,8 +46,9 @@ export const router = createBrowserRouter([
       { path: '/admins',           element: <RequireRole roles={['SuperAdmin']}><Page><AdminAccountsPage /></Page></RequireRole> },
       { path: '/admins/:id',       element: <Page><AdminDetailPage /></Page> },
       { path: '/me/sessions',      element: <Page><MySessionsPage /></Page> },
-      { path: '/settings/mfa',     element: <Page><MfaSetupPage /></Page> },
-      { path: '*',                 element: <Page><NotFoundPage /></Page> },
+      { path: '/settings/mfa',       element: <Page><MfaSetupPage /></Page> },
+      { path: '/privacy-dashboard',  element: <RequireRole roles={['SuperAdmin']}><Page><PrivacyDashboardPage /></Page></RequireRole> },
+      { path: '*',                   element: <Page><NotFoundPage /></Page> },
     ],
   },
 ])

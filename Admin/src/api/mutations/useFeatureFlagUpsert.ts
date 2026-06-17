@@ -5,8 +5,9 @@ import { qk } from '@/api/queryKeys'
 export function useFeatureFlagUpsert(options?: { onSuccess?: () => void; onError?: (e: unknown) => void }) {
   const qc = useQueryClient()
   return useMutation({
-    mutationFn: async (vars: { key: string; enabled: boolean; description?: string }) => {
-      const { data } = await api.put(`/v1/admin/feature-flags/${vars.key}`, vars)
+    mutationFn: async (vars: { key: string; defaultEnabled: boolean; description?: string }) => {
+      const { key, ...body } = vars
+      const { data } = await api.put(`/v1/admin/feature-flags/${key}`, body)
       return data
     },
     onSuccess: (_d, vars) => {

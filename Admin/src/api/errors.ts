@@ -26,6 +26,17 @@ const errorMessages: Record<string, string> = {
   'system.rate_limited':           'Too many requests. Please wait.',
   'system.internal_error':         'Something went wrong.',
   'validation.multiple_errors':    'Please fix the errors below.',
+  'validation.failed':             'The request is invalid. Please check your input.',
+  'auth.idp.invalid_token':        'Sign-in failed: your corporate session is invalid.',
+  'auth.idp.expired_token':        'Sign-in failed: your corporate session has expired.',
+  'ratelimit.exceeded':            'Too many attempts. Please wait before trying again.',
+  'mfa.totp.already_confirmed':    'An authenticator is already set up. Remove it first.',
+  'mfa.totp.not_enrolled':         'No pending enrollment found. Please start over.',
+  'kyc.already_decided':           'This KYC item has already been decided.',
+  'moderation.invalid_action':     'This action is not valid for this content type.',
+  'payouts.invalid_state':         'This payout cannot be changed in its current state.',
+  'platform_config.invalid_json':  'The value must be valid JSON.',
+  'feature_flag.override_invalid_audience': 'Specify either a role or an account, not both.',
 }
 
 export function getErrorMessage(code: string): string {

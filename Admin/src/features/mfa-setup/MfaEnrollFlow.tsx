@@ -13,20 +13,26 @@ type Step = 'start' | 'scan' | 'confirm'
 export function MfaEnrollFlow() {
   const [step, setStep] = useState<Step>('start')
   const [qrUri, setQrUri] = useState('')
+  const [secret, setSecret] = useState('')
   const [code, setCode] = useState('')
   const navigate = useNavigate()
 
-  const enroll = useMfaEnroll({ onSuccess: ({ qrCodeUri }) => { setQrUri(qrCodeUri); setStep('scan') }, onError: showErrorToast })
+  const enroll = useMfaEnroll({ onSuccess: ({ provisioningUri, secretBase32 }) => { setQrUri(provisioningUri ?? ''); setSecret(secretBase32 ?? ''); setStep('scan') }, onError: showErrorToast })
   const confirm = useMfaConfirm({ onSuccess: () => { toast.success('MFA enabled'); navigate('/kyc') }, onError: showErrorToast })
 
   return (
     <div className="bg-bg-card border border-[var(--surface-border)] rounded-xl p-8 w-full max-w-sm space-y-6">
       <h1 className="text-xl font-semibold text-text-primary">Set up MFA</h1>
-      {step === 'start' && <Button className="w-full bg-primary hover:bg-primary-dark text-bg-primary" onClick={() => enroll.mutate()} disabled={enroll.isPending}>Get Started</Button>}
+      {step === 'start' && <Button className="w-full bg-primary hover:bg-primary-dark text-bg-primary" onClick={() => enroll.mutate({})} disabled={enroll.isPending}>Get Started</Button>}
       {step === 'scan' && (
         <div className="space-y-4">
           <MfaQrCode uri={qrUri} />
           <p className="text-text-muted text-sm">Scan with your authenticator app, then enter the 6-digit code.</p>
+          {secret && (
+            <p className="text-[11px] text-[#4A7A6A]">
+              Manual entry: <span className="font-mono text-text-secondary">{secret}</span>
+            </p>
+          )}
           <Button className="w-full bg-primary hover:bg-primary-dark text-bg-primary" onClick={() => setStep('confirm')}>Next</Button>
         </div>
       )}

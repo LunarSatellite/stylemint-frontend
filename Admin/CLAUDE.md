@@ -129,8 +129,8 @@ Token in memory only. Never localStorage. Never cookies.
 
 ## Step-up MFA
 
-These 8 endpoints require step-up — always use `useMutationWithStepUp`:
-`DELETE /auth/mfa/totp` · `POST|DELETE /admins/{id}/roles/{role}` ·
+These 9 endpoints require step-up — always use `useMutationWithStepUp`:
+`DELETE /auth/mfa/totp` · `POST /admins/{id}/roles/{role}` · `DELETE /admins/{id}/roles/{role}` ·
 `POST /admins/{id}/disable` · `POST /admins/{id}/enable` ·
 `POST /admins/{id}/sessions/revoke-all` · `DELETE /admins/{id}/mfa` ·
 `POST /payouts/{id}/force-paid` · `POST /payouts/{id}/force-failed`
@@ -238,6 +238,7 @@ Two levels — page and feature widget. Never wrap AppShell itself.
 - JWT in memory only — never `localStorage`, never cookies
 - Switch on `errorCode` string — never on HTTP status number
 - Step-up endpoints use `useMutationWithStepUp` — never plain `useMutation`
+- `POST /auth/mfa/totp/verify` returns 204 void — never call `setToken` from its response
 - `auth.token_reuse_detected` → security warning redirect, not expired message
 - After login: check `hasTotp` — if false, redirect `/settings/mfa/setup` before anything
 - `schema.ts` committed to git — never regenerate in CI

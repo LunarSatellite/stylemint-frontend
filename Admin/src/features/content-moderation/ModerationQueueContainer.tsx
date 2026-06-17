@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { useModerationQueue } from '@/api/queries/useModerationQueue'
-import type { components } from '@/api/schema'
 
-type ModerationQueueFilter = components['schemas']['ModerationQueueParams']
+type ModerationQueueFilter = NonNullable<import('@/api/schema').paths['/v1/admin/moderation/queue']['get']['parameters']['query']>
 import { ModerationQueueView } from './ModerationQueueView'
 
 const PAGE_SIZE = 20
@@ -33,7 +32,7 @@ export function ModerationQueueContainer() {
     <ModerationQueueView
       data={data?.items ?? []}
       totalCount={data?.totalCount ?? 0}
-      pageNumber={filter.pageNumber}
+      pageNumber={filter.pageNumber ?? 1}
       pageSize={PAGE_SIZE}
       totalPages={data?.totalPages ?? 1}
       hasNext={data?.hasNext ?? false}

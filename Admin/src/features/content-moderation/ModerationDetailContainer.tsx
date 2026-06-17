@@ -6,7 +6,7 @@ import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
 import type { components } from '@/api/schema'
 
-type ModerationItem = components['schemas']['ModerationItemDto']
+type ModerationItem = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.ModerationItemDto']
 import { ModerationItemState, ModerationSource, ModerationTargetKind, ModerationAction } from '@/lib/enums'
 import {
   ModerationItemStateLabel,
@@ -160,8 +160,8 @@ export function ModerationDetailContainer({ id }: { id: string }) {
           <span className="font-mono text-[12px] text-[#4A7A6A]">{item.id}</span>
         </div>
         <div className="flex items-center gap-[10px]">
-          <StateBadge state={item.state} />
-          <TargetKindBadge kind={item.targetKind} />
+          <StateBadge state={item.state!} />
+          <TargetKindBadge kind={item.targetKind!} />
         </div>
       </div>
 
@@ -173,11 +173,11 @@ export function ModerationDetailContainer({ id }: { id: string }) {
           <h2 className="m-0 text-[14px] font-bold text-text-primary">Item Info</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Content Type" value={<TargetKindBadge kind={item.targetKind} />} />
-            <Field label="Source"       value={<SourceBadge source={item.source} />} />
+            <Field label="Content Type" value={<TargetKindBadge kind={item.targetKind!} />} />
+            <Field label="Source"       value={<SourceBadge source={item.source!} />} />
             <Field
               label="Target ID"
-              value={<span className="font-mono text-[12px]">{item.targetId.slice(0, 16)}…</span>}
+              value={<span className="font-mono text-[12px]">{item.targetId!.slice(0, 16)}…</span>}
             />
             <Field
               label="Assigned Reviewer"
@@ -222,7 +222,7 @@ export function ModerationDetailContainer({ id }: { id: string }) {
               label="Submitted"
               value={
                 <span className="flex items-center gap-[5px]">
-                  <Clock size={12} className="text-[#4A7A6A]" /> {formatDate(item.submittedUtc)}
+                  <Clock size={12} className="text-[#4A7A6A]" /> {formatDate(item.submittedUtc!)}
                 </span>
               }
             />
@@ -260,7 +260,7 @@ export function ModerationDetailContainer({ id }: { id: string }) {
           )}
 
           {/* Decision form — only when InReview */}
-          {canDecide && <ModerationDecisionForm id={item.id} />}
+          {canDecide && <ModerationDecisionForm id={item.id!} />}
 
           {/* Open — not yet assigned */}
           {item.state === ModerationItemState.Open && (
@@ -272,7 +272,7 @@ export function ModerationDetailContainer({ id }: { id: string }) {
               </p>
               <button
                 disabled={assign.isPending || !adminId}
-                onClick={() => assign.mutate({ id: item.id, reviewerAdminId: adminId! })}
+                onClick={() => assign.mutate({ id: item.id!, reviewerAdminId: adminId! })}
                 className={`flex items-center gap-2 rounded-[10px] border-none px-6 py-[11px] text-[13px] font-bold transition-all duration-[180ms] ${
                   assign.isPending || !adminId
                     ? 'cursor-not-allowed bg-bg-elevated text-[#4A7A6A]'

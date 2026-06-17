@@ -6,7 +6,7 @@ export function useMfaConfirm(options?: { onSuccess?: () => void; onError?: (e: 
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (vars: { code: string }) => {
-      const { data } = await api.post('/v1/admin/me/mfa/totp/confirm', vars)
+      const { data } = await api.post('/v1/admin/auth/mfa/totp/confirm', vars)
       return data
     },
     onSuccess: () => {

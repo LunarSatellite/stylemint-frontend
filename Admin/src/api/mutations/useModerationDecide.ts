@@ -3,8 +3,8 @@ import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
 import type { components } from '@/api/schema'
 
-type ModerationItem          = components['schemas']['ModerationItemDto']
-type DecideModerationRequest = components['schemas']['DecideModerationVm']
+type ModerationItem          = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.ModerationItemDto']
+type DecideModerationRequest = components['schemas']['StyleMint.Modules.Admin.Api.Controllers.V1.ViewModels.Moderation.DecideModerationVm']
 
 type Vars = { id: string } & DecideModerationRequest
 

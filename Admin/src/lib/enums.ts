@@ -93,3 +93,29 @@ export const ModerationReportReasonCodes = [
   'COUNTERFEIT_PRODUCT',
   'OTHER',
 ] as const
+
+export const AdminSessionRevocationReason = {
+  UserLogout:       1,
+  UserLogoutAll:    2,
+  AdminForceRevoke: 3,
+  AccountDisabled:  4,
+  RoleChanged:      5,
+  Expired:          6,
+  Security:         7,
+} as const
+
+export const MfaCredentialKind = {
+  Totp:     1,
+  WebAuthn: 2,
+} as const
+
+export const FeatureFlagAudience = {
+  Role:    1,
+  Account: 2,
+} as const
+
+export const FeatureFlagRoleKind = {
+  Customer: 1,
+  Creator:  2,
+  Vendor:   3,
+} as const

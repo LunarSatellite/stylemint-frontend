@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react'
 import type { components } from '@/api/schema'
 
-type ModerationItem        = components['schemas']['ModerationItemDto']
-type ModerationQueueFilter = components['schemas']['ModerationQueueParams']
+type ModerationItem        = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.ModerationItemDto']
+type ModerationQueueFilter = NonNullable<import('@/api/schema').paths['/v1/admin/moderation/queue']['get']['parameters']['query']>
 import { ModerationItemState, ModerationTargetKind, ModerationSource } from '@/lib/enums'
 import {
   ModerationItemStateLabel,
@@ -198,18 +198,18 @@ export function ModerationQueueView({
                   {/* Target ID */}
                   <td className="px-4 py-[14px]">
                     <span className="font-mono text-[12px] text-text-secondary">
-                      {item.targetId.slice(0, 8)}…
+                      {item.targetId!.slice(0, 8)}…
                     </span>
                   </td>
 
                   {/* Kind */}
                   <td className="px-4 py-[14px]">
-                    <TargetKindBadge kind={item.targetKind} />
+                    <TargetKindBadge kind={item.targetKind!} />
                   </td>
 
                   {/* Source */}
                   <td className="px-4 py-[14px]">
-                    <SourceBadge source={item.source} />
+                    <SourceBadge source={item.source!} />
                   </td>
 
                   {/* Reason code */}
@@ -224,12 +224,12 @@ export function ModerationQueueView({
 
                   {/* State */}
                   <td className="px-4 py-[14px]">
-                    <StateBadge state={item.state} />
+                    <StateBadge state={item.state!} />
                   </td>
 
                   {/* Submitted */}
                   <td className="whitespace-nowrap px-4 py-[14px] text-[13px] text-text-muted">
-                    {formatDateShort(item.submittedUtc)}
+                    {formatDateShort(item.submittedUtc!)}
                   </td>
 
                   {/* Action */}

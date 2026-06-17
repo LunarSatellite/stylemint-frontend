@@ -1,18 +1,18 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
+import { useMutationWithStepUp } from '@/auth/useMutationWithStepUp'
 
 export function useMfaRemove(options?: { onSuccess?: () => void; onError?: (e: unknown) => void }) {
   const qc = useQueryClient()
-  return useMutation({
-    mutationFn: async () => {
-      const { data } = await api.delete('/v1/admin/me/mfa/totp')
-      return data
+  return useMutationWithStepUp(
+    async () => { await api.delete('/v1/admin/auth/mfa/totp') },
+    {
+      onSuccess: () => {
+        qc.invalidateQueries({ queryKey: qk.meMfa() })
+        options?.onSuccess?.()
+      },
+      onError: options?.onError,
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: qk.meMfa() })
-      options?.onSuccess?.()
-    },
-    onError: options?.onError,
-  })
+  )
 }

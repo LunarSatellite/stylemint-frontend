@@ -3,8 +3,8 @@ import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
 import type { components } from '@/api/schema'
 
-type KycReviewItem   = components['schemas']['KycReviewItemDto']
-type AssignKycRequest = components['schemas']['AssignKycVm']
+type KycReviewItem    = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.KycReviewItemDto']
+type AssignKycRequest = components['schemas']['StyleMint.Modules.Admin.Api.Controllers.V1.ViewModels.Kyc.AssignKycVm']
 
 type Vars = { id: string } & AssignKycRequest
 
