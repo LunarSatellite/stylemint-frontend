@@ -1,13 +1,37 @@
 import { useState } from 'react'
 import { usePayouts } from '@/api/queries/usePayouts'
-import { useDebounce } from '@/hooks/use-debounce'
 import { PayoutsView } from './PayoutsView'
 
 export function PayoutsContainer() {
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search)
-  const { data, isLoading, isError } = usePayouts({ page, pageSize: 20, search: debouncedSearch })
+  const [cursor, setCursor]           = useState<string | undefined>(undefined)
+  const [cursorStack, setCursorStack] = useState<string[]>([])
+
+  const { data, isLoading, isError } = usePayouts({ cursor, pageSize: 20 })
+
+  function handleNext() {
+    if (!data?.nextCursor) return
+    setCursorStack((prev) => [...prev, cursor ?? ''])
+    setCursor(data.nextCursor)
+  }
+
+  function handlePrev() {
+    if (!cursorStack.length) return
+    const stack = [...cursorStack]
+    const prev  = stack.pop()
+    setCursorStack(stack)
+    setCursor(prev || undefined)
+  }
+
   if (isError) return <div className="text-red-400">Failed to load payouts.</div>
-  return <PayoutsView data={data?.items ?? []} total={data?.total ?? 0} page={page} pageSize={20} search={search} isLoading={isLoading} onPageChange={setPage} onSearchChange={setSearch} />
+
+  return (
+    <PayoutsView
+      data={data?.items ?? []}
+      isLoading={isLoading}
+      hasNext={data?.hasMore ?? false}
+      hasPrev={cursorStack.length > 0}
+      onNext={handleNext}
+      onPrev={handlePrev}
+    />
+  )
 }

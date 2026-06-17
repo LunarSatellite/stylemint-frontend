@@ -9,7 +9,7 @@ export function usePrivacyDashboard() {
   return useQuery<PrivacyDashboardDto>({
     queryKey: qk.privacyDashboard(),
     queryFn: async () => {
-      const { data } = await api.get<PrivacyDashboardDto>('/v1/admin/privacy-dashboard')
+      const { data } = await api.get<PrivacyDashboardDto>('/v1/admin/privacy/dashboard')
       return data
     },
     staleTime: 60_000,

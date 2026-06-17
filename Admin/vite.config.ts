@@ -7,6 +7,15 @@ export default defineConfig({
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
   },
+  server: {
+    port: 5173,
+    proxy: {
+      '/v1': {
+        target: 'https://stylemint.voyageritnepal.com',
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {

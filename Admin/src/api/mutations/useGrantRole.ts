@@ -6,12 +6,12 @@ import { useMutationWithStepUp } from '@/auth/useMutationWithStepUp'
 export function useGrantRole(options?: { onSuccess?: () => void; onError?: (e: unknown) => void }) {
   const qc = useQueryClient()
   return useMutationWithStepUp(
-    async (vars: { id: string; role: string }) => {
+    async (vars: { id: string; role: number }) => {
       const { data } = await api.post(`/v1/admin/admins/${vars.id}/roles/${vars.role}`)
       return data
     },
     {
-      onSuccess: (_d: unknown, vars: { id: string; role: string }) => {
+      onSuccess: (_d: unknown, vars: { id: string; role: number }) => {
         qc.invalidateQueries({ queryKey: qk.admin(vars.id) })
         qc.invalidateQueries({ queryKey: ['admins'], exact: false })
         options?.onSuccess?.()

@@ -2,11 +2,21 @@ import { useReactTable, getCoreRowModel, type ColumnDef } from '@tanstack/react-
 import { DataTable } from '@/components/DataTable'
 import { Input } from '@/components/ui/input'
 import { Link } from 'react-router-dom'
+import { AdminAccountState } from '@/lib/enums'
+import type { components } from '@/api/schema'
 
-type Admin = { id: string; email: string; state: number; roles: number[] }
+const STATE_LABEL: Record<number, { label: string; className: string }> = {
+  [AdminAccountState.Active]:   { label: 'Active',   className: 'text-emerald-400' },
+  [AdminAccountState.Disabled]: { label: 'Disabled', className: 'text-red-400' },
+}
+
+type Admin = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminAccountDto']
 const columns: ColumnDef<Admin>[] = [
   { accessorKey: 'email', header: 'Email', cell: ({ row }) => <span className="text-text-primary">{row.original.email}</span> },
-  { accessorKey: 'state', header: 'Status' },
+  { accessorKey: 'state', header: 'Status', cell: ({ row }) => {
+    const s = STATE_LABEL[row.original.state]
+    return <span className={s?.className ?? 'text-text-muted'}>{s?.label ?? row.original.state}</span>
+  }},
   { id: 'actions', header: '', cell: ({ row }) => <Link to={`/admins/${row.original.id}`} className="text-primary text-sm">View</Link> },
 ]
 

@@ -4,9 +4,24 @@ import { useDebounce } from '@/hooks/use-debounce'
 import { AuditLogView } from './AuditLogView'
 
 export function AuditLogContainer() {
-  const [search, setSearch] = useState('')
-  const debouncedSearch = useDebounce(search)
-  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useAuditLog({ search: debouncedSearch })
-  const entries = data?.pages.flatMap((p: any) => p.items) ?? []
-  return <AuditLogView entries={entries} isLoading={isLoading} hasNextPage={!!hasNextPage} isFetchingNextPage={isFetchingNextPage} search={search} onSearchChange={setSearch} onFetchMore={fetchNextPage} />
+  const [action, setAction] = useState('')
+  const debouncedAction = useDebounce(action)
+  const { data, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage, isError } = useAuditLog({
+    action: debouncedAction || undefined,
+  })
+  const entries = data?.pages.flatMap((p: any) => p.items ?? []) ?? []
+
+  if (isError) return <div className="text-red-400">Failed to load audit log.</div>
+
+  return (
+    <AuditLogView
+      entries={entries}
+      isLoading={isLoading}
+      hasNextPage={!!hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      actionFilter={action}
+      onActionFilterChange={setAction}
+      onFetchMore={fetchNextPage}
+    />
+  )
 }

@@ -1,19 +1,27 @@
 import { env } from '@/env'
 import { useAuth } from './store'
 
-function buildIdpAuthUrl(extra: Record<string, string> = {}): string {
+export function isSsoConfigured(): boolean {
+  return !!(env.ssoAuthority && env.ssoClientId && env.ssoRedirectUri)
+}
+
+export function buildIdpAuthUrl(extra: Record<string, string> = {}): string {
+  if (!isSsoConfigured()) {
+    throw new Error('SSO is not configured. Set VITE_SSO_AUTHORITY, VITE_SSO_CLIENT_ID, and VITE_SSO_REDIRECT_URI in .env')
+  }
   const params = new URLSearchParams({
-    client_id: env.ssoClientId,
-    redirect_uri: env.ssoRedirectUri,
+    client_id:     env.ssoClientId!,
+    redirect_uri:  env.ssoRedirectUri!,
     response_type: 'id_token',
-    scope: 'openid email profile',
-    nonce: crypto.randomUUID(),
+    scope:         'openid email profile',
+    nonce:         crypto.randomUUID(),
     ...extra,
   })
   return `${env.ssoAuthority}/authorize?${params}`
 }
 
 export async function trySilentRefresh(): Promise<boolean> {
+  if (!isSsoConfigured()) return false
   return new Promise((resolve) => {
     const iframe = document.createElement('iframe')
     iframe.style.display = 'none'

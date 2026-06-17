@@ -5,7 +5,7 @@ export function usePayoutRelease(options?: { onSuccess?: () => void; onError?: (
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (vars: { id: string }) => {
-      const { data } = await api.post(`/v1/admin/payouts/${vars.id}/release`, vars)
+      const { data } = await api.post(`/v1/admin/payouts/${vars.id}/release`)
       return data
     },
     onSuccess: () => {

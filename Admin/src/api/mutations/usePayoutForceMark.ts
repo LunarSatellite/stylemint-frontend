@@ -7,7 +7,7 @@ export function usePayoutForceMark(options?: { onSuccess?: () => void; onError?:
   return useMutationWithStepUp(
     async (vars: { id: string; state: 'paid' | 'failed'; reason: string }) => {
       const endpoint = vars.state === 'paid' ? 'force-paid' : 'force-failed'
-      const { data } = await api.post(`/v1/admin/payouts/${vars.id}/${endpoint}`, vars)
+      const { data } = await api.post(`/v1/admin/payouts/${vars.id}/${endpoint}`, { reason: vars.reason })
       return data
     },
     {

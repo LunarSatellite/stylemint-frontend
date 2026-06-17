@@ -1,18 +1,71 @@
 import { useReactTable, getCoreRowModel, type ColumnDef } from '@tanstack/react-table'
 import { DataTable } from '@/components/DataTable'
-import { Input } from '@/components/ui/input'
-import { PayoutStateLabel, formatCurrency } from '@/lib/formatters'
+import { PayoutStateLabel, formatDate } from '@/lib/formatters'
+import type { components } from '@/api/schema'
 
-type Payout = { id: string; amount: number; currency: string; state: number; createdAt: string }
+type Payout = components['schemas']['StyleMint.Modules.Payouts.Entity.Dtos.PayoutDto']
+
 const columns: ColumnDef<Payout>[] = [
-  { accessorKey: 'id', header: 'ID', cell: ({ row }) => <span className="font-mono text-xs text-text-muted">{row.original.id}</span> },
-  { accessorKey: 'amount', header: 'Amount', cell: ({ row }) => formatCurrency(row.original.amount, row.original.currency) },
-  { accessorKey: 'state', header: 'Status', cell: ({ row }) => PayoutStateLabel[row.original.state] },
+  {
+    accessorKey: 'id',
+    header: 'ID',
+    cell: ({ row }) => <span className="font-mono text-xs text-text-muted">{row.original.id}</span>,
+  },
+  {
+    accessorKey: 'payeeProfileId',
+    header: 'Payee',
+    cell: ({ row }) => <span className="font-mono text-xs text-text-muted">{row.original.payeeProfileId}</span>,
+  },
+  {
+    accessorKey: 'requestedAmountValue',
+    header: 'Amount',
+    cell: ({ row }) => {
+      const currency = row.original.requestedAmountCurrency ?? 'USD'
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(row.original.requestedAmountValue)
+    },
+  },
+  {
+    accessorKey: 'state',
+    header: 'Status',
+    cell: ({ row }) => PayoutStateLabel[row.original.state] ?? row.original.state,
+  },
+  {
+    accessorKey: 'requestedUtc',
+    header: 'Requested',
+    cell: ({ row }) => formatDate(row.original.requestedUtc),
+  },
 ]
 
-interface Props { data: Payout[]; total: number; page: number; pageSize: number; search: string; isLoading?: boolean; onPageChange: (p: number) => void; onSearchChange: (s: string) => void }
+interface Props {
+  data: Payout[]
+  isLoading?: boolean
+  hasNext: boolean
+  hasPrev: boolean
+  onNext: () => void
+  onPrev: () => void
+}
 
-export function PayoutsView({ data, total, page, pageSize, search, isLoading, onPageChange, onSearchChange }: Props) {
-  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel(), manualPagination: true, rowCount: total, state: { pagination: { pageIndex: page - 1, pageSize } }, onPaginationChange: (u) => { const n = typeof u === 'function' ? u({ pageIndex: page - 1, pageSize }) : u; onPageChange(n.pageIndex + 1) } })
-  return <div className="space-y-4"><Input value={search} onChange={(e) => onSearchChange(e.target.value)} placeholder="Search payouts…" className="max-w-xs bg-bg-elevated border-[var(--border-primary)] text-text-primary" /><DataTable table={table} isLoading={isLoading} /></div>
+export function PayoutsView({ data, isLoading, hasNext, hasPrev, onNext, onPrev }: Props) {
+  const table = useReactTable({ data, columns, getCoreRowModel: getCoreRowModel() })
+  return (
+    <div className="space-y-4">
+      <DataTable table={table} isLoading={isLoading} />
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={onPrev}
+          disabled={!hasPrev}
+          className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-white/[0.07] hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Previous
+        </button>
+        <button
+          onClick={onNext}
+          disabled={!hasNext}
+          className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-sm font-medium text-text-secondary transition-colors hover:bg-white/[0.07] hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  )
 }

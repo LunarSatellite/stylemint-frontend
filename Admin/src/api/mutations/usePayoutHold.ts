@@ -6,7 +6,7 @@ export function usePayoutHold(options?: { onSuccess?: () => void; onError?: (e: 
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (vars: { id: string; reason: string }) => {
-      const { data } = await api.post(`/v1/admin/payouts/${vars.id}/hold`, vars)
+      const { data } = await api.post(`/v1/admin/payouts/${vars.id}/hold`, { reason: vars.reason })
       return data
     },
     onSuccess: () => {

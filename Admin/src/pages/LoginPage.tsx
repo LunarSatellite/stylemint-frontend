@@ -1,46 +1,80 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/auth/store'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { PhoneMockupAnimation } from '@/components/PhoneMockupAnimation'
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { buildIdpAuthUrl, isSsoConfigured } from '@/auth/silentRefresh'
+import { useSsoLogin } from '@/api/mutations/useSsoLogin'
+import { api } from '@/api/client'
+import { qk } from '@/api/queryKeys'
+import type { components } from '@/api/schema'
+import { AlertCircle, Building2, FlaskConical, Eye, EyeOff } from 'lucide-react'
 
-const HARDCODED_EMAIL    = 'admin@stylemint.com'
-const HARDCODED_PASSWORD = 'Admin@123'
+type AdminMfaStatusDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminMfaStatusDto']
 
-const FAKE_TOKEN = (() => {
-  const header  = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' }))
-  const payload = btoa(JSON.stringify({
-    sub:   'admin-001',
-    jti:   'local-jti-001',
-    email: 'admin@stylemint.com',
-    roles: ['SuperAdmin'],
-    exp:   9999999999,
-  }))
-  return `${header}.${payload}.fake`
-})()
+const REASON_MESSAGES: Record<string, string> = {
+  expired:          'Your session expired. Please sign in again.',
+  revoked:          'Your session was revoked. Please sign in again.',
+  security:         'A security event was detected. Please sign in again.',
+  sso_failed:       'Sign-in failed. Please try again.',
+  invalid_callback: 'Invalid sign-in response. Please try again.',
+  rate_limited:     'Too many sign-in attempts. Please wait and try again.',
+}
 
 export default function LoginPage() {
-  const [email,    setEmail]    = useState('')
-  const [password, setPassword] = useState('')
-  const [showPw,   setShowPw]   = useState(false)
-  const [error,    setError]    = useState<string | null>(null)
-  const setToken  = useAuth((s) => s.setToken)
-  const navigate  = useNavigate()
+  const [searchParams] = useSearchParams()
+  const navigate        = useNavigate()
+  const queryClient     = useQueryClient()
+  const login           = useSsoLogin()
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (email === HARDCODED_EMAIL && password === HARDCODED_PASSWORD) {
-      setToken(FAKE_TOKEN)
-      navigate('/', { replace: true })
-    } else {
-      setError('Invalid email or password.')
+  const reason       = searchParams.get('reason')
+  const retryAfter   = searchParams.get('retryAfter')
+  const errorMessage = reason ? (REASON_MESSAGES[reason] ?? 'Something went wrong.') : null
+
+  // Dev-only state
+  const [devSecret, setDevSecret] = useState('')
+  const [showSecret, setShowSecret] = useState(false)
+  const [devError, setDevError]   = useState<string | null>(null)
+
+  function handleSsoSignIn() {
+    if (!isSsoConfigured()) {
+      alert('SSO is not configured. Set VITE_SSO_AUTHORITY, VITE_SSO_CLIENT_ID, and VITE_SSO_REDIRECT_URI in your .env file.')
+      return
     }
+    const state = crypto.randomUUID()
+    sessionStorage.setItem('sso_state', state)
+    window.location.assign(buildIdpAuthUrl({ state }))
+  }
+
+  async function handleDevLogin(e: React.FormEvent) {
+    e.preventDefault()
+    setDevError(null)
+    login.mutate(devSecret.trim(), {
+      onSuccess: async () => {
+        try {
+          const mfa = await queryClient.fetchQuery<AdminMfaStatusDto>({
+            queryKey: qk.meMfa(),
+            queryFn:  async () => {
+              const { data } = await api.get<AdminMfaStatusDto>('/v1/admin/me/mfa')
+              return data
+            },
+            staleTime: 30_000,
+          })
+          navigate(mfa.hasTotp ? '/kyc' : '/settings/mfa', { replace: true })
+        } catch {
+          navigate('/kyc', { replace: true })
+        }
+      },
+      onError: (err: any) => {
+        const code = err?.response?.data?.errorCode as string | undefined
+        setDevError(code ?? 'Login failed. Check your dev secret.')
+      },
+    })
   }
 
   return (
     <div className="flex h-screen min-w-[1280px]">
 
-      {/* Left panel */}
+      {/* ── Left panel ── */}
       <div
         className="flex w-[60%] shrink-0 flex-col items-center justify-center gap-7"
         style={{ background: 'radial-gradient(ellipse at 40% 50%, var(--bg-secondary) 0%, var(--bg-primary) 100%)' }}
@@ -70,10 +104,10 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Divider */}
+      {/* ── Divider ── */}
       <div className="w-px shrink-0 bg-[var(--surface-border)]" />
 
-      {/* Right panel */}
+      {/* ── Right panel ── */}
       <div className="flex flex-1 flex-col items-center justify-center gap-7 bg-bg-primary">
 
         {/* Logo */}
@@ -81,9 +115,9 @@ export default function LoginPage() {
           <div
             className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[14px] border"
             style={{
-              background:   'var(--bg-secondary)',
-              borderColor:  'var(--border-primary)',
-              boxShadow:    '0 0 24px var(--glow-primary)',
+              background:  'var(--bg-secondary)',
+              borderColor: 'var(--border-primary)',
+              boxShadow:   '0 0 24px var(--glow-primary)',
             }}
           >
             <svg width="38" height="38" viewBox="0 0 38 38" fill="none">
@@ -103,7 +137,7 @@ export default function LoginPage() {
               StyleMint
             </div>
             <div className="mt-[3px] text-[13px] font-medium tracking-[0.02em] text-text-muted">
-              AI-Powered Analytics
+              Admin Portal
             </div>
           </div>
         </div>
@@ -119,80 +153,109 @@ export default function LoginPage() {
             style={{ background: 'linear-gradient(90deg, transparent, var(--border-primary), transparent)' }}
           />
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
+          <div className="flex flex-col gap-6">
 
-            {/* Email */}
-            <div className="flex flex-col gap-[7px]">
-              <label className="text-[13px] font-semibold text-text-secondary">
-                Email address
-              </label>
-              <div className="relative">
-                <Mail size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setError(null); setEmail(e.target.value) }}
-                  placeholder="@stylemint.com"
-                  autoComplete="email"
-                  required
-                  className="w-full rounded-[10px] border bg-bg-elevated py-[11px] pl-[38px] pr-[14px] text-[13px] text-text-primary outline-none transition-colors duration-[180ms] placeholder:text-text-muted focus:border-[var(--border-primary)]"
-                  style={{ borderColor: 'var(--border-subtle)' }}
-                />
-              </div>
+            {/* Heading */}
+            <div>
+              <h1 className="text-[20px] font-bold leading-[1.2] text-text-primary">
+                Welcome back
+              </h1>
+              <p className="mt-1.5 text-[13px] text-text-muted">
+                Sign in with your company account to continue.
+              </p>
             </div>
 
-            {/* Password */}
-            <div className="flex flex-col gap-[7px]">
-              <div className="flex items-center justify-between">
-                <label className="text-[13px] font-semibold text-text-secondary">
-                  Password
-                </label>
-                <button
-                  type="button"
-                  className="cursor-pointer border-none bg-transparent p-0 text-[12px] font-medium text-primary"
-                >
-                  Forgot password?
-                </button>
-              </div>
-              <div className="relative">
-                <Lock size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
-                <input
-                  type={showPw ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => { setError(null); setPassword(e.target.value) }}
-                  placeholder="••••••••"
-                  autoComplete="current-password"
-                  required
-                  className="w-full rounded-[10px] border bg-bg-elevated py-[11px] pl-[38px] pr-[42px] text-[13px] text-text-primary outline-none transition-colors duration-[180ms] placeholder:text-text-muted focus:border-[var(--border-primary)]"
-                  style={{ borderColor: 'var(--border-subtle)' }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPw((p) => !p)}
-                  className="absolute right-[11px] top-1/2 flex -translate-y-1/2 cursor-pointer items-center border-none bg-transparent p-[3px] text-text-muted"
-                >
-                  {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
-                </button>
-              </div>
-            </div>
-
-            {error && (
+            {/* Error banner (from URL reason param) */}
+            {errorMessage && (
               <div
-                className="rounded-lg border px-[13px] py-[9px] text-[13px] text-red-400"
+                className="flex items-start gap-2.5 rounded-lg border px-[13px] py-[10px] text-[13px] text-red-400"
                 style={{ background: 'rgba(248,113,113,0.07)', borderColor: 'rgba(248,113,113,0.2)' }}
               >
-                {error}
+                <AlertCircle size={14} className="mt-[1px] shrink-0" />
+                <span>
+                  {errorMessage}
+                  {reason === 'rate_limited' && retryAfter && <> Retry in {retryAfter}s.</>}
+                </span>
               </div>
             )}
 
+            {/* SSO button */}
             <button
-              type="submit"
-              className="mt-0.5 cursor-pointer rounded-[10px] border-none bg-primary py-[13px] text-[14px] font-bold text-bg-primary transition-colors duration-[180ms] hover:bg-primary-dark"
+              type="button"
+              onClick={handleSsoSignIn}
+              className="flex w-full items-center justify-center gap-2.5 rounded-[10px] border-none bg-primary py-[13px] text-[14px] font-bold text-bg-primary transition-colors duration-[180ms] hover:bg-primary-dark"
             >
-              Sign in
+              <Building2 size={16} />
+              Sign in with SSO
             </button>
-          </form>
+
+            <p className="text-center text-[12px] text-text-muted">
+              You will be redirected to your company's login page.
+            </p>
+
+            {/* ── Dev-only section ── only compiled in when running `vite dev` */}
+            {import.meta.env.DEV && (
+              <>
+                {/* Divider */}
+                <div className="flex items-center gap-3">
+                  <div className="h-px flex-1 bg-white/[0.06]" />
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-text-muted">
+                    <FlaskConical size={11} />
+                    Dev only
+                  </span>
+                  <div className="h-px flex-1 bg-white/[0.06]" />
+                </div>
+
+                <form onSubmit={handleDevLogin} className="flex flex-col gap-3">
+                  <p className="text-[12px] text-text-muted">
+                    Paste <code className="rounded bg-white/[0.06] px-1 py-0.5 font-mono text-[11px] text-text-secondary">ADMIN_DEV_SSO_SECRET</code> from the VPS <code className="rounded bg-white/[0.06] px-1 py-0.5 font-mono text-[11px] text-text-secondary">~/apps/uat/.env.uat</code>
+                  </p>
+
+                  {/* Dev error */}
+                  {devError && (
+                    <div
+                      className="flex items-start gap-2 rounded-lg border px-3 py-2 text-[12px] text-red-400"
+                      style={{ background: 'rgba(248,113,113,0.07)', borderColor: 'rgba(248,113,113,0.2)' }}
+                    >
+                      <AlertCircle size={12} className="mt-[1px] shrink-0" />
+                      {devError}
+                    </div>
+                  )}
+
+                  {/* Secret input */}
+                  <div className="relative">
+                    <input
+                      type={showSecret ? 'text' : 'password'}
+                      value={devSecret}
+                      onChange={(e) => { setDevError(null); setDevSecret(e.target.value) }}
+                      placeholder="Dev secret…"
+                      required
+                      className="w-full rounded-[10px] border bg-bg-elevated py-[10px] pl-[14px] pr-[42px] font-mono text-[13px] text-text-primary outline-none transition-colors duration-[180ms] placeholder:text-text-muted focus:border-[var(--border-primary)]"
+                      style={{ borderColor: 'var(--border-subtle)' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSecret((p) => !p)}
+                      className="absolute right-[11px] top-1/2 flex -translate-y-1/2 cursor-pointer items-center border-none bg-transparent p-[3px] text-text-muted"
+                    >
+                      {showSecret ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={!devSecret.trim() || login.isPending}
+                    className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-[10px] border border-white/[0.08] bg-white/[0.04] py-[11px] text-[13px] font-semibold text-text-secondary transition-colors duration-[180ms] hover:border-white/[0.14] hover:bg-white/[0.07] hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {login.isPending ? 'Signing in…' : 'Sign in with dev secret'}
+                  </button>
+                </form>
+              </>
+            )}
+
+          </div>
         </div>
+
       </div>
     </div>
   )
