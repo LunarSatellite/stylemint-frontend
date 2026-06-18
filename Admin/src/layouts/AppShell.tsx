@@ -9,9 +9,10 @@ import type { LucideIcon } from 'lucide-react'
 import {
   UserCheck, ShieldAlert, Wallet, RotateCcw,
   ScrollText, ToggleLeft, SlidersHorizontal,
-  Users, Monitor, KeyRound, LogOut,
+  Users, Monitor, LogOut,
   ChevronLeft, ChevronRight, ChevronDown,
   ShieldCheck, Eye, BadgeDollarSign, Cpu, Crown, CircleUser,
+  Flag, Clapperboard, Music2, FileText,
 } from 'lucide-react'
 
 // ── Nav data ──────────────────────────────────────────────────────────────────
@@ -22,8 +23,17 @@ const NAV_GROUPS = [
     icon: Eye,
     iconColor: 'text-sky-400',
     items: [
-      { to: '/kyc',        label: 'KYC Review', icon: UserCheck,  permission: 'canReviewKyc'       },
-      { to: '/moderation', label: 'Moderation',  icon: ShieldAlert, permission: 'canModerateContent' },
+      { to: '/kyc',            label: 'KYC Review',      icon: UserCheck,  permission: 'canReviewKyc'       },
+      { to: '/moderation',     label: 'Moderation',      icon: ShieldAlert, permission: 'canModerateContent' },
+      { to: '/account-reports', label: 'Account Reports', icon: Flag,        permission: 'canModerateContent' },
+    ],
+  },
+  {
+    label: 'Content',
+    icon: Clapperboard,
+    iconColor: 'text-pink-400',
+    items: [
+      { to: '/audio', label: 'Audio', icon: Music2, permission: 'canModerateContent' },
     ],
   },
   {
@@ -44,6 +54,7 @@ const NAV_GROUPS = [
       { to: '/feature-flags',     label: 'Feature Flags',     icon: ToggleLeft,        permission: 'canManageFlags'          },
       { to: '/platform-config',   label: 'Platform Config',   icon: SlidersHorizontal, permission: 'canManageFlags'          },
       { to: '/privacy-dashboard', label: 'Privacy Dashboard', icon: ShieldCheck,       permission: 'canViewPrivacyDashboard' },
+      { to: '/policies',          label: 'Policies',          icon: FileText,          permission: 'canManageFlags'          },
     ],
   },
   {
@@ -59,8 +70,7 @@ const NAV_GROUPS = [
     icon: CircleUser,
     iconColor: 'text-emerald-400',
     items: [
-      { to: '/me/sessions',  label: 'My Sessions', icon: Monitor,  permission: null },
-      { to: '/settings/mfa', label: 'MFA Setup',   icon: KeyRound, permission: null },
+      { to: '/me/sessions', label: 'My Sessions', icon: Monitor, permission: null },
     ],
   },
 ]

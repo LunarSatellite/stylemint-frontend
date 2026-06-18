@@ -1,7 +1,10 @@
 import { format, formatDistanceToNow } from 'date-fns'
 import {
-  KycReviewState, KycDecision, KycApplicantKind, AdminRole, PayoutState,
+  ApplicationState, AudienceSizeBand, BusinessType, SocialIdentityProvider,
+  AdminRole, PayoutState, MusicTrackRefState,
   ModerationItemState, ModerationTargetKind, ModerationSource, ModerationAction,
+  PostReportState, PostReportReason,
+  PublishPlatform,
 } from './enums'
 
 export function formatDate(iso: string): string {
@@ -26,31 +29,44 @@ export function isOverdue(dueByUtc: string): boolean {
 
 // ── KYC labels ──────────────────────────────────────────────────────────────
 
-export const KycReviewStateLabel: Record<number, string> = {
-  [KycReviewState.Pending]:  'Pending',
-  [KycReviewState.InReview]: 'In Review',
-  [KycReviewState.Decided]:  'Decided',
+export const ApplicationStateLabel: Record<number, string> = {
+  [ApplicationState.Draft]:       'Draft',
+  [ApplicationState.Submitted]:   'Submitted',
+  [ApplicationState.UnderReview]: 'Under Review',
+  [ApplicationState.Approved]:    'Approved',
+  [ApplicationState.Rejected]:    'Rejected',
 }
 
-export const KycDecisionLabel: Record<number, string> = {
-  [KycDecision.Approved]:          'Approved',
-  [KycDecision.RejectedRetryable]: 'Rejected (Retryable)',
-  [KycDecision.RejectedTerminal]:  'Rejected (Terminal)',
+export const AudienceSizeBandLabel: Record<number, string> = {
+  [AudienceSizeBand.Under1k]:      '< 1k',
+  [AudienceSizeBand.From1kTo10k]:  '1k – 10k',
+  [AudienceSizeBand.From10kTo50k]: '10k – 50k',
+  [AudienceSizeBand.From50kTo100k]: '50k – 100k',
+  [AudienceSizeBand.Over100k]:     '100k+',
 }
 
-export const KycApplicantKindLabel: Record<number, string> = {
-  [KycApplicantKind.Creator]: 'Creator',
-  [KycApplicantKind.Vendor]:  'Vendor',
+export const BusinessTypeLabel: Record<number, string> = {
+  [BusinessType.SoleProprietor]: 'Sole Proprietor',
+  [BusinessType.LLC]:            'LLC',
+  [BusinessType.Corporation]:    'Corporation',
+  [BusinessType.Partnership]:    'Partnership',
+  [BusinessType.NonProfit]:      'Non-Profit',
+  [BusinessType.Other]:          'Other',
 }
 
-export const KycReasonCodeLabel: Record<string, string> = {
-  DOCS_UNCLEAR:                  'Documents Unclear',
-  DOCS_MISMATCH:                 'Documents Mismatch',
-  CATEGORY_MISSING:              'Category Missing',
-  POLICY_VIOLATION_RECOVERABLE:  'Policy Violation (Recoverable)',
-  FRAUD_SUSPECTED:               'Fraud Suspected',
-  SANCTIONS_HIT:                 'Sanctions Hit',
-  UNDERAGE:                      'Underage',
+export const SocialIdentityProviderLabel: Record<number, string> = {
+  [SocialIdentityProvider.Instagram]: 'Instagram',
+  [SocialIdentityProvider.TikTok]:    'TikTok',
+  [SocialIdentityProvider.YouTube]:   'YouTube',
+  [SocialIdentityProvider.Facebook]:  'Facebook',
+}
+
+// ── Audio labels ─────────────────────────────────────────────────────────────
+
+export const MusicTrackRefStateLabel: Record<number, string> = {
+  [MusicTrackRefState.Active]:      'Active',
+  [MusicTrackRefState.Hidden]:      'Hidden',
+  [MusicTrackRefState.LinksBroken]: 'Links Broken',
 }
 
 // ── Other labels ────────────────────────────────────────────────────────────
@@ -99,6 +115,40 @@ export const ModerationActionLabel: Record<number, string> = {
   [ModerationAction.WarnAuthor]:    'Warn Author',
   [ModerationAction.SuspendAuthor]: 'Suspend Author (7d)',
   [ModerationAction.BanAuthor]:     'Ban Author',
+}
+
+// ── Social Feed Reports ────────────────────────────────────────────────────────
+
+export const PostReportStateLabel: Record<number, string> = {
+  [PostReportState.Open]:         'Open',
+  [PostReportState.InReview]:     'In Review',
+  [PostReportState.Resolved]:     'Resolved',
+  [PostReportState.Dismissed]:    'Dismissed',
+  [PostReportState.AutoResolved]: 'Auto Resolved',
+}
+
+export const PostReportReasonLabel: Record<number, string> = {
+  [PostReportReason.Spam]:                   'Spam',
+  [PostReportReason.Nudity]:                 'Nudity',
+  [PostReportReason.HateOrHarassment]:       'Hate / Harassment',
+  [PostReportReason.Violence]:               'Violence',
+  [PostReportReason.Misleading]:             'Misleading',
+  [PostReportReason.Bullying]:               'Bullying',
+  [PostReportReason.SuicideOrSelfHarm]:      'Suicide / Self-Harm',
+  [PostReportReason.DangerousOrganizations]: 'Dangerous Organizations',
+  [PostReportReason.PrivacyViolation]:       'Privacy Violation',
+  [PostReportReason.Scam]:                   'Scam',
+  [PostReportReason.Other]:                  'Other',
+}
+
+// ── Reach / Publish ────────────────────────────────────────────────────────────
+
+export const PublishPlatformLabel: Record<number, string> = {
+  [PublishPlatform.StyleMint]: 'StyleMint',
+  [PublishPlatform.Instagram]: 'Instagram',
+  [PublishPlatform.TikTok]:    'TikTok',
+  [PublishPlatform.YouTube]:   'YouTube',
+  [PublishPlatform.Facebook]:  'Facebook',
 }
 
 export const ModerationReportReasonCodeLabel: Record<string, string> = {

@@ -20,6 +20,9 @@ const AdminDetailPage      = lazy(() => import('@/pages/AdminDetailPage'))
 const MySessionsPage       = lazy(() => import('@/pages/MySessionsPage'))
 const MfaSetupPage          = lazy(() => import('@/pages/MfaSetupPage'))
 const PrivacyDashboardPage  = lazy(() => import('@/pages/PrivacyDashboardPage'))
+const AccountReportsPage    = lazy(() => import('@/pages/AccountReportsPage'))
+const AudioPage             = lazy(() => import('@/pages/AudioPage'))
+const PoliciesPage          = lazy(() => import('@/pages/PoliciesPage'))
 const NotFoundPage          = lazy(() => import('@/pages/NotFoundPage'))
 
 function Page({ children }: { children: React.ReactNode }) {
@@ -48,6 +51,9 @@ export const router = createBrowserRouter([
       { path: '/me/sessions',      element: <Page><MySessionsPage /></Page> },
       { path: '/settings/mfa',       element: <Page><MfaSetupPage /></Page> },
       { path: '/privacy-dashboard',  element: <RequireRole roles={['SuperAdmin']}><Page><PrivacyDashboardPage /></Page></RequireRole> },
+      { path: '/account-reports',    element: <Page><AccountReportsPage /></Page> },
+      { path: '/audio',              element: <Page><AudioPage /></Page> },
+      { path: '/policies',           element: <Page><PoliciesPage /></Page> },
       { path: '*',                   element: <Page><NotFoundPage /></Page> },
     ],
   },

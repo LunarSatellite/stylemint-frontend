@@ -6,4 +6,4 @@ export const env = {
   ssoRedirectUri: import.meta.env.VITE_SSO_REDIRECT_URI as string | undefined,
 }
 
-if (!env.apiBaseUrl) throw new Error('Missing env variable: VITE_API_BASE_URL')
+if (env.apiBaseUrl === undefined) throw new Error('Missing env variable: VITE_API_BASE_URL')
