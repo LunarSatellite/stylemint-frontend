@@ -1,9 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react'
-import type { components } from '@/api/schema'
+import type { ModerationItemDto, ModerationQueueFilter } from '@/api/schema'
 
-type ModerationItem        = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.ModerationItemDto']
-type ModerationQueueFilter = NonNullable<import('@/api/schema').paths['/v1/admin/moderation/queue']['get']['parameters']['query']>
+type ModerationItem = ModerationItemDto
 import { ModerationItemState, ModerationTargetKind, ModerationSource } from '@/lib/enums'
 import {
   ModerationItemStateLabel,

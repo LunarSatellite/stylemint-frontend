@@ -1,11 +1,19 @@
-import type { paths } from '@/api/schema'
+import type {
+  KycCreatorQueueFilter,
+  KycVendorQueueFilter,
+  KycReviewQueueFilter,
+  AudioTracksFilter,
+  ModerationQueueFilter,
+} from '@/api/schema'
 
-type KycCreatorQueueFilter = NonNullable<paths['/v1/admin/kyc/creator/queue']['get']['parameters']['query']>
-type KycVendorQueueFilter  = NonNullable<paths['/v1/admin/kyc/vendor/queue']['get']['parameters']['query']>
-type AudioTracksFilter     = NonNullable<paths['/v1/admin/audio/tracks']['get']['parameters']['query']>
-type ModerationQueueFilter = NonNullable<paths['/v1/admin/moderation/queue']['get']['parameters']['query']>
-
-type AuditFilter  = Record<string, unknown>
+type AuditFilter  = {
+  adminAccountId?: string
+  action?:         string
+  targetKind?:     string
+  targetId?:       string
+  fromUtc?:        string
+  toUtc?:          string
+}
 type AdminFilter  = Record<string, unknown>
 type PayoutFilter = Record<string, unknown>
 
@@ -16,6 +24,8 @@ export const qk = {
   kyc: {
     creatorQueue: (f: KycCreatorQueueFilter) => ['kyc', 'creator', 'queue', f] as const,
     vendorQueue:  (f: KycVendorQueueFilter)  => ['kyc', 'vendor', 'queue', f] as const,
+    queue:        (f: KycReviewQueueFilter)  => ['kyc', 'queue', f] as const,
+    detail:       (id: string)               => ['kyc', 'detail', id] as const,
   },
   moderation: {
     queue:  (f: ModerationQueueFilter) => ['mod', 'queue', f] as const,

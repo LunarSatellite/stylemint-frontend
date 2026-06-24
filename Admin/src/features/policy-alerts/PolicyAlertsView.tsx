@@ -1,8 +1,6 @@
 import { FileText, Loader2, AlertTriangle } from 'lucide-react'
 import { PublishPlatformLabel, formatDate } from '@/lib/formatters'
-import type { components } from '@/api/schema'
-
-type PolicyChangeAlertDto = components['schemas']['StyleMint.Modules.Reach.Entity.UnifiedReachSnapshot.Dtos.PolicyChangeAlertDto']
+import type { PolicyChangeAlertDto } from '@/api/schema'
 
 interface Props {
   alerts:    PolicyChangeAlertDto[]

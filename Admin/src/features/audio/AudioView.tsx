@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Music2, Eye, EyeOff, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
 import { MusicTrackRefState } from '@/lib/enums'
 import { MusicTrackRefStateLabel, formatDate } from '@/lib/formatters'
-import type { components } from '@/api/schema'
-
-type MusicTrackRefDto = components['schemas']['StyleMint.Modules.Audio.Entity.MusicTrackRef.Dtos.MusicTrackRefDto']
+import type { MusicTrackRefDto } from '@/api/schema'
 type TrackState = typeof MusicTrackRefState[keyof typeof MusicTrackRefState]
 
 const STATE_TABS: { label: string; value: TrackState | undefined }[] = [

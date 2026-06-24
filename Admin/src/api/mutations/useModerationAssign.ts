@@ -1,12 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
+import type { ModerationItemDto, AssignModerationVm } from '@/api/schema'
 
-type ModerationItem          = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.ModerationItemDto']
-type AssignModerationRequest = components['schemas']['StyleMint.Modules.Admin.Api.Controllers.V1.ViewModels.Moderation.AssignModerationVm']
-
-type Vars = { id: string } & AssignModerationRequest
+type ModerationItem = ModerationItemDto
+type Vars = { id: string } & AssignModerationVm
 
 export function useModerationAssign(options?: {
   onSuccess?: (data: ModerationItem) => void

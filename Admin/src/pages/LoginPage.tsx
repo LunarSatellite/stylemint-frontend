@@ -6,10 +6,8 @@ import { buildIdpAuthUrl, isSsoConfigured } from '@/auth/silentRefresh'
 import { useSsoLogin } from '@/api/mutations/useSsoLogin'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
+import type { AdminMfaStatusDto } from '@/api/schema'
 import { AlertCircle, Building2, FlaskConical, Eye, EyeOff } from 'lucide-react'
-
-type AdminMfaStatusDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminMfaStatusDto']
 
 const REASON_MESSAGES: Record<string, string> = {
   expired:          'Your session expired. Please sign in again.',

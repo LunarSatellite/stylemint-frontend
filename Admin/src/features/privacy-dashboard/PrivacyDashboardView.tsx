@@ -1,6 +1,4 @@
-import type { components } from '@/api/schema'
-
-type PrivacyDashboardDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.PrivacyDashboardDto']
+import type { PrivacyDashboardDto } from '@/api/schema'
 
 interface Props {
   data?:      PrivacyDashboardDto

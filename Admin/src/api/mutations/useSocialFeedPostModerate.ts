@@ -1,8 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
-import type { components } from '@/api/schema'
-
-type PostDto = components['schemas']['StyleMint.Modules.SocialFeed.Entity.Post.Dtos.PostDto']
+import type { PostDto } from '@/api/schema'
 type Action  = 'hide' | 'remove' | 'restore'
 
 interface Vars { postId: string; action: Action; reason?: string | null }

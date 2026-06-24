@@ -95,6 +95,25 @@ export const ModerationReportReasonCodes = [
   'OTHER',
 ] as const
 
+// ── Admin KYC Review ──────────────────────────────────────────────────────────
+
+export const KycReviewState = {
+  Pending:  1,
+  InReview: 2,
+  Decided:  3,
+} as const
+
+export const KycApplicantKind = {
+  Creator: 1,
+  Vendor:  2,
+} as const
+
+export const KycDecision = {
+  Approved:          1,
+  RejectedRetryable: 2,
+  RejectedTerminal:  3,
+} as const
+
 // MusicTrackRefState — lifecycle of a catalog track
 export const MusicTrackRefState = {
   Active:      1,

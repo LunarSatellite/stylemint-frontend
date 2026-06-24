@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import type { components } from '@/api/schema'
+import type { CreatorApplicationDto, VendorApplicationDto } from '@/api/schema'
 import { ApplicationState } from '@/lib/enums'
 import {
   ApplicationStateLabel, AudienceSizeBandLabel, BusinessTypeLabel,
@@ -9,8 +9,6 @@ import {
 } from '@/lib/formatters'
 import { KycDecisionForm } from './KycDecisionForm'
 
-type CreatorApplicationDto = components['schemas']['StyleMint.Modules.Onboarding.Entity.Dtos.CreatorApplicationDto']
-type VendorApplicationDto  = components['schemas']['StyleMint.Modules.Onboarding.Entity.Dtos.VendorApplicationDto']
 
 type LocationState = { application: CreatorApplicationDto | VendorApplicationDto; kind: 'creator' | 'vendor' } | null
 

@@ -5,15 +5,13 @@ import { useAudioHide } from '@/api/mutations/useAudioHide'
 import { useAudioRestore } from '@/api/mutations/useAudioRestore'
 import { showErrorToast } from '@/api/errors'
 import { AudioView } from './AudioView'
-import type { paths, components } from '@/api/schema'
-
-type AudioTracksFilter  = NonNullable<paths['/v1/admin/audio/tracks']['get']['parameters']['query']>
-type MusicTrackRefDto   = components['schemas']['StyleMint.Modules.Audio.Entity.MusicTrackRef.Dtos.MusicTrackRefDto']
+import type { AudioTracksFilter, MusicTrackRefDto } from '@/api/schema'
 
 const PAGE_SIZE = 25
 
 export function AudioContainer() {
   const [filter, setFilter] = useState<AudioTracksFilter>({ pageSize: PAGE_SIZE })
+  const [cursorStack, setCursorStack] = useState<string[]>([])
   const [hideTarget, setHideTarget] = useState<MusicTrackRefDto | null>(null)
 
   const tracksQ = useAudioTracks(filter)
@@ -32,15 +30,24 @@ export function AudioContainer() {
   })
 
   function setStateFilter(state: AudioTracksFilter['state'] | undefined) {
+    setCursorStack([])
     setFilter(f => ({ ...f, state: state as AudioTracksFilter['state'], cursor: undefined }))
   }
 
   function goNext() {
-    setFilter(f => ({ ...f, cursor: tracksQ.data?.nextCursor ?? undefined }))
+    const nextCursor = tracksQ.data?.nextCursor
+    if (!nextCursor) return
+    setCursorStack(s => [...s, filter.cursor ?? ''])
+    setFilter(f => ({ ...f, cursor: nextCursor }))
   }
 
   function goPrev() {
-    setFilter(f => ({ ...f, cursor: tracksQ.data?.previousCursor ?? undefined }))
+    setCursorStack(s => {
+      const newStack = [...s]
+      const prevCursor = newStack.pop()
+      setFilter(f => ({ ...f, cursor: prevCursor || undefined }))
+      return newStack
+    })
   }
 
   if (tracksQ.isError) return (
@@ -55,8 +62,8 @@ export function AudioContainer() {
       totalCount={tracksQ.data?.totalCount ?? 0}
       isLoading={tracksQ.isLoading}
       stateFilter={filter.state}
-      hasNext={tracksQ.data?.hasMore ?? false}
-      hasPrevious={!!tracksQ.data?.previousCursor}
+      hasNext={!!tracksQ.data?.nextCursor}
+      hasPrevious={cursorStack.length > 0}
       hideTarget={hideTarget}
       isHiding={hideM.isPending}
       isRestoring={restoreM.isPending}
@@ -67,7 +74,7 @@ export function AudioContainer() {
       onHideCancel={() => setHideTarget(null)}
       onHideConfirm={(reason) => {
         if (!hideTarget) return
-        hideM.mutate({ trackId: hideTarget.id!, reason: reason || null })
+        hideM.mutate({ trackId: hideTarget.id, reason })
       }}
       onRestore={(trackId) => restoreM.mutate({ trackId })}
     />

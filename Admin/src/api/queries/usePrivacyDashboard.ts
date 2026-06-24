@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
-
-type PrivacyDashboardDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.PrivacyDashboardDto']
+import type { PrivacyDashboardDto } from '@/api/schema'
 
 export function usePrivacyDashboard() {
   return useQuery<PrivacyDashboardDto>({

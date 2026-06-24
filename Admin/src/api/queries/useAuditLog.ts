@@ -2,7 +2,14 @@ import { useInfiniteQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
 
-type AuditFilter = { adminAccountId?: string; action?: string; targetKind?: string }
+type AuditFilter = {
+  adminAccountId?: string
+  action?:         string
+  targetKind?:     string
+  targetId?:       string
+  fromUtc?:        string
+  toUtc?:          string
+}
 
 export function useAuditLog(filter: AuditFilter) {
   return useInfiniteQuery({

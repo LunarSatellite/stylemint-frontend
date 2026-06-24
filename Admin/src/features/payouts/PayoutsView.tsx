@@ -1,9 +1,9 @@
 import { useReactTable, getCoreRowModel, type ColumnDef } from '@tanstack/react-table'
 import { DataTable } from '@/components/DataTable'
 import { PayoutStateLabel, formatDate } from '@/lib/formatters'
-import type { components } from '@/api/schema'
+import type { PayoutDto } from '@/api/schema'
 
-type Payout = components['schemas']['StyleMint.Modules.Payouts.Entity.Dtos.PayoutDto']
+type Payout = PayoutDto
 
 const columns: ColumnDef<Payout>[] = [
   {

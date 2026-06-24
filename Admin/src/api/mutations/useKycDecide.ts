@@ -1,19 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
-import { qk } from '@/api/queryKeys'
-import type { paths, components } from '@/api/schema'
-
-type CreatorApproveResponse = paths['/v1/admin/kyc/creator/{applicationId}/approve']['post']['responses']['200']['content']['application/json']
-type VendorApproveResponse  = paths['/v1/admin/kyc/vendor/{applicationId}/approve']['post']['responses']['200']['content']['application/json']
-type CreatorRejectResponse  = paths['/v1/admin/kyc/creator/{applicationId}/reject']['post']['responses']['200']['content']['application/json']
-type VendorRejectResponse   = paths['/v1/admin/kyc/vendor/{applicationId}/reject']['post']['responses']['200']['content']['application/json']
-type RejectKycVm            = components['schemas']['StyleMint.Modules.Onboarding.Api.Controllers.V1.ViewModels.AdminKyc.RejectKycVm']
+import type { CreatorApplicationDto, VendorApplicationDto, RejectKycVm } from '@/api/schema'
 
 type ApproveVars = { applicationId: string; kind: 'creator' | 'vendor' }
 type RejectVars  = { applicationId: string; kind: 'creator' | 'vendor' } & RejectKycVm
 
-type ApproveResponse = CreatorApproveResponse | VendorApproveResponse
-type RejectResponse  = CreatorRejectResponse  | VendorRejectResponse
+type ApproveResponse = CreatorApplicationDto | VendorApplicationDto
+type RejectResponse  = CreatorApplicationDto | VendorApplicationDto
 
 export function useKycApprove(options?: {
   onSuccess?: (data: ApproveResponse) => void

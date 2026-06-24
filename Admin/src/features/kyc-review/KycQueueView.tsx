@@ -1,11 +1,11 @@
+
+
 import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Filter } from 'lucide-react'
-import type { components } from '@/api/schema'
+import type { CreatorApplicationDto, VendorApplicationDto } from '@/api/schema'
 import { ApplicationState } from '@/lib/enums'
 import { ApplicationStateLabel, formatDateShort, AudienceSizeBandLabel, BusinessTypeLabel } from '@/lib/formatters'
 
-type CreatorApplicationDto = components['schemas']['StyleMint.Modules.Onboarding.Entity.Dtos.CreatorApplicationDto']
-type VendorApplicationDto  = components['schemas']['StyleMint.Modules.Onboarding.Entity.Dtos.VendorApplicationDto']
 
 // ── State badge ───────────────────────────────────────────────────────────────
 function StateBadge({ state }: { state: number }) {

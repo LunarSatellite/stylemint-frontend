@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
-
-type AdminSessionDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminSessionDto']
+import type { AdminSessionDto } from '@/api/schema'
 
 export function useAdminSessions(adminAccountId: string) {
   return useQuery<AdminSessionDto[]>({

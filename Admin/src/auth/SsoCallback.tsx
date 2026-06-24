@@ -4,9 +4,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useSsoLogin } from '@/api/mutations/useSsoLogin'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
-
-type AdminMfaStatusDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminMfaStatusDto']
+import type { AdminMfaStatusDto } from '@/api/schema'
 
 export function SsoCallback() {
   const navigate    = useNavigate()

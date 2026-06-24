@@ -1,10 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { paths, components } from '@/api/schema'
+import type { HideTrackVm } from '@/api/schema'
 
-type HideTrackVm = components['schemas']['StyleMint.Modules.Audio.Api.Controllers.V1.ViewModels.Tracks.HideTrackVm']
-type Vars        = { trackId: string } & HideTrackVm
+type Vars = { trackId: string } & HideTrackVm
 
 export function useAudioHide(options?: { onSuccess?: () => void; onError?: (e: unknown) => void }) {
   const qc = useQueryClient()

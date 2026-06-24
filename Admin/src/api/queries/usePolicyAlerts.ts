@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
-
-type PolicyChangeAlertDto = components['schemas']['StyleMint.Modules.Reach.Entity.UnifiedReachSnapshot.Dtos.PolicyChangeAlertDto']
+import type { PolicyChangeAlertDto } from '@/api/schema'
 
 export function usePolicyAlerts() {
   return useQuery<PolicyChangeAlertDto[]>({

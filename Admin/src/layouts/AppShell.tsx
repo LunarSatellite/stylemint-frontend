@@ -173,10 +173,9 @@ export function AppShell() {
   const claims  = useAuth((s) => s.claims)
   const roles: string[] = claims?.roles ?? []
   const logout  = useLogout()
-  const email   = claims?.email ?? ''
-  const handle  = email.split('@')[0]
-  const initials = handle.slice(0, 2).toUpperCase()
-  const role    = roles[0] ?? 'Admin'
+  const role        = roles[0] ?? 'Admin'
+  const displayName = role.replace(/([A-Z])/g, ' $1').trim()
+  const initial     = displayName.charAt(0).toUpperCase()
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg-primary">
@@ -287,10 +286,10 @@ export function AppShell() {
           {collapsed ? (
             <div className="flex flex-col items-center gap-1">
               <div
-                title={email}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-[11px] font-bold text-text-secondary"
+                title={displayName}
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-[12px] font-bold text-bg-primary"
               >
-                {initials}
+                {initial}
               </div>
               <button
                 onClick={() => logout.mutate()}
@@ -303,13 +302,13 @@ export function AppShell() {
             </div>
           ) : (
             <>
-              <div className="mb-2 flex items-center gap-2.5 rounded-lg bg-white/[0.02] px-2 py-2">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-white/[0.1] bg-white/[0.07] text-[11px] font-bold text-text-secondary">
-                  {initials}
+              <div className="mb-2 flex items-center gap-3 rounded-lg bg-white/[0.02] px-2 py-2">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary text-[13px] font-bold text-bg-primary">
+                  {initial}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-semibold capitalize text-text-secondary">{handle}</p>
-                  <p className="truncate text-[10px] text-text-muted">{role}</p>
+                  <p className="truncate text-[13px] font-semibold text-text-primary">{displayName}</p>
+                  <p className="truncate text-[11px] text-text-muted">{role}</p>
                 </div>
               </div>
 

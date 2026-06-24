@@ -37,7 +37,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/kyc" replace /> },
       { path: '/kyc',              element: <RequireRole roles={['KycReviewer','SuperAdmin','Readonly']}><Page><KycQueuePage /></Page></RequireRole> },
-      { path: '/kyc/:id',          element: <Page><KycDetailPage /></Page> },
+      { path: '/kyc/:id',          element: <RequireRole roles={['KycReviewer','SuperAdmin','Readonly']}><Page><KycDetailPage /></Page></RequireRole> },
       { path: '/moderation',       element: <RequireRole roles={['ContentMod','SuperAdmin']}><Page><ModerationQueuePage /></Page></RequireRole> },
       { path: '/moderation/:id',   element: <RequireRole roles={['ContentMod','SuperAdmin']}><Page><ModerationDetailPage /></Page></RequireRole> },
       { path: '/audit',            element: <Page><AuditLogPage /></Page> },

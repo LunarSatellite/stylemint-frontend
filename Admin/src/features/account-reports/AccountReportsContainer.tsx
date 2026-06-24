@@ -5,9 +5,7 @@ import { useResolveReport } from '@/api/mutations/useResolveReport'
 import { useSocialFeedPostModerate } from '@/api/mutations/useSocialFeedPostModerate'
 import { showErrorToast } from '@/api/errors'
 import { AccountReportsView } from './AccountReportsView'
-import type { components } from '@/api/schema'
-
-type PostReportDto = components['schemas']['StyleMint.Modules.SocialFeed.Entity.PostReport.Dtos.PostReportDto']
+import type { PostReportDto } from '@/api/schema'
 
 export function AccountReportsContainer() {
   const [resolveTarget, setResolveTarget] = useState<PostReportDto | null>(null)

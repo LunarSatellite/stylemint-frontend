@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { Flag, Loader2, EyeOff, Trash2 } from 'lucide-react'
 import { PostReportState } from '@/lib/enums'
 import { PostReportStateLabel, PostReportReasonLabel, formatDate } from '@/lib/formatters'
-import type { components } from '@/api/schema'
-
-type PostReportDto = components['schemas']['StyleMint.Modules.SocialFeed.Entity.PostReport.Dtos.PostReportDto']
+import type { PostReportDto } from '@/api/schema'
 
 const STATE_BADGE: Record<number, string> = {
   [PostReportState.Open]:         'bg-blue-400/[0.12] text-blue-400 border-blue-400/20',

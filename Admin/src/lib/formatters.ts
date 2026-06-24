@@ -5,6 +5,7 @@ import {
   ModerationItemState, ModerationTargetKind, ModerationSource, ModerationAction,
   PostReportState, PostReportReason,
   PublishPlatform,
+  KycReviewState, KycApplicantKind, KycDecision,
 } from './enums'
 
 export function formatDate(iso: string): string {
@@ -25,6 +26,25 @@ export function formatCurrency(amount: number, currency = 'USD'): string {
 
 export function isOverdue(dueByUtc: string): boolean {
   return new Date() > new Date(dueByUtc)
+}
+
+// ── Admin KYC Review labels ───────────────────────────────────────────────────
+
+export const KycReviewStateLabel: Record<number, string> = {
+  [KycReviewState.Pending]:  'Pending',
+  [KycReviewState.InReview]: 'In Review',
+  [KycReviewState.Decided]:  'Decided',
+}
+
+export const KycApplicantKindLabel: Record<number, string> = {
+  [KycApplicantKind.Creator]: 'Creator',
+  [KycApplicantKind.Vendor]:  'Vendor',
+}
+
+export const KycDecisionLabel: Record<number, string> = {
+  [KycDecision.Approved]:          'Approved',
+  [KycDecision.RejectedRetryable]: 'Rejected (Retryable)',
+  [KycDecision.RejectedTerminal]:  'Rejected (Terminal)',
 }
 
 // ── KYC labels ──────────────────────────────────────────────────────────────

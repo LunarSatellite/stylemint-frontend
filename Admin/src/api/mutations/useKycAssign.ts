@@ -1,12 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
+import type { KycReviewItemDto, AssignKycVm } from '@/api/schema'
 
-type KycReviewItem    = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.KycReviewItemDto']
-type AssignKycRequest = components['schemas']['StyleMint.Modules.Admin.Api.Controllers.V1.ViewModels.Kyc.AssignKycVm']
-
-type Vars = { id: string } & AssignKycRequest
+type KycReviewItem = KycReviewItemDto
+type Vars = { id: string } & AssignKycVm
 
 export function useKycAssign(options?: { onSuccess?: (data: KycReviewItem) => void; onError?: (e: unknown) => void }) {
   const qc = useQueryClient()

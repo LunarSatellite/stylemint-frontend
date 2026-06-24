@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
-import type { components } from '@/api/schema'
+import type { FeatureFlagDto } from '@/api/schema'
 
-type Flag = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.FeatureFlagDto']
+type Flag = FeatureFlagDto
 
 export function FeatureFlagsView({ flags, isLoading }: { flags: Flag[]; isLoading?: boolean }) {
   if (isLoading) return <div className="text-text-muted">Loading…</div>

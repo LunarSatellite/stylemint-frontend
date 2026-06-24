@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react'
 import { ShieldCheck, AlertTriangle } from 'lucide-react'
-import type { components } from '@/api/schema'
+import type { AdminMfaStatusDto } from '@/api/schema'
 import { formatDate } from '@/lib/formatters'
 import { Button } from '@/components/ui/button'
-
-type AdminMfaStatusDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminMfaStatusDto']
 
 interface Props {
   status:     AdminMfaStatusDto

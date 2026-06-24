@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { components } from '@/api/schema'
-
-type PostReportDto = components['schemas']['StyleMint.Modules.SocialFeed.Entity.PostReport.Dtos.PostReportDto']
+import type { PostReportDto } from '@/api/schema'
 
 export function useSocialFeedReports(take = 50) {
   return useQuery<PostReportDto[]>({

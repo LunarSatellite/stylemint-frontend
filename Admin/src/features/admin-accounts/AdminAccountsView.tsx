@@ -3,14 +3,14 @@ import { DataTable } from '@/components/DataTable'
 import { Input } from '@/components/ui/input'
 import { Link } from 'react-router-dom'
 import { AdminAccountState } from '@/lib/enums'
-import type { components } from '@/api/schema'
+import type { AdminAccountDto } from '@/api/schema'
 
 const STATE_LABEL: Record<number, { label: string; className: string }> = {
   [AdminAccountState.Active]:   { label: 'Active',   className: 'text-emerald-400' },
   [AdminAccountState.Disabled]: { label: 'Disabled', className: 'text-red-400' },
 }
 
-type Admin = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminAccountDto']
+type Admin = AdminAccountDto
 const columns: ColumnDef<Admin>[] = [
   { accessorKey: 'email', header: 'Email', cell: ({ row }) => <span className="text-text-primary">{row.original.email}</span> },
   { accessorKey: 'state', header: 'Status', cell: ({ row }) => {

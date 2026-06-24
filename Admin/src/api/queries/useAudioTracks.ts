@@ -1,16 +1,13 @@
 import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { api } from '@/api/client'
 import { qk } from '@/api/queryKeys'
-import type { paths } from '@/api/schema'
-
-type AudioTracksFilter   = NonNullable<paths['/v1/admin/audio/tracks']['get']['parameters']['query']>
-type AudioTracksResponse = paths['/v1/admin/audio/tracks']['get']['responses']['200']['content']['application/json']
+import type { AudioTracksFilter, PagedResult, MusicTrackRefDto } from '@/api/schema'
 
 export function useAudioTracks(filter: AudioTracksFilter) {
-  return useQuery<AudioTracksResponse>({
+  return useQuery<PagedResult<MusicTrackRefDto>>({
     queryKey:        qk.audio(filter),
     queryFn:         async () => {
-      const { data } = await api.get('/v1/admin/audio/tracks', { params: filter })
+      const { data } = await api.get<PagedResult<MusicTrackRefDto>>('/v1/admin/audio/tracks', { params: filter })
       return data
     },
     staleTime:       30_000,

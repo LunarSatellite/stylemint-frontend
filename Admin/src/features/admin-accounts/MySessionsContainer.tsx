@@ -1,8 +1,6 @@
 import { useMeSessions } from '@/api/queries/useMeSessions'
 import { useAuth } from '@/auth/store'
-import type { components } from '@/api/schema'
-
-type AdminSessionDto = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.AdminSessionDto']
+import type { AdminSessionDto } from '@/api/schema'
 
 function parseUserAgent(ua: string): string {
   let browser = 'Unknown Browser'

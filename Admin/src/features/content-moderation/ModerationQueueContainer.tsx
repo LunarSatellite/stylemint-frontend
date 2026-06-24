@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useModerationQueue } from '@/api/queries/useModerationQueue'
 
-type ModerationQueueFilter = NonNullable<import('@/api/schema').paths['/v1/admin/moderation/queue']['get']['parameters']['query']>
+import type { ModerationQueueFilter } from '@/api/schema'
 import { ModerationQueueView } from './ModerationQueueView'
 
 const PAGE_SIZE = 20

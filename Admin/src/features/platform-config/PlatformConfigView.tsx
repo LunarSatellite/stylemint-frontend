@@ -3,9 +3,9 @@ import { usePlatformConfigSet } from '@/api/mutations/usePlatformConfigSet'
 import { showErrorToast } from '@/api/errors'
 import { toast } from 'sonner'
 import { Pencil, X, Check } from 'lucide-react'
-import type { components } from '@/api/schema'
+import type { PlatformConfigEntryDto } from '@/api/schema'
 
-type ConfigEntry = components['schemas']['StyleMint.Modules.Admin.Entity.Dtos.PlatformConfigEntryDto']
+type ConfigEntry = PlatformConfigEntryDto
 
 function ConfigRow({ entry }: { entry: ConfigEntry }) {
   const [editing, setEditing]   = useState(false)
