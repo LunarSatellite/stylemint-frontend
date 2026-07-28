@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, CheckCircle2, XCircle, Gavel } from 'lucide-react'
 import { toast } from 'sonner'
 import { useKycApprove, useKycReject } from '@/api/mutations/useKycDecide'
 import { showErrorToast } from '@/api/errors'
@@ -39,16 +39,19 @@ export function KycDecisionForm({
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-[14px] border border-white/[0.07] bg-bg-card p-6">
-      <h2 className="m-0 text-[14px] font-bold text-text-primary">Make a Decision</h2>
+    <div className="flex flex-col gap-5 rounded-[14px] border border-white/[0.07] bg-bg-card p-6 shadow-soft">
+      <h2 className="m-0 flex items-center gap-2 text-[14px] font-bold text-text-primary">
+        <Gavel size={15} className="text-primary" />
+        Make a Decision
+      </h2>
 
       {/* Decision selector */}
       <div className="flex flex-col gap-2">
         <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-text-muted">Decision</span>
         <div className="flex flex-col gap-1.5">
           {([
-            { value: 'approve' as const, label: 'Approve', color: '#00D98A' },
-            { value: 'reject'  as const, label: 'Reject',  color: '#f87171' },
+            { value: 'approve' as const, label: 'Approve', color: '#00D98A', Icon: CheckCircle2 },
+            { value: 'reject'  as const, label: 'Reject',  color: '#f87171', Icon: XCircle },
           ]).map(opt => {
             const active = selected === opt.value
             return (
@@ -62,15 +65,7 @@ export function KycDecisionForm({
                   background: active ? `${opt.color}12` : 'rgba(255,255,255,0.02)',
                 }}
               >
-                <div
-                  className="flex h-[14px] w-[14px] shrink-0 items-center justify-center rounded-full"
-                  style={{
-                    border:     active ? 'none' : '1.5px solid rgba(255,255,255,0.2)',
-                    background: active ? opt.color : 'transparent',
-                  }}
-                >
-                  {active && <div className="h-[5px] w-[5px] rounded-full bg-bg-primary" />}
-                </div>
+                <opt.Icon size={16} style={{ color: active ? opt.color : '#4A7A6A' }} />
                 <span
                   className="text-[13px]"
                   style={{ fontWeight: active ? 600 : 400, color: active ? opt.color : '#B8E6D5' }}
@@ -81,6 +76,9 @@ export function KycDecisionForm({
             )
           })}
         </div>
+        {!selected && (
+          <span className="text-[11px] text-[#4A7A6A]">Select a decision to continue.</span>
+        )}
       </div>
 
       {/* Reason — only for reject */}

@@ -208,6 +208,9 @@ export default function LoginPage() {
                   <p className="text-[12px] text-text-muted">
                     Paste <code className="rounded bg-white/[0.06] px-1 py-0.5 font-mono text-[11px] text-text-secondary">ADMIN_DEV_SSO_SECRET</code> from the VPS <code className="rounded bg-white/[0.06] px-1 py-0.5 font-mono text-[11px] text-text-secondary">~/apps/uat/.env.uat</code>
                   </p>
+                  <p className="text-[12px] text-text-muted">
+                    You will be logged in as the bootstrap SuperAdmin: <code className="rounded bg-white/[0.06] px-1 py-0.5 font-mono text-[11px] text-text-secondary">sumendra.pandey@voyageritnepal.com</code>
+                  </p>
 
                   {/* Dev error */}
                   {devError && (

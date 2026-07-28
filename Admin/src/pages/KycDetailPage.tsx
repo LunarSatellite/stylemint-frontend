@@ -7,7 +7,7 @@ export default function KycDetailPage() {
   if (!id) return null
   return (
     <ErrorBoundary fallback={<PageErrorFallback />}>
-      <div className="p-6"><KycDetailContainer id={id} /></div>
+      <div className="kyc-detail-scroll flex-1 overflow-y-auto p-6"><KycDetailContainer id={id} /></div>
     </ErrorBoundary>
   )
 }

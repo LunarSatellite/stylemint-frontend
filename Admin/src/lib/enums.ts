@@ -27,12 +27,12 @@ export const AudienceSizeBand = {
 
 // BusinessType — legal form of the vendor entity
 export const BusinessType = {
-  SoleProprietor:  1,
-  LLC:             2,
-  Corporation:     3,
-  Partnership:     4,
-  NonProfit:       5,
-  Other:           6,
+  Individual:         1,
+  SoleProprietorship: 2,
+  LimitedLiability:   3,
+  Corporation:        4,
+  Partnership:        5,
+  NonProfit:          6,
 } as const
 
 // SocialIdentityProvider — platforms a creator can declare
@@ -41,6 +41,24 @@ export const SocialIdentityProvider = {
   TikTok:    2,
   YouTube:   3,
   Facebook:  4,
+} as const
+
+// CatalogSizeEstimate — self-reported catalog size band on a VendorApplication
+export const CatalogSizeEstimate = {
+  Under10:     1,
+  From10To50:  2,
+  From50To200: 3,
+  From200To1000: 4,
+  Over1000:    5,
+} as const
+
+// VendorApplicationDocumentKind — supporting document types on a VendorApplication
+export const VendorApplicationDocumentKind = {
+  BusinessRegistration: 1,
+  TaxCertificate:       2,
+  IdentityDocument:     3,
+  AddressProof:         4,
+  Other:                99,
 } as const
 
 export const AdminAccountState = {

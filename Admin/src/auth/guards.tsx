@@ -1,6 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from './store'
-import { permissions } from '@/lib/permissions'
 
 export function RequireAuth({ children }: { children?: React.ReactNode }) {
   const token = useAuth((s) => s.token)

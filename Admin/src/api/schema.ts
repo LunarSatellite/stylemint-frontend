@@ -403,6 +403,7 @@ export interface CreatorApplicationSocialDto {
 export interface CreatorApplicationDto {
   id:                     string
   accountId:              string
+  displayName:             string | null
   state:                  ApplicationState
   bio:                    string | null
   audienceBand:           AudienceSizeBand
@@ -447,8 +448,9 @@ export interface VendorApplicationDto {
   legalBusinessName:    string | null
   countryCode:          string | null
   businessType:         BusinessType
-  taxId:                string | null
-  commissionMinPercent: number
+  taxId:                            string | null
+  businessRegistrationNumber:        string | null
+  commissionMinPercent:              number
   commissionMaxPercent: number
   submittedAtUtc:       string | null
   expectedDecisionByUtc: string | null

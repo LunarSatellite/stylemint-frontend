@@ -1,6 +1,7 @@
 import { format, formatDistanceToNow } from 'date-fns'
 import {
   ApplicationState, AudienceSizeBand, BusinessType, SocialIdentityProvider,
+  CatalogSizeEstimate, VendorApplicationDocumentKind,
   AdminRole, PayoutState, MusicTrackRefState,
   ModerationItemState, ModerationTargetKind, ModerationSource, ModerationAction,
   PostReportState, PostReportReason,
@@ -66,12 +67,12 @@ export const AudienceSizeBandLabel: Record<number, string> = {
 }
 
 export const BusinessTypeLabel: Record<number, string> = {
-  [BusinessType.SoleProprietor]: 'Sole Proprietor',
-  [BusinessType.LLC]:            'LLC',
-  [BusinessType.Corporation]:    'Corporation',
-  [BusinessType.Partnership]:    'Partnership',
-  [BusinessType.NonProfit]:      'Non-Profit',
-  [BusinessType.Other]:          'Other',
+  [BusinessType.Individual]:         'Individual',
+  [BusinessType.SoleProprietorship]: 'Sole Proprietorship',
+  [BusinessType.LimitedLiability]:   'LLC',
+  [BusinessType.Corporation]:        'Corporation',
+  [BusinessType.Partnership]:        'Partnership',
+  [BusinessType.NonProfit]:          'Non-Profit',
 }
 
 export const SocialIdentityProviderLabel: Record<number, string> = {
@@ -79,6 +80,22 @@ export const SocialIdentityProviderLabel: Record<number, string> = {
   [SocialIdentityProvider.TikTok]:    'TikTok',
   [SocialIdentityProvider.YouTube]:   'YouTube',
   [SocialIdentityProvider.Facebook]:  'Facebook',
+}
+
+export const CatalogSizeEstimateLabel: Record<number, string> = {
+  [CatalogSizeEstimate.Under10]:      '< 10 items',
+  [CatalogSizeEstimate.From10To50]:   '10 – 50 items',
+  [CatalogSizeEstimate.From50To200]:  '50 – 200 items',
+  [CatalogSizeEstimate.From200To1000]: '200 – 1,000 items',
+  [CatalogSizeEstimate.Over1000]:     '1,000+ items',
+}
+
+export const VendorApplicationDocumentKindLabel: Record<number, string> = {
+  [VendorApplicationDocumentKind.BusinessRegistration]: 'Business Registration',
+  [VendorApplicationDocumentKind.TaxCertificate]:       'Tax Certificate',
+  [VendorApplicationDocumentKind.IdentityDocument]:     'Identity Document',
+  [VendorApplicationDocumentKind.AddressProof]:         'Address Proof',
+  [VendorApplicationDocumentKind.Other]:                'Other',
 }
 
 // ── Audio labels ─────────────────────────────────────────────────────────────

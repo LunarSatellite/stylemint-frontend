@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/api/client'
-import { qk } from '@/api/queryKeys'
 import type { PostReportDto } from '@/api/schema'
 
 interface Vars {
