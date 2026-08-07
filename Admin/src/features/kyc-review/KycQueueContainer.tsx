@@ -30,8 +30,13 @@ export function KycQueueContainer() {
   const vendorItems:  VendorApplicationDto[] = vendorQ.data?.items ?? []
 
   function setStateFilter(state: number | undefined) {
-    if (isCreator) setCreatorFilter(f => ({ ...f, state: state as CreatorFilter['state'], cursor: undefined }))
-    else           setVendorFilter(f  => ({ ...f, state: state as VendorFilter['state'],  cursor: undefined }))
+    if (isCreator) {
+      const { state: _s, ...rest } = creatorFilter
+      setCreatorFilter({ ...rest, ...(state !== undefined ? { state: state as CreatorFilter['state'] } : {}), cursor: undefined })
+    } else {
+      const { state: _s, ...rest } = vendorFilter
+      setVendorFilter({ ...rest, ...(state !== undefined ? { state: state as VendorFilter['state'] } : {}), cursor: undefined })
+    }
   }
 
   function goNext() {

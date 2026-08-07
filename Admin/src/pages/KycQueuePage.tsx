@@ -8,7 +8,7 @@ export default function KycQueuePage() {
         <div className="flex items-center gap-3">
           <div>
             <h1
-              className="m-0 text-[20px] font-bold leading-[1.2] capitalize"
+              className="m-0 inline-block text-[20px] font-bold leading-[1.2]"
               style={{
                 background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%)',
                 WebkitBackgroundClip: 'text',

@@ -11,7 +11,15 @@ export default function PoliciesPage() {
           <FileText className="h-4 w-4 text-text-muted" />
         </div>
         <div>
-          <h1 className="text-[18px] font-bold text-text-primary leading-tight">Policy Alerts</h1>
+          <h1
+            className="m-0 inline-block text-[20px] font-bold leading-[1.2]"
+            style={{
+              background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >Policy Alerts</h1>
           <p className="text-[13px] text-text-muted">Platform-level policy change alerts from external channels</p>
         </div>
       </div>

@@ -62235,6 +62235,9 @@
             "type": "string",
             "format": "uuid"
           },
+          "displayName": {
+            "type": "string"
+          },
           "state": {
             "$ref": "#/components/schemas/StyleMint.Modules.Onboarding.Enums.ApplicationState"
           },

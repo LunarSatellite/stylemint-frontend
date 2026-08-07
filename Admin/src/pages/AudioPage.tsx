@@ -11,7 +11,15 @@ export default function AudioPage() {
           <Music2 className="h-4 w-4 text-text-muted" />
         </div>
         <div>
-          <h1 className="text-[18px] font-bold text-text-primary leading-tight">Audio Tracks</h1>
+          <h1
+            className="m-0 inline-block text-[20px] font-bold leading-[1.2]"
+            style={{
+              background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}
+          >Audio Tracks</h1>
           <p className="text-[13px] text-text-muted">Review and moderate music tracks</p>
         </div>
       </div>

@@ -24,7 +24,15 @@ export function PrivacyDashboardView({ data, isLoading }: Props) {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="m-0 mb-1 text-[20px] font-bold text-text-primary">Privacy Dashboard</h1>
+        <h1
+          className="m-0 mb-1 inline-block text-[20px] font-bold leading-[1.2]"
+          style={{
+            background: 'linear-gradient(135deg, var(--text-primary) 0%, var(--primary) 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+          }}
+        >Privacy Dashboard</h1>
         <p className="m-0 text-[13px] text-text-muted">GDPR / data-rights overview</p>
       </div>
 

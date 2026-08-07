@@ -39,7 +39,14 @@ export function KycDecisionForm({
   }
 
   return (
-    <div className="flex flex-col gap-5 rounded-[14px] border border-white/[0.07] bg-bg-card p-6 shadow-soft">
+    <div
+      className="flex flex-col gap-5 rounded-xl border p-5 shadow-md"
+      style={{
+        background: 'rgba(0,217,138,0.04)',
+        borderColor: 'var(--surface-border)',
+        width: '330px',
+      }}
+    >
       <h2 className="m-0 flex items-center gap-2 text-[14px] font-bold text-text-primary">
         <Gavel size={15} className="text-primary" />
         Make a Decision

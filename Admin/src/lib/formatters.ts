@@ -10,7 +10,7 @@ import {
 } from './enums'
 
 export function formatDate(iso: string): string {
-  return format(new Date(iso), 'dd MMM yyyy, HH:mm')
+  return format(new Date(iso), 'dd MMM yyyy, hh:mm a')
 }
 
 export function formatDateShort(iso: string): string {
@@ -56,6 +56,24 @@ export const ApplicationStateLabel: Record<number, string> = {
   [ApplicationState.UnderReview]: 'Under Review',
   [ApplicationState.Approved]:    'Approved',
   [ApplicationState.Rejected]:    'Rejected',
+}
+
+export const CreatorContentCategoryLabel: Record<string, string> = {
+  '22222222-2222-2222-2222-000000000001': 'Fashion',
+  '22222222-2222-2222-2222-000000000002': 'Beauty',
+  '22222222-2222-2222-2222-000000000003': 'Fitness',
+  '22222222-2222-2222-2222-000000000004': 'Food',
+  '22222222-2222-2222-2222-000000000005': 'Travel',
+  '22222222-2222-2222-2222-000000000006': 'Technology',
+  '22222222-2222-2222-2222-000000000007': 'Gaming',
+  '22222222-2222-2222-2222-000000000008': 'Home & Living',
+  '22222222-2222-2222-2222-000000000009': 'Art',
+  '22222222-2222-2222-2222-000000000010': 'Music',
+  '22222222-2222-2222-2222-000000000011': 'Books',
+  '22222222-2222-2222-2222-000000000012': 'Pets',
+  '22222222-2222-2222-2222-000000000013': 'Parenting',
+  '22222222-2222-2222-2222-000000000014': 'Outdoor',
+  '22222222-2222-2222-2222-000000000015': 'Other',
 }
 
 export const AudienceSizeBandLabel: Record<number, string> = {

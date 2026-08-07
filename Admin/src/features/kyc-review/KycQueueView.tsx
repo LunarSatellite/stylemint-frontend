@@ -1,10 +1,12 @@
 
 
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronLeft, ChevronRight, Filter, Clock, Eye, CheckCircle2, XCircle, FileClock, Inbox } from 'lucide-react'
+import { useDebounce } from '@/hooks/use-debounce'
+import { ChevronLeft, ChevronRight, Filter, Clock, Eye, CheckCircle2, XCircle, FileClock, Inbox, ArrowUpDown, Search } from 'lucide-react'
 import type { CreatorApplicationDto, VendorApplicationDto } from '@/api/schema'
 import { ApplicationState } from '@/lib/enums'
-import { ApplicationStateLabel, AudienceSizeBandLabel, formatDateShort, BusinessTypeLabel } from '@/lib/formatters'
+import { ApplicationStateLabel, AudienceSizeBandLabel, formatDate, BusinessTypeLabel } from '@/lib/formatters'
 
 
 // ── State badge ───────────────────────────────────────────────────────────────
@@ -40,12 +42,81 @@ function StateBadge({ state }: { state: number }) {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+const COUNTRY_FLAG_URLS: Record<string, string> = {
+  NP: 'https://flagcdn.com/w40/np.png',
+  IN: 'https://flagcdn.com/w40/in.png',
+  US: 'https://flagcdn.com/w40/us.png',
+  GB: 'https://flagcdn.com/w40/gb.png',
+  CA: 'https://flagcdn.com/w40/ca.png',
+  AU: 'https://flagcdn.com/w40/au.png',
+  DE: 'https://flagcdn.com/w40/de.png',
+  FR: 'https://flagcdn.com/w40/fr.png',
+  CN: 'https://flagcdn.com/w40/cn.png',
+  JP: 'https://flagcdn.com/w40/jp.png',
+  KR: 'https://flagcdn.com/w40/kr.png',
+  SG: 'https://flagcdn.com/w40/sg.png',
+  AE: 'https://flagcdn.com/w40/ae.png',
+  BD: 'https://flagcdn.com/w40/bd.png',
+  PK: 'https://flagcdn.com/w40/pk.png',
+  LK: 'https://flagcdn.com/w40/lk.png',
+  TH: 'https://flagcdn.com/w40/th.png',
+  VN: 'https://flagcdn.com/w40/vn.png',
+  ID: 'https://flagcdn.com/w40/id.png',
+  MY: 'https://flagcdn.com/w40/my.png',
+  PH: 'https://flagcdn.com/w40/ph.png',
+}
+
+function getCountryFlagUrl(countryCode: string | null): string {
+  if (!countryCode) return ''
+  return COUNTRY_FLAG_URLS[countryCode.toUpperCase()] ?? ''
+}
+
 function vendorSummary(item: VendorApplicationDto): string {
   const parts: string[] = []
   if (item.brandName)   parts.push(item.brandName)
   if (item.businessType) parts.push(BusinessTypeLabel[item.businessType] ?? '')
   if (item.countryCode)  parts.push(item.countryCode.toUpperCase())
   return parts.join(' · ') || '—'
+}
+
+// ── Sort options ────────────────────────────────────────────────────────────────
+type VendorSortOption  = 'brand_asc' | 'brand_desc' | 'date_asc' | 'date_desc'
+type CreatorSortOption = 'name_asc' | 'name_desc' | 'date_asc' | 'date_desc'
+
+const VENDOR_SORT_OPTIONS: { value: VendorSortOption; label: string }[] = [
+  { value: 'brand_asc',  label: 'Brand Name A → Z' },
+  { value: 'brand_desc', label: 'Brand Name Z → A' },
+  { value: 'date_asc',   label: 'Oldest Date' },
+  { value: 'date_desc',  label: 'Newest Date' },
+]
+
+const CREATOR_SORT_OPTIONS: { value: CreatorSortOption; label: string }[] = [
+  { value: 'name_asc',   label: 'Creator Name A → Z' },
+  { value: 'name_desc',  label: 'Creator Name Z → A' },
+  { value: 'date_asc',   label: 'Oldest Date' },
+  { value: 'date_desc',  label: 'Newest Date' },
+]
+
+function applyVendorSort(items: VendorApplicationDto[], sort: VendorSortOption): VendorApplicationDto[] {
+  return [...items].sort((a, b) => {
+    if (sort === 'brand_asc')  return (a.brandName ?? '').localeCompare(b.brandName ?? '')
+    if (sort === 'brand_desc') return (b.brandName ?? '').localeCompare(a.brandName ?? '')
+    const aDate = a.submittedAtUtc ?? a.createdUtc ?? ''
+    const bDate = b.submittedAtUtc ?? b.createdUtc ?? ''
+    if (sort === 'date_asc') return aDate.localeCompare(bDate)
+    return bDate.localeCompare(aDate)
+  })
+}
+
+function applyCreatorSort(items: CreatorApplicationDto[], sort: CreatorSortOption): CreatorApplicationDto[] {
+  return [...items].sort((a, b) => {
+    if (sort === 'name_asc')  return (a.displayName ?? '').localeCompare(b.displayName ?? '')
+    if (sort === 'name_desc') return (b.displayName ?? '').localeCompare(a.displayName ?? '')
+    const aDate = a.submittedAtUtc ?? a.createdUtc ?? ''
+    const bDate = b.submittedAtUtc ?? b.createdUtc ?? ''
+    if (sort === 'date_asc') return aDate.localeCompare(bDate)
+    return bDate.localeCompare(aDate)
+  })
 }
 
 // ── Props ─────────────────────────────────────────────────────────────────────
@@ -70,12 +141,31 @@ export function KycQueueView({
   hasNext, hasPrevious, onNext, onPrev, onStateFilter,
 }: KycQueueViewProps) {
   const isVendor = kind === 'vendor'
+  const [vendorSort,  setVendorSort]  = useState<VendorSortOption>('date_desc')
+  const [creatorSort, setCreatorSort] = useState<CreatorSortOption>('date_desc')
+  const [searchQuery, setSearchQuery]   = useState('')
+  const debouncedSearch = useDebounce(searchQuery, 300)
 
-  // Columns: Brand | State | Submitted | Review   (vendor tab)
-  //          Display Name | Audience | State | Submitted | Review (creator tab)
+  const sortedItems: CreatorApplicationDto[] | VendorApplicationDto[] = isVendor
+    ? applyVendorSort(items as VendorApplicationDto[], vendorSort)
+    : applyCreatorSort(items as CreatorApplicationDto[], creatorSort)
+
+  const filteredItems = sortedItems.filter(item => {
+    if (!debouncedSearch) return true
+    const q = debouncedSearch.toLowerCase()
+    if (isVendor) {
+      const v = item as VendorApplicationDto
+      return (v.brandName ?? '').toLowerCase().includes(q)
+    }
+    const c = item as CreatorApplicationDto
+    return (c.displayName ?? '').toLowerCase().includes(q)
+  })
+
+  // Columns: Brand Name | Business Type | Country | State | Submitted | Review (vendor tab)
+  //          Creator Name | Audience | State | Submitted | Review (creator tab)
   const tableHeaders = isVendor
-    ? ['Brand', 'State', 'Submitted', '']
-    : ['Display Name', 'Audience', 'State', 'Submitted', '']
+    ? ['Brand Name', 'Business Type', 'Country', 'State', 'Submitted', '']
+    : ['Creator Name', 'Audience', 'State', 'Submitted', '']
 
   return (
     <div className="flex flex-col gap-4">
@@ -96,6 +186,55 @@ export function KycQueueView({
             <option value={ApplicationState.Approved}>Approved</option>
             <option value={ApplicationState.Rejected}>Rejected</option>
           </select>
+
+          {isVendor && (
+            <>
+              <div className="h-6 w-px bg-white/[0.08]" />
+              <div className="flex items-center gap-1.5">
+                <ArrowUpDown size={13} className="text-[#4A7A6A]" />
+                <select
+                  value={vendorSort}
+                  onChange={e => setVendorSort(e.target.value as VendorSortOption)}
+                  className={selectCls}
+                >
+                  {VENDOR_SORT_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          {!isVendor && (
+            <>
+              <div className="h-6 w-px bg-white/[0.08]" />
+              <div className="flex items-center gap-1.5">
+                <ArrowUpDown size={13} className="text-[#4A7A6A]" />
+                <select
+                  value={creatorSort}
+                  onChange={e => setCreatorSort(e.target.value as CreatorSortOption)}
+                  className={selectCls}
+                >
+                  {CREATOR_SORT_OPTIONS.map(o => (
+                    <option key={o.value} value={o.value}>{o.label}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
+
+          <div className="h-6 w-px bg-white/[0.08]" />
+          <div className="relative">
+            <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4A7A6A]" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by name…"
+              className="rounded-lg border border-[var(--border-subtle)] bg-bg-elevated py-[7px] pl-9 pr-3 text-[13px] text-text-secondary outline-none transition-colors duration-[150ms] placeholder:text-[var(--text-muted)] focus:border-[var(--border-primary)]"
+              style={{ width: 200 }}
+            />
+          </div>
         </div>
         <span
           className="rounded-full px-[10px] py-[3px] text-[12px] font-medium text-[#4A7A6A]"
@@ -149,7 +288,7 @@ export function KycQueueView({
                 </td>
               </tr>
             ) : (
-              items.map((item, idx) => {
+              filteredItems.map((item, idx) => {
                 const itemKind: 'creator' | 'vendor' = kind
 
                 return (
@@ -159,11 +298,30 @@ export function KycQueueView({
                       idx < items.length - 1 ? 'border-b border-white/[0.04]' : ''
                     }`}
                   >
-                    {/* Vendor: Brand name / Creator: Display Name */}
+                    {/* Vendor: Brand Name | Business Type | Country / Creator: Creator Name */}
                     {isVendor ? (
-                      <td className="px-4 py-[14px] text-[13px] text-text-secondary">
-                        {vendorSummary(item as VendorApplicationDto)}
-                      </td>
+                      <>
+                        <td className="px-4 py-[14px] text-[13px] text-text-secondary">
+                          {(item as VendorApplicationDto).brandName ?? '—'}
+                        </td>
+                        <td className="px-4 py-[14px] text-[13px] text-text-secondary">
+                          {(item as VendorApplicationDto).businessType != null
+                            ? BusinessTypeLabel[(item as VendorApplicationDto).businessType!] ?? '—'
+                            : '—'}
+                        </td>
+                        <td className="px-4 py-[14px]">
+                          {(item as VendorApplicationDto).countryCode ? (
+                            <span className="flex items-center gap-1.5 text-[13px] text-text-secondary uppercase">
+                              <img
+                                src={getCountryFlagUrl((item as VendorApplicationDto).countryCode!)}
+                                alt={(item as VendorApplicationDto).countryCode ?? ''}
+                                style={{ width: 24, height: 18, objectFit: 'contain', borderRadius: 2 }}
+                              />
+                              <span>{(item as VendorApplicationDto).countryCode}</span>
+                            </span>
+                          ) : '—'}
+                        </td>
+                      </>
                     ) : (
                       <td className="px-4 py-[14px] text-[13px] text-text-secondary">
                         {(item as CreatorApplicationDto).displayName || '—'}
@@ -189,7 +347,7 @@ export function KycQueueView({
 
                     {/* Submitted Date */}
                     <td className="whitespace-nowrap px-4 py-[14px] text-[13px] text-text-muted">
-                      {item.submittedAtUtc ? formatDateShort(item.submittedAtUtc) : '—'}
+                      {item.submittedAtUtc ? formatDate(item.submittedAtUtc) : '—'}
                     </td>
 
                     {/* Review action */}
