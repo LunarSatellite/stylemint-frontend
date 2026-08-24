@@ -71,14 +71,6 @@ function getCountryFlagUrl(countryCode: string | null): string {
   return COUNTRY_FLAG_URLS[countryCode.toUpperCase()] ?? ''
 }
 
-function vendorSummary(item: VendorApplicationDto): string {
-  const parts: string[] = []
-  if (item.brandName)   parts.push(item.brandName)
-  if (item.businessType) parts.push(BusinessTypeLabel[item.businessType] ?? '')
-  if (item.countryCode)  parts.push(item.countryCode.toUpperCase())
-  return parts.join(' · ') || '—'
-}
-
 // ── Sort options ────────────────────────────────────────────────────────────────
 type VendorSortOption  = 'brand_asc' | 'brand_desc' | 'date_asc' | 'date_desc'
 type CreatorSortOption = 'name_asc' | 'name_desc' | 'date_asc' | 'date_desc'
