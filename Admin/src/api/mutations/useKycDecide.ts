@@ -5,24 +5,31 @@ import { qk, type KycQueueFilter } from '../queryKeys';
 import { correlationIdOf, errorCodeOf, getErrorMessage } from '../errors';
 import { useMutationWithStepUp } from '@/auth/useMutationWithStepUp';
 import type { KycReviewItem, PagedList } from '../queries/useKycQueue';
-import type { KycState } from '@/lib/enums';
-
-export interface KycDecideVars {
-  kycItemId: string;
-  decision: number;
-  reasonCode?: string;
-  note?: string;
-  /** Sent back so the server can reject a decision made on a stale view. */
-  rowVersion: string;
-}
+import type { KycDecision, KycState } from '@/lib/enums';
 
 /**
  * Approve or reject a KYC application.
  *
- * Optimistic, because a reviewer works the queue at speed and a row
- * that lingers after a decision gets decided twice. The snapshot is
- * restored on any failure, including a cancelled step-up challenge.
+ * The body is `DecideKycVm`, read from the spec. Worth saying plainly,
+ * because the first version of this file was written from the written
+ * brief instead and got two things wrong: it sent `reasonCode` and
+ * `note`, where the contract wants `decisionReasonCode` and
+ * `decisionNote` — so the reviewer's reason would have been dropped
+ * without any error — and it sent a `rowVersion` the endpoint does not
+ * accept, which made the code look as though it carried concurrency
+ * protection when nothing on the wire did.
+ *
+ * There is no optimistic-concurrency token on this endpoint. Two
+ * reviewers deciding the same case is resolved server side or not at
+ * all; this client must not imply otherwise.
  */
+export interface KycDecideVars {
+  kycItemId: string;
+  decision: KycDecision;
+  decisionReasonCode?: string;
+  decisionNote?: string;
+}
+
 export function useKycDecide(filter: KycQueueFilter, nextState: KycState) {
   const queryClient = useQueryClient();
 
@@ -30,12 +37,13 @@ export function useKycDecide(filter: KycQueueFilter, nextState: KycState) {
     async (vars) => {
       await api.post(`/v1/admin/kyc/${vars.kycItemId}/decide`, {
         decision: vars.decision,
-        reasonCode: vars.reasonCode,
-        note: vars.note,
-        rowVersion: vars.rowVersion,
+        decisionReasonCode: vars.decisionReasonCode,
+        decisionNote: vars.decisionNote,
       });
     },
     {
+      // Optimistic because a reviewer works the queue at speed, and a
+      // row that lingers after a decision gets decided twice.
       onMutate: async (vars) => {
         await queryClient.cancelQueries({ queryKey: qk.kyc.queue(filter) });
         const previous = queryClient.getQueryData<PagedList<KycReviewItem>>(qk.kyc.queue(filter));
@@ -58,9 +66,6 @@ export function useKycDecide(filter: KycQueueFilter, nextState: KycState) {
         if (snapshot) queryClient.setQueryData(qk.kyc.queue(filter), snapshot);
 
         const code = errorCodeOf(err);
-        // A conflict is not a failure to report as one: somebody else
-        // decided this case first, and the right response is to show
-        // the reviewer what is actually there now.
         if (code === 'state.concurrency_conflict') {
           void queryClient.invalidateQueries({ queryKey: qk.kyc.all() });
           toast.message(getErrorMessage(code));
