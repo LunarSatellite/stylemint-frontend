@@ -2,6 +2,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/AppShell';
 import { RequireAuth } from '@/auth/guards';
 import { KycQueuePage } from '@/features/kyc/KycQueuePage';
+import { ModerationQueuePage } from '@/features/moderation/ModerationQueuePage';
+import { AdminAccountsPage } from '@/features/admins/AdminAccountsPage';
+import { AuditLogPage } from '@/features/audit/AuditLogPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 
 /** A section that exists in the nav but has no screen yet. */
@@ -28,11 +31,13 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/kyc" replace /> },
       { path: 'kyc', element: <KycQueuePage /> },
-      { path: 'moderation', element: <NotBuiltYet name="Moderation" /> },
+      { path: 'moderation', element: <ModerationQueuePage /> },
+      // Payouts has four actions in the API and no list endpoint to
+      // hang them on, so there is nothing honest to render yet.
       { path: 'payouts', element: <NotBuiltYet name="Payouts" /> },
-      { path: 'admins', element: <NotBuiltYet name="Admin accounts" /> },
+      { path: 'admins', element: <AdminAccountsPage /> },
       { path: 'flags', element: <NotBuiltYet name="Feature flags" /> },
-      { path: 'audit', element: <NotBuiltYet name="Audit log" /> },
+      { path: 'audit', element: <AuditLogPage /> },
       { path: 'settings/mfa', element: <NotBuiltYet name="My security" /> },
       { path: 'forbidden', element: <NotBuiltYet name="Not permitted" /> },
     ],

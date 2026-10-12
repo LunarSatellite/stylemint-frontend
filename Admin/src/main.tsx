@@ -5,11 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
 import { assertEnv } from './env';
 import { initBroadcastLogout } from './auth/broadcastLogout';
+import { seedDevToken } from './auth/devToken';
 import { router } from './routes';
 import './index.css';
 
 assertEnv();
 initBroadcastLogout();
+seedDevToken();
 
 const queryClient = new QueryClient({
   defaultOptions: {

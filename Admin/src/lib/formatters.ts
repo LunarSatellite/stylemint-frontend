@@ -1,4 +1,13 @@
-import { AdminRole, KycApplicantKind, KycState } from './enums';
+import {
+  AdminRole,
+  KycApplicantKind,
+  KycDecision,
+  KycState,
+  ModerationAction,
+  ModerationItemState,
+  ModerationSource,
+  ModerationTargetKind,
+} from './enums';
 
 export const KycStateLabel: Record<number, string> = {
   [KycState.Pending]: 'Pending',
@@ -31,3 +40,38 @@ export function labelOf(map: Record<number, string>, value: number | undefined |
   if (value === undefined || value === null) return '—';
   return map[value] ?? `Unknown (${value})`;
 }
+
+export const ModerationStateLabel: Record<number, string> = {
+  [ModerationItemState.Open]: 'Open',
+  [ModerationItemState.InReview]: 'In review',
+  [ModerationItemState.Decided]: 'Decided',
+};
+
+export const ModerationTargetLabel: Record<number, string> = {
+  [ModerationTargetKind.Reel]: 'Reel',
+  [ModerationTargetKind.Review]: 'Review',
+  [ModerationTargetKind.ReelComment]: 'Reel comment',
+  [ModerationTargetKind.Profile]: 'Profile',
+  [ModerationTargetKind.RecommendationReply]: 'Recommendation reply',
+};
+
+export const ModerationSourceLabel: Record<number, string> = {
+  [ModerationSource.UserReport]: 'User report',
+  [ModerationSource.AutomatedScanner]: 'Automated scanner',
+  [ModerationSource.AdminSpot]: 'Spotted by an admin',
+};
+
+export const ModerationActionLabel: Record<number, string> = {
+  [ModerationAction.NoAction]: 'No action',
+  [ModerationAction.HideContent]: 'Content hidden',
+  [ModerationAction.RemoveContent]: 'Content removed',
+  [ModerationAction.WarnAuthor]: 'Author warned',
+  [ModerationAction.SuspendAuthor]: 'Author suspended',
+  [ModerationAction.BanAuthor]: 'Author banned',
+};
+
+export const KycDecisionLabel: Record<number, string> = {
+  [KycDecision.Approved]: 'Approved',
+  [KycDecision.RejectedRetryable]: 'Rejected — may reapply',
+  [KycDecision.RejectedTerminal]: 'Rejected — final',
+};
