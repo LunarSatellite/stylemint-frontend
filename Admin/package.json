@@ -15,7 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "e2e": "playwright test",
-    "codegen": "openapi-typescript ../../stylemint-backend/swagger-spec.json -o src/api/schema.ts"
+    "codegen": "openapi-typescript ../../stylemint-backend/swagger-spec.json -o src/api/schema.ts && node scripts/extract-request-bodies.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "3.9.1",

@@ -1,0 +1,1612 @@
+{
+  "POST /v1/accounts": [
+    "displayName",
+    "locale",
+    "timezone"
+  ],
+  "PATCH /v1/accounts/{id}": [
+    "displayName",
+    "locale",
+    "timezone",
+    "dateOfBirth",
+    "gender",
+    "avatarUrl",
+    "countryCode",
+    "rowVersion"
+  ],
+  "POST /v1/accounts/{id}/suspend": [
+    "reason"
+  ],
+  "POST /v1/accounts/{accountId}/deletion-requests": [
+    "reason",
+    "gracePeriodDays"
+  ],
+  "POST /v1/accounts/{accountId}/deletion-requests/{requestId}/cancel": [
+    "cancellationReason"
+  ],
+  "POST /v1/accounts/{accountId}/emails": [
+    "email",
+    "isPrimary"
+  ],
+  "POST /v1/accounts/{accountId}/external-ids": [
+    "provider",
+    "providerSubject",
+    "verifiedEmailAtLink"
+  ],
+  "POST /v1/accounts/{accountId}/handles": [
+    "handle",
+    "contextRole"
+  ],
+  "POST /v1/accounts/{accountId}/interests": [
+    "categoryId",
+    "isExplicit",
+    "weight"
+  ],
+  "POST /v1/accounts/{accountId}/lockouts": [
+    "type",
+    "reason",
+    "unlockAtUtc"
+  ],
+  "POST /v1/accounts/{accountId}/lockouts/{lockoutId}/unlock": [
+    "unlockReason"
+  ],
+  "POST /v1/auth/pause": [
+    "days"
+  ],
+  "POST /v1/accounts/{accountId}/phones": [
+    "phoneE164",
+    "countryDialCode",
+    "isPrimary"
+  ],
+  "POST /v1/accounts/{accountId}/professions": [
+    "professionKey",
+    "specialization",
+    "setAsPrimary"
+  ],
+  "POST /v1/accounts/{accountId}/report": [
+    "reasonCode"
+  ],
+  "POST /v1/accounts/{accountId}/addresses": [
+    "label",
+    "line1",
+    "line2",
+    "city",
+    "stateProvince",
+    "postalCode",
+    "countryCode",
+    "isDefault"
+  ],
+  "PUT /v1/accounts/{accountId}/addresses/{addressId}": [
+    "label",
+    "line1",
+    "line2",
+    "city",
+    "stateProvince",
+    "postalCode",
+    "countryCode",
+    "rowVersion"
+  ],
+  "POST /v1/admin/audio/tracks": [
+    "title",
+    "artist",
+    "durationSecondsApprox",
+    "tempoBpm",
+    "genre",
+    "mood",
+    "language",
+    "isInstrumental",
+    "initialLinks"
+  ],
+  "POST /v1/admin/audio/tracks/{trackId}/links": [
+    "provider",
+    "url",
+    "providerTrackId"
+  ],
+  "POST /v1/admin/audio/tracks/{trackId}/hide": [
+    "reason"
+  ],
+  "POST /v1/admin/audio/trends/{trendId}/promote": [
+    "musicTrackRefId"
+  ],
+  "POST /v1/admin/couriers/{courierProfileId}/kyc/complete": [
+    "approved",
+    "governmentIdLast4",
+    "selfieMatchRef",
+    "rejectionReason"
+  ],
+  "POST /v1/admin/couriers/{courierProfileId}/suspend": [
+    "reason"
+  ],
+  "POST /v1/admin/couriers/{courierProfileId}/escrow/draw": [
+    "amount",
+    "currency",
+    "packageId",
+    "note"
+  ],
+  "POST /v1/admin/matchmaking/featured/{id}/approve": [
+    "note"
+  ],
+  "POST /v1/admin/matchmaking/featured/{id}/reject": [
+    "note"
+  ],
+  "POST /v1/admin/brand-studio/goal-templates": [
+    "goal",
+    "promptText",
+    "notes"
+  ],
+  "POST /v1/admin/kyc/creator/{applicationId}/reject": [
+    "reason"
+  ],
+  "POST /v1/admin/kyc/vendor/{applicationId}/reject": [
+    "reason"
+  ],
+  "POST /v1/admin/auth/mfa/totp/enroll": [
+    "label"
+  ],
+  "POST /v1/admin/auth/mfa/totp/confirm": [
+    "code"
+  ],
+  "POST /v1/admin/auth/mfa/totp/verify": [
+    "code"
+  ],
+  "POST /v1/posts/{postId}/report": [
+    "reason",
+    "context"
+  ],
+  "POST /v1/admin/social-feed/posts/{postId}/hide": [
+    "reason"
+  ],
+  "POST /v1/admin/social-feed/posts/{postId}/remove": [
+    "reason"
+  ],
+  "POST /v1/admin/social-feed/reports/{reportId}/resolve": [
+    "reason"
+  ],
+  "PATCH /v1/admin/brand-studio/policies/{vendorProfileId}": [
+    "monthlyLlmCallQuota",
+    "commissionCeilingPercent",
+    "defaultCurrencyCode"
+  ],
+  "POST /v1/admin/catalog/popular-searches": [
+    "label",
+    "query",
+    "displayOrder",
+    "regionCode"
+  ],
+  "PUT /v1/admin/catalog/popular-searches/{id}": [
+    "label",
+    "query",
+    "displayOrder",
+    "regionCode"
+  ],
+  "POST /v1/admin/recipes/curate": [
+    "title",
+    "musicTrackRefId",
+    "context",
+    "segment",
+    "beats",
+    "captionVariants",
+    "platformAdaptations",
+    "reasoning",
+    "explanationByKey",
+    "recipeVersion"
+  ],
+  "POST /v1/admin/recipes/{id}/hide": [
+    "reason"
+  ],
+  "POST /v1/admin/reels/{reelId}/drop-party/pin": [
+    "dropPartyId"
+  ],
+  "POST /v1/admin/reels/{reelId}/drop-party/unpin": [
+    "dropPartyId"
+  ],
+  "POST /v1/admin/reputation/{accountId}/recompute": [
+    "kind"
+  ],
+  "POST /v1/admin/reputation/badges/{awardId}/revoke": [
+    "reason",
+    "superAdminOverride"
+  ],
+  "POST /v1/admin/routing/replan/{packageId}": [
+    "reason",
+    "note"
+  ],
+  "POST /v1/admin/audio/tracks/{trackId}/hot-segments": [
+    "segmentStartSeconds",
+    "ordinal",
+    "label"
+  ],
+  "PATCH /v1/admin/audio/tracks/{trackId}/hot-segments/{id}": [
+    "segmentStartSeconds",
+    "label"
+  ],
+  "POST /v1/admin/audio/unmatched-citations/{unmatchedId}/canonicalize": [
+    "musicTrackRefId",
+    "includeSiblings"
+  ],
+  "POST /v1/admin/audio/unmatched-citations/{unmatchedId}/dismiss": [
+    "reason"
+  ],
+  "POST /v1/creator/affiliate/links": [
+    "vendorAccountId",
+    "productId",
+    "commissionRate"
+  ],
+  "POST /v1/public/affiliate/{code}/click": [
+    "userAgent"
+  ],
+  "POST /v1/groups/{groupId}/announcements": [
+    "title",
+    "body"
+  ],
+  "POST /v1/admin/auth/sso": [
+    "idToken"
+  ],
+  "POST /v1/auth/login": [
+    "identifierType",
+    "identifier",
+    "password",
+    "deviceId",
+    "deviceFingerprint",
+    "devicePlatform",
+    "deviceModel",
+    "deviceOsVersion",
+    "deviceAppVersion"
+  ],
+  "POST /v1/auth/login-otp/request": [
+    "identifierType",
+    "identifier"
+  ],
+  "POST /v1/auth/login-otp/verify": [
+    "identifierType",
+    "identifier",
+    "code",
+    "deviceId",
+    "deviceFingerprint",
+    "devicePlatform",
+    "deviceModel",
+    "deviceOsVersion",
+    "deviceAppVersion"
+  ],
+  "POST /v1/auth/login-magic/request": [
+    "email"
+  ],
+  "POST /v1/auth/login-magic/consume": [
+    "token",
+    "deviceId",
+    "deviceFingerprint",
+    "devicePlatform",
+    "deviceModel",
+    "deviceOsVersion",
+    "deviceAppVersion"
+  ],
+  "POST /v1/auth/passkeys/authenticate/complete": [
+    "challengeBase64Url",
+    "clientResponseJson",
+    "deviceId",
+    "deviceFingerprint",
+    "devicePlatform",
+    "deviceModel",
+    "deviceOsVersion",
+    "deviceAppVersion"
+  ],
+  "POST /v1/auth/passkeys/register/bootstrap/options": [
+    "displayName",
+    "locale",
+    "timezone"
+  ],
+  "POST /v1/auth/passkeys/register/bootstrap/complete": [
+    "accountId",
+    "challengeBase64Url",
+    "clientResponseJson",
+    "nickname",
+    "deviceId",
+    "deviceFingerprint",
+    "devicePlatform",
+    "deviceModel",
+    "deviceOsVersion",
+    "deviceAppVersion"
+  ],
+  "POST /v1/auth/password-reset/request": [
+    "email"
+  ],
+  "POST /v1/auth/password-reset/consume": [
+    "token",
+    "newPassword"
+  ],
+  "POST /v1/auth/refresh": [
+    "refreshToken"
+  ],
+  "POST /v1/auth/logout": [
+    "refreshToken",
+    "allSessions"
+  ],
+  "PUT /v1/badges/me/showcase": [
+    "awardIdsInOrder"
+  ],
+  "POST /v1/accounts/{accountId}/blocked": [
+    "blockedAccountId",
+    "scope",
+    "reason"
+  ],
+  "PUT /v1/reach/budgets/me": [
+    "ownerKind",
+    "monthlyCapAmount",
+    "monthlyCapCurrency"
+  ],
+  "POST /v1/cart/lines": [
+    "productId",
+    "productVariantId",
+    "quantity",
+    "reelTagContextId"
+  ],
+  "PATCH /v1/cart/lines/{lineId}": [
+    "quantity"
+  ],
+  "POST /v1/cart-shares": [
+    "ownerAccountId",
+    "cartId"
+  ],
+  "POST /v1/cart-shares/{id}/invite": [
+    "invitedAccountId",
+    "proposedRole"
+  ],
+  "POST /v1/cart-shares/invitations/accept": [
+    "token",
+    "accountId"
+  ],
+  "POST /v1/cart-shares/{id}/votes": [
+    "cartLineId",
+    "voterAccountId",
+    "vote"
+  ],
+  "POST /v1/cart-shares/{id}/close": [
+    "actorAccountId"
+  ],
+  "POST /v1/checkout/sessions/{sessionId}/address": [
+    "addressId"
+  ],
+  "POST /v1/checkout/sessions/{sessionId}/payment-method": [
+    "paymentMethod"
+  ],
+  "POST /v1/posts/{postId}/comments": [
+    "parentCommentId",
+    "body"
+  ],
+  "PUT /v1/comments/{commentId}": [
+    "body"
+  ],
+  "PATCH /v1/customer/companion/me": [
+    "tone",
+    "proactiveEnabled",
+    "proactiveQuietHoursStart",
+    "proactiveQuietHoursEnd"
+  ],
+  "POST /v1/customer/companion/memories/search": [
+    "query",
+    "limit"
+  ],
+  "POST /v1/connection-blocks": [
+    "blockedAccountId",
+    "reason",
+    "reasonNote"
+  ],
+  "POST /v1/connection-categories": [
+    "friendAccountId",
+    "kind",
+    "customLabel"
+  ],
+  "POST /v1/connection-introductions": [
+    "accountA",
+    "accountB",
+    "message"
+  ],
+  "POST /v1/connection-requests": [
+    "receiverAccountId",
+    "message"
+  ],
+  "POST /v1/accounts/{accountId}/consents": [
+    "consentType",
+    "consentVersion",
+    "ipAddress",
+    "userAgent"
+  ],
+  "POST /v1/contact-imports": [
+    "consentedAtUtc",
+    "phoneHashes"
+  ],
+  "POST /v1/courier/apply": [
+    "accountId",
+    "homeGeohash",
+    "vehicle"
+  ],
+  "POST /v1/courier/{courierProfileId}/kyc": [
+    "governmentIdLast4",
+    "selfieMatchRef"
+  ],
+  "POST /v1/courier/{courierProfileId}/device-keys": [
+    "publicKeyId",
+    "publicKeyPem",
+    "deviceModel"
+  ],
+  "DELETE /v1/courier/device-keys/{publicKeyId}": [
+    "reason"
+  ],
+  "POST /v1/courier/{courierProfileId}/travel-plans": [
+    "originGeohash",
+    "destinationGeohash",
+    "departsUtcStart",
+    "departsUtcEnd",
+    "arrivesUtcExpected",
+    "vehicle",
+    "maxWeightGrams"
+  ],
+  "DELETE /v1/courier/travel-plans/{travelPlanId}": [
+    "reason"
+  ],
+  "POST /v1/courier/{courierProfileId}/escrow/deposit": [
+    "amount",
+    "currency",
+    "note"
+  ],
+  "POST /v1/courier/{courierProfileId}/escrow/withdraw": [
+    "amount",
+    "currency",
+    "note"
+  ],
+  "POST /v1/deliveries/hops/{hopId}/pickup": [
+    "geohashAtEvent",
+    "proofPhotoUrl",
+    "signature",
+    "signerPublicKeyId"
+  ],
+  "POST /v1/deliveries/hops/{hopId}/handoff/nfc/init": [
+    "geohashAtEvent"
+  ],
+  "POST /v1/deliveries/hops/{hopId}/handoff/nfc/confirm": [
+    "handshakeId",
+    "signedChallenge",
+    "signerPublicKeyId",
+    "geohashAtEvent",
+    "proofPhotoUrl",
+    "notes"
+  ],
+  "POST /v1/deliveries/hops/{hopId}/handoff/photo": [
+    "nextCourierProfileId",
+    "geohashAtEvent",
+    "proofPhotoUrl",
+    "signature",
+    "signerPublicKeyId",
+    "notes",
+    "isFinalDelivery"
+  ],
+  "POST /v1/deliveries/hops/{hopId}/exception": [
+    "code",
+    "geohashAtEvent",
+    "note",
+    "failHop"
+  ],
+  "POST /v1/courier/offers/{offerId}/decline": [
+    "reasonCode",
+    "note"
+  ],
+  "POST /v1/co-watch": [
+    "hostAccountId",
+    "reelId"
+  ],
+  "POST /v1/co-watch/join": [
+    "joinCode",
+    "guestAccountId"
+  ],
+  "POST /v1/co-watch/{id}/end": [
+    "callerAccountId"
+  ],
+  "POST /v1/creator/apply": [
+    "bio",
+    "audienceBand",
+    "contentCategoryIds",
+    "otherCategoryDescription",
+    "socials"
+  ],
+  "POST /v1/creator/audio/recommendations": [
+    "primaryCategoryId",
+    "reelDurationSeconds",
+    "regionCode",
+    "tempoHintBpm",
+    "reelDraftId",
+    "take"
+  ],
+  "POST /v1/creator/audio/interactions": [
+    "musicTrackRefId",
+    "kind",
+    "reelDraftId",
+    "primaryCategoryId",
+    "occurredUtc"
+  ],
+  "POST /v1/creator/partnerships/request": [
+    "vendorProfileId",
+    "commissionMinPercent",
+    "commissionMaxPercent",
+    "message"
+  ],
+  "PATCH /v1/accounts/{accountId}/creator-profile": [
+    "bio",
+    "specializationSummary",
+    "instagramHandle",
+    "tiktokHandle",
+    "youtubeHandle",
+    "facebookHandle"
+  ],
+  "POST /v1/accounts/{accountId}/creator-profile/reject": [
+    "reason"
+  ],
+  "POST /v1/creator/rate-card": [
+    "baseRate",
+    "rates",
+    "commissionPreference",
+    "platformPreferences",
+    "contentCategories",
+    "sampleReelIds",
+    "notes"
+  ],
+  "POST /v1/creator/reels/{reelId}/recipe-citation": [
+    "recipeId",
+    "recipeVersion"
+  ],
+  "POST /v1/creator/recipes/recommendations": [
+    "context",
+    "forCreatorProfileId",
+    "take"
+  ],
+  "POST /v1/creator/recipes/draft": [
+    "context",
+    "musicTrackRefId",
+    "forCreatorProfileId"
+  ],
+  "POST /v1/creator/reels/{reelId}/cite-recipe": [
+    "recipeId",
+    "recipeVersion",
+    "adherence"
+  ],
+  "POST /v1/creator/reels/intents": [
+    "targetPlatform"
+  ],
+  "POST /v1/creator/reels/intents/{intentId}/complete": [
+    "resultingReelId"
+  ],
+  "POST /v1/creator/reels/import": [
+    "sourcePlatform",
+    "sourceUrl",
+    "externalId",
+    "durationSeconds",
+    "caption",
+    "thumbnailCdnUrl",
+    "musicTrackTitle",
+    "musicArtistName",
+    "musicProviderUrl"
+  ],
+  "POST /v1/creator/reels/{reelId}/tagged-products": [
+    "productId",
+    "overlayPositionX",
+    "overlayPositionY"
+  ],
+  "POST /v1/accounts/{accountId}/creator-specializations": [
+    "categoryId",
+    "isPrimary"
+  ],
+  "POST /v1/creator/stitched-reel-suggestions/{id}/dismiss": [
+    "reason"
+  ],
+  "POST /v1/creator/story-arcs/{id}/drop": [
+    "reason"
+  ],
+  "POST /v1/creator/studio/analyze": [
+    "reelDraftId"
+  ],
+  "PUT /v1/reach/cross-publish/me": [
+    "enabledPlatforms"
+  ],
+  "POST /v1/customer/interests": [
+    "interestIds"
+  ],
+  "PUT /v1/customer/interests": [
+    "interestIds"
+  ],
+  "POST /v1/customer/products/{productId}/reviews": [
+    "orderId",
+    "kind",
+    "rating",
+    "text",
+    "imageCdnUrls",
+    "reelPlatform",
+    "reelSourceUrl"
+  ],
+  "POST /v1/customer/reels/{reelId}/comments": [
+    "body",
+    "parentCommentId"
+  ],
+  "POST /v1/customer/reels/{reelId}/comments/{commentId}/report": [
+    "reasonCode"
+  ],
+  "POST /v1/customer/reels/{reelId}/report": [
+    "reasonCode"
+  ],
+  "POST /v1/reels/{reelId}/views": [
+    "completed",
+    "occurredUtc"
+  ],
+  "POST /v1/customer/reviews/{reviewId}/report": [
+    "reasonCode"
+  ],
+  "POST /v1/accounts/{accountId}/data-rights-requests": [
+    "requestType",
+    "description",
+    "dueDays"
+  ],
+  "POST /v1/accounts/{accountId}/data-rights-requests/{requestId}/complete": [
+    "fulfilmentReference"
+  ],
+  "POST /v1/accounts/{accountId}/data-rights-requests/{requestId}/reject": [
+    "reason"
+  ],
+  "POST /api/v1/devices": [
+    "platform",
+    "pushToken",
+    "deviceModel",
+    "appVersion"
+  ],
+  "POST /v1/accounts/{accountId}/devices": [
+    "deviceFingerprint",
+    "platform",
+    "model",
+    "osVersion",
+    "appVersion",
+    "nickname"
+  ],
+  "PATCH /v1/accounts/{accountId}/devices/{deviceId}/name": [
+    "nickname"
+  ],
+  "POST /v1/drop-parties": [
+    "creatorProfileId",
+    "vendorProfileId",
+    "reelId",
+    "title",
+    "description",
+    "startsUtc",
+    "durationMinutes"
+  ],
+  "POST /v1/drop-parties/{id}/exclusive-products": [
+    "productVariantId",
+    "quantityReserved",
+    "commissionRateForParty"
+  ],
+  "POST /v1/drop-parties/{id}/go-live": [
+    "accountId"
+  ],
+  "POST /v1/drop-parties/{id}/end": [
+    "accountId"
+  ],
+  "POST /v1/drop-parties/{id}/cancel": [
+    "actorAccountId",
+    "reason"
+  ],
+  "POST /v1/drop-parties/{id}/rsvp": [
+    "accountId"
+  ],
+  "POST /v1/drop-parties/{id}/join-live": [
+    "accountId"
+  ],
+  "POST /api/v1/expertise-endorsements": [
+    "endorseeAccountId",
+    "type",
+    "weight",
+    "note"
+  ],
+  "POST /v1/groups/{groupId}/events": [
+    "type",
+    "title",
+    "detail",
+    "locationType",
+    "location",
+    "startUtc",
+    "endUtc"
+  ],
+  "POST /v1/groups/{groupId}/events/{eventId}/rsvp": [
+    "status"
+  ],
+  "PUT /v1/admin/feature-flags/{key}": [
+    "defaultEnabled",
+    "description"
+  ],
+  "PUT /v1/admin/feature-flags/{key}/overrides": [
+    "roleKind",
+    "accountId",
+    "enabled"
+  ],
+  "DELETE /v1/admin/feature-flags/{key}/overrides": [
+    "roleKind",
+    "accountId",
+    "enabled"
+  ],
+  "POST /v1/customer/feed/interaction": [
+    "entityId",
+    "entityType",
+    "action"
+  ],
+  "POST /v1/groups": [
+    "categoryId",
+    "name",
+    "description",
+    "privacy"
+  ],
+  "PUT /v1/groups/{groupId}/name": [
+    "name"
+  ],
+  "PUT /v1/groups/{groupId}/description": [
+    "description"
+  ],
+  "PUT /v1/groups/{groupId}/cover-image": [
+    "coverImageUrl"
+  ],
+  "POST /v1/groups/{groupId}/transfer-ownership": [
+    "newOwnerAccountId"
+  ],
+  "POST /api/v1/group-buys/start": [
+    "productId",
+    "initiatorAccountId",
+    "targetBuyerCount",
+    "discountPercent",
+    "expiresUtc"
+  ],
+  "POST /api/v1/group-buys/{id}/join": [
+    "groupBuyId",
+    "accountId",
+    "paymentIntentId"
+  ],
+  "POST /v1/groups/{groupId}/posts": [
+    "body",
+    "crossPostId"
+  ],
+  "POST /v1/accounts/{accountId}/kyc-sessions": [
+    "provider",
+    "providerReference",
+    "lifetimeDays"
+  ],
+  "POST /v1/accounts/{accountId}/kyc-sessions/{sessionId}/approve": [
+    "riskLevel"
+  ],
+  "POST /v1/accounts/{accountId}/kyc-sessions/{sessionId}/reject": [
+    "reason"
+  ],
+  "POST /v1/vendor/partnerships/{id}/insurance": [
+    "coverageAmount",
+    "currency"
+  ],
+  "POST /v1/partnerships/{id}/insurance/claim": [
+    "claimAmount",
+    "currency",
+    "reason",
+    "evidenceUrls"
+  ],
+  "POST /v1/admin/insurance/claims/{id}/review": [
+    "approved",
+    "notes",
+    "settlementAmount"
+  ],
+  "POST /v1/invite-links": [
+    "redemptionCap"
+  ],
+  "POST /v1/invite-redemptions": [
+    "code"
+  ],
+  "POST /v1/admin/kyc/{kycItemId}/assign": [
+    "reviewerAdminId"
+  ],
+  "POST /v1/admin/kyc/{kycItemId}/decide": [
+    "decision",
+    "decisionReasonCode",
+    "decisionNote"
+  ],
+  "POST /ask": [
+    "message",
+    "context"
+  ],
+  "POST /api/v1/languages/me": [
+    "language"
+  ],
+  "POST /v1/creator/live/schedule": [
+    "title",
+    "scheduledStart",
+    "featuredProductIds"
+  ],
+  "POST /v1/creator/live/{id}/start": [
+    "streamKey"
+  ],
+  "POST /v1/magic-links/consume": [
+    "tokenHash",
+    "ipAddressConsumed"
+  ],
+  "POST /v1/accounts/{accountId}/magic-links": [
+    "purpose",
+    "tokenHash",
+    "ipAddressRequested",
+    "userAgentRequested",
+    "lifetimeMinutes"
+  ],
+  "POST /v1/accounts/{accountId}/marketing-consents": [
+    "category",
+    "granted",
+    "source",
+    "ipAddress",
+    "userAgent"
+  ],
+  "POST /v1/groups/{groupId}/members/request-join": [
+    "answersJson"
+  ],
+  "POST /v1/groups/{groupId}/members/join-requests/{requestId}/approve": [
+    "note"
+  ],
+  "POST /v1/groups/{groupId}/members/join-requests/{requestId}/deny": [
+    "note"
+  ],
+  "PUT /v1/groups/{groupId}/members/{targetAccountId}/role": [
+    "newRole"
+  ],
+  "POST /v1/groups/{groupId}/members/invitations": [
+    "inviteeAccountId"
+  ],
+  "POST /v1/message-threads": [
+    "scope",
+    "otherParticipantId",
+    "contextId"
+  ],
+  "POST /v1/message-threads/{threadId}/messages": [
+    "body"
+  ],
+  "POST /v1/accounts/{accountId}/mfa-methods/totp": [
+    "label",
+    "totpSecretEncrypted"
+  ],
+  "POST /v1/accounts/{accountId}/mfa-methods/destination": [
+    "methodType",
+    "label",
+    "destinationHash"
+  ],
+  "PATCH /v1/accounts/{accountId}/mfa-methods/{methodId}/label": [
+    "label"
+  ],
+  "POST /v1/admin/moderation/{moderationItemId}/assign": [
+    "reviewerAdminId"
+  ],
+  "POST /v1/admin/moderation/{moderationItemId}/decide": [
+    "action",
+    "decisionNote"
+  ],
+  "POST /v1/groups/{groupId}/moderation/posts/{postId}/remove": [
+    "reason"
+  ],
+  "POST /v1/groups/{groupId}/moderation/members/{targetAccountId}/warn": [
+    "reason"
+  ],
+  "POST /v1/groups/{groupId}/moderation/members/{targetAccountId}/ban": [
+    "reason"
+  ],
+  "PATCH /v1/accounts/{accountId}/notification-preferences/toggles": [
+    "emailOrderUpdates",
+    "pushOrderUpdates",
+    "emailDeliveryUpdates",
+    "pushDeliveryUpdates",
+    "emailMessages",
+    "pushMessages",
+    "emailReelActivity",
+    "pushReelActivity",
+    "emailFriendActivity",
+    "pushFriendActivity",
+    "emailMarketing",
+    "pushMarketing",
+    "emailSystemAnnouncements",
+    "pushSystemAnnouncements"
+  ],
+  "PATCH /v1/accounts/{accountId}/notification-preferences/quiet-hours": [
+    "enabled",
+    "startLocal",
+    "endLocal",
+    "timezone"
+  ],
+  "PATCH /api/v1/notifications/preferences": [
+    "toggles",
+    "quietHours"
+  ],
+  "POST /v1/auth/oauth/{provider}/authorize": [
+    "redirectUri"
+  ],
+  "POST /v1/auth/oauth/callback": [
+    "code",
+    "state"
+  ],
+  "POST /v1/orders/{orderNumber}/cancel": [
+    "subOrderId",
+    "reason",
+    "note",
+    "acknowledgedFiveToSevenDayRefund"
+  ],
+  "POST /v1/otp": [
+    "destinationType",
+    "destination",
+    "purpose",
+    "accountId"
+  ],
+  "POST /v1/otp/verify": [
+    "destinationType",
+    "destination",
+    "purpose",
+    "code"
+  ],
+  "POST /v1/accounts/{accountId}/passkeys/register/options": [
+    "nickname"
+  ],
+  "POST /v1/accounts/{accountId}/passkeys/register/complete": [
+    "challengeBase64Url",
+    "clientResponseJson",
+    "nickname"
+  ],
+  "POST /v1/accounts/{accountId}/passkeys/authenticate/complete": [
+    "challengeBase64Url",
+    "clientResponseJson",
+    "deviceId",
+    "deviceFingerprint",
+    "devicePlatform",
+    "deviceModel",
+    "deviceOsVersion",
+    "deviceAppVersion"
+  ],
+  "PUT /v1/accounts/{accountId}/password": [
+    "newPassword"
+  ],
+  "POST /v1/accounts/{accountId}/password/change": [
+    "currentPassword",
+    "newPassword"
+  ],
+  "POST /v1/accounts/{accountId}/password/verify": [
+    "password"
+  ],
+  "POST /v1/accounts/{accountId}/payment-instruments": [
+    "kind",
+    "processorName",
+    "processorToken",
+    "last4",
+    "expiryMonth",
+    "expiryYear",
+    "holderName",
+    "billingCountryCode",
+    "isPrimary"
+  ],
+  "POST /v1/admin/payments/{paymentIntentId}/refund": [
+    "amount",
+    "currency",
+    "reasonTag",
+    "reason"
+  ],
+  "POST /v1/payout-destinations": [
+    "role",
+    "kind",
+    "label",
+    "accountIdentifier",
+    "branchOrIfsc",
+    "makeDefault"
+  ],
+  "POST /v1/accounts/{accountId}/payout-methods/bank": [
+    "kind",
+    "label",
+    "maskedAccountNumber",
+    "beneficiaryName",
+    "processorReference"
+  ],
+  "POST /v1/accounts/{accountId}/payout-methods/external-wallet": [
+    "kind",
+    "label",
+    "externalIdentifier",
+    "processorReference"
+  ],
+  "POST /v1/accounts/{accountId}/payout-methods/{methodId}/reject": [
+    "reason"
+  ],
+  "POST /v1/admin/payouts/{payoutId}/hold": [
+    "reason"
+  ],
+  "POST /v1/admin/payouts/{payoutId}/release": [
+    "reason"
+  ],
+  "POST /v1/admin/payouts/{payoutId}/force-paid": [
+    "reason"
+  ],
+  "POST /v1/admin/payouts/{payoutId}/force-failed": [
+    "reason"
+  ],
+  "POST /v1/payouts/on-demand": [
+    "role",
+    "destination",
+    "destinationRef",
+    "requestedAmount"
+  ],
+  "PUT /v1/admin/platform-config/{key}": [
+    "valueJson",
+    "description"
+  ],
+  "POST /v1/posts": [
+    "type",
+    "visibility",
+    "body",
+    "originalPostId",
+    "eventStartUtc",
+    "eventEndUtc",
+    "scheduledPublishUtc",
+    "media",
+    "attachments",
+    "hashtags",
+    "mentionedHandles",
+    "pollOptions"
+  ],
+  "PUT /v1/posts/{postId}": [
+    "body"
+  ],
+  "POST /v1/vendor/pricing/flash-sales": [
+    "productId",
+    "salePrice",
+    "startUtc",
+    "endUtc",
+    "maxUnits"
+  ],
+  "PATCH /v1/accounts/{accountId}/privacy-settings": [
+    "profileVisibility",
+    "searchVisibility",
+    "allowMessagesFrom",
+    "allowFriendRequests",
+    "allowTaggingInPosts",
+    "showOnlineStatus"
+  ],
+  "POST /v1/product-inquiries": [
+    "vendorAccountId",
+    "productId",
+    "orderId",
+    "question"
+  ],
+  "POST /v1/product-inquiries/{inquiryId}/reply": [
+    "reply"
+  ],
+  "POST /v1/professional-circles": [
+    "categoryId",
+    "groupName",
+    "description",
+    "professionCode",
+    "verifyingAuthority",
+    "requiresLicenseNumber"
+  ],
+  "POST /v1/professional-circles/{circleId}/verifications": [
+    "kycDocumentId",
+    "licenseNumber"
+  ],
+  "POST /v1/professional-circles/verifications/{verificationId}/approve": [
+    "note"
+  ],
+  "POST /v1/professional-circles/verifications/{verificationId}/reject": [
+    "note"
+  ],
+  "POST /v1/cart/promo": [
+    "code"
+  ],
+  "POST /v1/reach/publish-jobs": [
+    "reelId",
+    "scheduledUtc",
+    "platforms",
+    "baseCaption",
+    "productTitles",
+    "intendedPostAtLocal",
+    "sourceVideoUrl"
+  ],
+  "POST /v1/auth/qr/create": [
+    "targetApp",
+    "deviceFingerprint",
+    "devicePlatform",
+    "deviceModel",
+    "deviceOsVersion",
+    "deviceAppVersion"
+  ],
+  "POST /v1/auth/qr/exchange": [
+    "publicToken",
+    "clientSecret"
+  ],
+  "POST /v1/reactions/posts/{postId}": [
+    "type"
+  ],
+  "POST /v1/reactions/comments/{commentId}": [
+    "type"
+  ],
+  "POST /v1/accounts/{accountId}/recovery-codes/batches": [
+    "codeHashes"
+  ],
+  "POST /v1/accounts/{accountId}/recovery-codes/consume": [
+    "codeHash"
+  ],
+  "POST /v1/registration/start": [
+    "displayName",
+    "locale",
+    "timezone",
+    "email",
+    "phoneE164",
+    "countryDialCode"
+  ],
+  "POST /v1/registration/{accountId}/verify-email": [
+    "email",
+    "code"
+  ],
+  "POST /v1/registration/{accountId}/verify-phone": [
+    "phoneE164",
+    "code"
+  ],
+  "POST /v1/registration/{accountId}/set-password": [
+    "password"
+  ],
+  "POST /v1/registration/{accountId}/accept-terms": [
+    "consentVersion",
+    "ipAddress",
+    "userAgent"
+  ],
+  "POST /api/v1/recommendation-replies": [
+    "requestId",
+    "body",
+    "reasoning",
+    "isSponsored",
+    "replierIsVendor",
+    "products",
+    "externalLinks"
+  ],
+  "PUT /api/v1/recommendation-replies/{id}": [
+    "body",
+    "reasoning"
+  ],
+  "POST /api/v1/recommendation-requests": [
+    "title",
+    "body",
+    "visibility",
+    "urgency",
+    "budgetMinAmount",
+    "budgetMaxAmount",
+    "budgetCurrency",
+    "askerProfessionSnapshot",
+    "groupId",
+    "categoryIds",
+    "invitedAccountIds",
+    "attachments"
+  ],
+  "POST /v1/vendor/retainers": [
+    "creatorAccountId",
+    "monthlyAmount",
+    "currency",
+    "deliverablesPerMonth"
+  ],
+  "POST /v1/orders/{orderNumber}/returns": [
+    "subOrderId",
+    "subOrderLineId",
+    "quantity",
+    "reason",
+    "photoUrls"
+  ],
+  "POST /v1/accounts/{accountId}/roles": [
+    "role"
+  ],
+  "POST /v1/accounts/{accountId}/roles/{role}/revoke": [
+    "reason"
+  ],
+  "POST /v1/groups/{groupId}/rules": [
+    "title",
+    "detail"
+  ],
+  "PUT /v1/groups/{groupId}/rules/{ruleId}": [
+    "displayOrder",
+    "title",
+    "detail"
+  ],
+  "POST /v1/payments/saved-methods": [
+    "method",
+    "processorName",
+    "processorCustomerId",
+    "processorPaymentMethodId",
+    "displayBrand",
+    "displayLast4",
+    "expiryMonth",
+    "expiryYear",
+    "displayLabel",
+    "makeDefault"
+  ],
+  "PATCH /v1/payments/saved-methods/{savedMethodId}": [
+    "label"
+  ],
+  "POST /api/v1/customer/search/image": [
+    "imageUrl",
+    "limit"
+  ],
+  "POST /v1/addresses": [
+    "label",
+    "receiverName",
+    "receiverPhone",
+    "addressLine1",
+    "landmark",
+    "country",
+    "state",
+    "city",
+    "zipCode",
+    "latitude",
+    "longitude",
+    "locationAccuracyMetres",
+    "locationCapturedFrom",
+    "makeDefault"
+  ],
+  "PATCH /v1/addresses/{addressId}": [
+    "label",
+    "receiverName",
+    "receiverPhone",
+    "addressLine1",
+    "landmark",
+    "country",
+    "state",
+    "city",
+    "zipCode",
+    "latitude",
+    "longitude",
+    "locationAccuracyMetres",
+    "locationCapturedFrom"
+  ],
+  "DELETE /v1/social/accounts/{providerSlug}": [
+    "reason"
+  ],
+  "POST /v1/social/accounts/{providerSlug}/publish-scopes/revoke": [
+    "reason"
+  ],
+  "POST /v1/social/connect/{providerSlug}/begin": [
+    "redirectUri"
+  ],
+  "POST /v1/webhooks/social/{providerSlug}": [
+    "kind",
+    "providerEventId",
+    "rawPayloadJson",
+    "affectedCreatorAccountId"
+  ],
+  "POST /v1/vendor/squads": [
+    "briefId",
+    "name",
+    "budgetTotal",
+    "budgetCurrency"
+  ],
+  "POST /v1/vendor/squads/{id}/invite": [
+    "creatorAccountId",
+    "budgetShare"
+  ],
+  "POST /v1/stitches": [
+    "childReelId",
+    "parentReelId",
+    "childCreatorProfileId",
+    "parentCreatorProfileId",
+    "kind"
+  ],
+  "POST /v1/stitches/{id}/block": [
+    "parentCreatorProfileId"
+  ],
+  "POST /v1/stitches/{id}/report": [
+    "reportedByAccountId",
+    "reason"
+  ],
+  "POST /v1/stories": [
+    "mediaType",
+    "mediaUrl",
+    "thumbnailUrl",
+    "caption",
+    "durationSeconds"
+  ],
+  "POST /v1/stories/{storyId}/reply": [
+    "body",
+    "quickReactionEmoji"
+  ],
+  "POST /v1/style-circles": [
+    "ownerAccountId",
+    "name",
+    "description",
+    "coverImageUrl"
+  ],
+  "POST /v1/style-circles/{id}/invite": [
+    "invitedAccountId"
+  ],
+  "POST /v1/style-circles/invitations/accept": [
+    "token",
+    "accountId"
+  ],
+  "POST /v1/subscriptions/me/upgrade": [
+    "planId"
+  ],
+  "POST /api/v1/support/tickets": [
+    "category",
+    "subject",
+    "body",
+    "attachmentUrls",
+    "orderId",
+    "subOrderId",
+    "returnRequestId"
+  ],
+  "POST /api/v1/support/tickets/{ticketNumber}/replies": [
+    "body",
+    "attachmentUrls"
+  ],
+  "POST /v1/accounts/{accountId}/tax-information": [
+    "formType",
+    "taxId",
+    "taxResidencyCountry",
+    "fullLegalName",
+    "businessName"
+  ],
+  "POST /api/v1/recommendation-threads": [
+    "title",
+    "description",
+    "categoryId"
+  ],
+  "POST /v1/tips": [
+    "fromAccountId",
+    "toCreatorProfileId",
+    "reelId",
+    "amountValue",
+    "currency",
+    "paymentIntentId"
+  ],
+  "POST /v1/accounts/{accountId}/sessions/{sessionId}/revoke": [
+    "reason"
+  ],
+  "POST /v1/vendor/apply": [
+    "brandName",
+    "legalBusinessName",
+    "countryCode",
+    "businessType",
+    "commissionMinPercent",
+    "commissionMaxPercent",
+    "website",
+    "taxId",
+    "addressLine1",
+    "addressLine2",
+    "city",
+    "stateProvince",
+    "postalCode",
+    "catalogSize",
+    "priceRangeMinAmount",
+    "priceRangeMaxAmount",
+    "priceRangeCurrency",
+    "brandStory",
+    "documents",
+    "bankAccount"
+  ],
+  "PATCH /v1/vendor/application/draft/step-1": [
+    "brandName",
+    "legalBusinessName",
+    "countryCode",
+    "businessType"
+  ],
+  "PATCH /v1/vendor/application/draft/step-2": [
+    "commissionMinPercent",
+    "commissionMaxPercent"
+  ],
+  "PATCH /v1/vendor/application/draft/step-3": [
+    "website",
+    "taxId"
+  ],
+  "PATCH /v1/vendor/application/draft/step-4": [
+    "documents"
+  ],
+  "POST /v1/vendor/briefs/{briefId}/recipes": [
+    "recipeId",
+    "recipeVersion",
+    "isPrimaryRecipe"
+  ],
+  "POST /v1/vendor/briefs": [
+    "vendorProfileId",
+    "title",
+    "primaryGoal",
+    "productVariantIds",
+    "currencyCode"
+  ],
+  "PATCH /v1/vendor/briefs/{id}": [
+    "title",
+    "primaryGoal",
+    "commissionRange",
+    "boostBudgetAmount",
+    "boostBudgetCurrency",
+    "roiProjection",
+    "body",
+    "explanationByKey"
+  ],
+  "POST /v1/vendor/sub-orders/{subOrderId}/tracking": [
+    "carrier",
+    "trackingNumber"
+  ],
+  "POST /v1/vendor/sub-orders/bulk/ready-to-ship": [
+    "subOrderIds"
+  ],
+  "POST /v1/vendor/sub-orders/bulk/packing-slips": [
+    "subOrderIds"
+  ],
+  "POST /v1/vendor/packages/{trackingNumber}/seal": [
+    "sealId",
+    "sealPhotoUrl"
+  ],
+  "POST /v1/vendor/partnerships/invite": [
+    "creatorProfileId",
+    "commissionMinPercent",
+    "commissionMaxPercent",
+    "brandBriefId"
+  ],
+  "POST /v1/vendor/partnerships/{id}/pause": [
+    "reason"
+  ],
+  "POST /v1/vendor/partnerships/{id}/end": [
+    "reason"
+  ],
+  "POST /v1/vendor/partnerships/{id}/adjust-commission": [
+    "commissionMinPercent",
+    "commissionMaxPercent",
+    "reason"
+  ],
+  "POST /v1/vendor/partnership-terms": [
+    "whoCanJoin",
+    "reelContentRules"
+  ],
+  "POST /v1/vendor/products": [
+    "categoryId",
+    "name",
+    "shortDescription",
+    "longDescriptionMarkdown"
+  ],
+  "PATCH /v1/vendor/products/{productId}/step-1": [
+    "categoryId",
+    "name",
+    "shortDescription",
+    "longDescriptionMarkdown"
+  ],
+  "PATCH /v1/vendor/products/{productId}/step-2": [
+    "images",
+    "video"
+  ],
+  "PATCH /v1/vendor/products/{productId}/step-3": [
+    "sku",
+    "priceAmount",
+    "priceCurrency",
+    "costPriceAmount",
+    "costPriceCurrency",
+    "trackInventory",
+    "allowOverselling",
+    "quantityOnHand",
+    "productKind",
+    "billingCadence"
+  ],
+  "PATCH /v1/vendor/products/{productId}/step-4": [
+    "processingTimeDays",
+    "shipsFromAddressId",
+    "weightGrams",
+    "lengthCm",
+    "widthCm",
+    "heightCm",
+    "shippingOptions"
+  ],
+  "PATCH /v1/vendor/products/{productId}/stock": [
+    "adjustments",
+    "restockUtc",
+    "alertCustomersOnRestock"
+  ],
+  "POST /v1/vendor/products/{productId}/ai-describe": [
+    "shorthandNotes",
+    "imageUrls"
+  ],
+  "PATCH /v1/accounts/{accountId}/vendor-profile": [
+    "businessName",
+    "businessType",
+    "businessRegistrationNumber",
+    "taxId",
+    "logoUrl",
+    "description",
+    "websiteUrl",
+    "commissionRangeMin",
+    "commissionRangeMax"
+  ],
+  "POST /v1/accounts/{accountId}/vendor-profile/reject": [
+    "reason"
+  ],
+  "POST /v1/vendor/{vendorProfileId}/recipes": [
+    "title",
+    "musicTrackRefId",
+    "context",
+    "segment",
+    "beats",
+    "captionVariants",
+    "platformAdaptations",
+    "reasoning",
+    "explanationByKey",
+    "recipeVersion"
+  ],
+  "PATCH /v1/vendor/{vendorProfileId}/recipes/{id}": [
+    "title",
+    "musicTrackRefId",
+    "context",
+    "segment",
+    "beats",
+    "captionVariants",
+    "platformAdaptations",
+    "reasoning",
+    "explanationByKey",
+    "rowVersion"
+  ],
+  "POST /v1/accounts/{accountId}/vendor-team": [
+    "memberAccountId",
+    "role"
+  ],
+  "PATCH /v1/accounts/{accountId}/vendor-team/{membershipId}/role": [
+    "newRole"
+  ],
+  "DELETE /v1/accounts/{accountId}/vendor-team/{membershipId}": [
+    "reason"
+  ],
+  "POST /v1/accounts/{accountId}/verification-documents": [
+    "sessionId",
+    "documentType",
+    "side",
+    "blobReference",
+    "contentHash",
+    "contentSizeBytes",
+    "contentType",
+    "originalFilename",
+    "expiresUtc"
+  ],
+  "POST /v1/accounts/{accountId}/verification-documents/{documentId}/reject": [
+    "reason"
+  ],
+  "POST /api/v1/recommendation-votes": [
+    "replyId",
+    "type"
+  ],
+  "POST /api/v1/admin/messaging/webhooks/fcm": [
+    "messageId",
+    "status",
+    "errorCode",
+    "unregisteredToken",
+    "eventUtc"
+  ],
+  "POST /api/v1/admin/messaging/webhooks/apns": [
+    "apnsId",
+    "status",
+    "reason",
+    "unregisteredToken",
+    "eventUtc"
+  ],
+  "POST /api/v1/admin/messaging/webhooks/ses": [
+    "Type",
+    "MessageId",
+    "Token",
+    "TopicArn",
+    "Subject",
+    "Message",
+    "Timestamp",
+    "SubscribeURL"
+  ],
+  "POST /v1/payments/webhooks/card-3ds-callback": [
+    "providerEventId",
+    "providerIntentId",
+    "signaledOutcome",
+    "rawPayload"
+  ],
+  "POST /v1/payments/webhooks/paypal-ipn": [
+    "providerEventId",
+    "providerIntentId",
+    "signaledOutcome",
+    "rawPayload"
+  ],
+  "POST /v1/payments/webhooks/esewa-verification": [
+    "providerEventId",
+    "providerIntentId",
+    "signaledOutcome",
+    "rawPayload"
+  ]
+}

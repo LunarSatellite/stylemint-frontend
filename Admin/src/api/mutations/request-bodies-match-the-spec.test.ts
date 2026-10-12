@@ -1,6 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import bodies from '../request-bodies.json';
 
 /**
  * Every field a mutation sends must exist on the endpoint's request body.
@@ -20,15 +19,16 @@ import { describe, expect, it } from 'vitest';
  */
 
 /**
- * Resolved from the working directory, not `import.meta.url`: under
- * jsdom that is an http URL and `fileURLToPath` refuses it.
+ * `request-bodies.json` is written by `npm run codegen` from the
+ * backend's spec and committed, next to the generated types.
+ *
+ * Reading the backend repository directly worked here and would have
+ * failed in CI, which checks out only this one — and a contract guard
+ * that cannot find its contract passes by doing nothing, which is the
+ * worst way for it to fail. The first version of this file did exactly
+ * that.
  */
-const SPEC_PATH = resolve(process.cwd(), '../../stylemint-backend/swagger-spec.json');
-
-const SPEC = JSON.parse(readFileSync(SPEC_PATH, 'utf8')) as {
-  paths: Record<string, Record<string, { requestBody?: { content?: Record<string, { schema?: { $ref?: string } }> } }>>;
-  components: { schemas: Record<string, { properties?: Record<string, unknown> }> };
-};
+const SPEC: Record<string, string[]> = bodies;
 
 /** The mutations, and the literal body each one posts. */
 const SENDS: { file: string; method: 'post' | 'put' | 'delete'; path: string; keys: string[] }[] = [
@@ -47,21 +47,18 @@ const SENDS: { file: string; method: 'post' | 'put' | 'delete'; path: string; ke
 ];
 
 function bodyPropertiesOf(path: string, method: string): string[] {
-  const operation = SPEC.paths[path]?.[method];
-  expect(operation, `${method.toUpperCase()} ${path} is not in the spec`).toBeTruthy();
-
-  const ref = operation?.requestBody?.content?.['application/json']?.schema?.$ref;
-  expect(ref, `${path} has no JSON request body in the spec`).toBeTruthy();
-
-  const schema = SPEC.components.schemas[ref!.split('/').pop()!];
-  return Object.keys(schema?.properties ?? {});
+  const key = `${method.toUpperCase()} ${path}`;
+  const properties = SPEC[key];
+  expect(properties, `${key} has no JSON request body recorded from the spec`).toBeTruthy();
+  return properties ?? [];
 }
 
 describe('what a mutation sends is what the endpoint accepts', () => {
-  it('reads a spec with the admin endpoints in it', () => {
-    expect(Object.keys(SPEC.paths).filter((p) => p.startsWith('/v1/admin')).length).toBeGreaterThan(
-      50,
-    );
+  it('reads a contract with the admin endpoints in it', () => {
+    // Non-vacuity: an empty or missing artifact would otherwise let
+    // every assertion below pass by having nothing to check.
+    const admin = Object.keys(SPEC).filter((k) => k.includes(' /v1/admin'));
+    expect(admin.length).toBeGreaterThan(20);
   });
 
   for (const { file, method, path, keys } of SENDS) {
