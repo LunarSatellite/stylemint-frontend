@@ -134,3 +134,55 @@ export const VehicleKind = {
   Van: 5,
 } as const;
 export type VehicleKind = (typeof VehicleKind)[keyof typeof VehicleKind];
+
+/** Why a post was reported, from `PostReportReason.cs`. */
+export const PostReportReason = {
+  Spam: 1,
+  Harassment: 2,
+  HateSpeech: 3,
+  SexualContent: 4,
+  SelfHarm: 5,
+  Violence: 6,
+  Misinformation: 7,
+  IntellectualProperty: 8,
+  Scam: 9,
+  OtherIllegal: 10,
+} as const;
+export type PostReportReason = (typeof PostReportReason)[keyof typeof PostReportReason];
+
+/** `PostReportState.cs`. Actioned and Dismissed are both closed. */
+export const PostReportState = {
+  Open: 1,
+  UnderReview: 2,
+  Actioned: 3,
+  Dismissed: 4,
+  Duplicate: 5,
+} as const;
+export type PostReportState = (typeof PostReportState)[keyof typeof PostReportState];
+
+/**
+ * Where a reel recipe came from, from `RecipeOrigin.cs`.
+ *
+ * `LlmDrafted` is the one with a review queue: a model wrote it and
+ * nobody has signed it off. Promoting it to `PlatformCurated` is the
+ * act of a person taking responsibility for it, which is why that
+ * distinction is shown rather than collapsed into "recipe".
+ */
+export const RecipeOrigin = {
+  BrandAuthored: 1,
+  PlatformCurated: 2,
+  LlmDrafted: 3,
+  CreatorFork: 4,
+} as const;
+export type RecipeOrigin = (typeof RecipeOrigin)[keyof typeof RecipeOrigin];
+
+/** `FeaturedMatchState.cs`. Approved and Pushed are different things. */
+export const FeaturedMatchState = {
+  PendingReview: 1,
+  Approved: 2,
+  Rejected: 3,
+  Pushed: 4,
+  Acted: 5,
+} as const;
+export type FeaturedMatchState =
+  (typeof FeaturedMatchState)[keyof typeof FeaturedMatchState];

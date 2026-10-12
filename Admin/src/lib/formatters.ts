@@ -11,6 +11,10 @@ import {
   CourierProfileState,
   DeliveryTier,
   VehicleKind,
+  PostReportReason,
+  PostReportState,
+  RecipeOrigin,
+  FeaturedMatchState,
 } from './enums';
 
 export const KycStateLabel: Record<number, string> = {
@@ -108,4 +112,40 @@ export const VehicleLabel: Record<number, string> = {
   [VehicleKind.Motorcycle]: 'Motorcycle',
   [VehicleKind.Car]: 'Car',
   [VehicleKind.Van]: 'Van',
+};
+
+export const PostReportReasonLabel: Record<number, string> = {
+  [PostReportReason.Spam]: 'Spam',
+  [PostReportReason.Harassment]: 'Harassment',
+  [PostReportReason.HateSpeech]: 'Hate speech',
+  [PostReportReason.SexualContent]: 'Sexual content',
+  [PostReportReason.SelfHarm]: 'Self-harm',
+  [PostReportReason.Violence]: 'Violence',
+  [PostReportReason.Misinformation]: 'Misinformation',
+  [PostReportReason.IntellectualProperty]: 'Intellectual property',
+  [PostReportReason.Scam]: 'Scam',
+  [PostReportReason.OtherIllegal]: 'Other illegal content',
+};
+
+export const PostReportStateLabel: Record<number, string> = {
+  [PostReportState.Open]: 'Open',
+  [PostReportState.UnderReview]: 'Under review',
+  [PostReportState.Actioned]: 'Actioned',
+  [PostReportState.Dismissed]: 'Dismissed',
+  [PostReportState.Duplicate]: 'Duplicate',
+};
+
+export const RecipeOriginLabel: Record<number, string> = {
+  [RecipeOrigin.BrandAuthored]: 'Brand authored',
+  [RecipeOrigin.PlatformCurated]: 'Platform curated',
+  [RecipeOrigin.LlmDrafted]: 'Drafted by a model',
+  [RecipeOrigin.CreatorFork]: 'Creator fork',
+};
+
+export const FeaturedMatchStateLabel: Record<number, string> = {
+  [FeaturedMatchState.PendingReview]: 'Pending review',
+  [FeaturedMatchState.Approved]: 'Approved, not yet pushed',
+  [FeaturedMatchState.Rejected]: 'Rejected',
+  [FeaturedMatchState.Pushed]: 'Pushed to users',
+  [FeaturedMatchState.Acted]: 'Acted on by a user',
 };
