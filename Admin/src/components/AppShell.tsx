@@ -9,6 +9,7 @@ import {
   MessageSquareWarning,
   Sparkles,
   Star,
+  Search,
   ShieldCheck,
   SlidersHorizontal,
   Users,
@@ -46,6 +47,7 @@ const SECTIONS: Section[] = [
   { to: '/payouts', label: 'Payouts', icon: Banknote, roles: [AdminRole.SuperAdmin, AdminRole.PayoutsOps] },
   { to: '/admins', label: 'Admin accounts', icon: Users, roles: [AdminRole.SuperAdmin] },
   { to: '/flags', label: 'Feature flags', icon: SlidersHorizontal, roles: [AdminRole.SuperAdmin] },
+  { to: '/popular-searches', label: 'Popular searches', icon: Search, roles: [AdminRole.SuperAdmin, AdminRole.ContentMod] },
   { to: '/audit', label: 'Audit log', icon: FileClock, roles: [] },
   { to: '/settings/mfa', label: 'My security', icon: ShieldCheck, roles: [] },
 ];
