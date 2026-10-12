@@ -1,7 +1,7 @@
 /**
  * Customers (Identity AdminCustomersController), vendor/creator verification badges (Identity
  * AdminProfileVerificationController), vendor/creator applications (Onboarding AdminKycController), and the vendor
- * directory that the backend is adding (`/v1/admin/vendors`, see wt/admin-api-contract.md once it exists).
+ * directory (`/v1/admin/vendors`, wt/admin-api-contract.md).
  */
 import { http } from './client';
 import { ApiError } from './errors';
@@ -81,29 +81,119 @@ export interface VendorApplication {
   } | null;
 }
 
-/**
- * The vendor directory row as the backend agent is adding it. Fields beyond `accountId` and a name are optional on
- * purpose: the console shows what arrives and does not break on what does not.
- */
+/** Vendor directory (wt/admin-api-contract.md §1). New endpoints: enum names as strings, money as { amount, currency }. */
+export interface Money {
+  amount: number;
+  currency: string;
+}
+
 export interface VendorRow {
   accountId: string;
-  id?: string;
-  brandName?: string | null;
-  displayName?: string | null;
-  legalName?: string | null;
-  legalBusinessName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  city?: string | null;
-  countryCode?: string | null;
-  isVerified?: boolean | null;
-  verifiedUtc?: string | null;
-  status?: number | string | null;
-  productCount?: number | null;
-  orderCount?: number | null;
-  createdUtc?: string | null;
-  approvedUtc?: string | null;
+  businessName: string | null;
+  logoUrl: string | null;
+  contact: { emailMasked: string | null; phoneMasked: string | null } | null;
+  applicationStatus: 'Draft' | 'Pending' | 'UnderReview' | 'Approved' | 'Rejected' | string | null;
+  kyc: { kycItemId: string; state: string; decision: string | null; submittedUtc: string; decidedUtc: string | null } | null;
+  isVerified: boolean;
+  verifiedUtc: string | null;
+  accountStatus: string | null;
+  isSuspended: boolean;
+  createdUtc: string;
+  products: { active: number; total: number } | null;
+  orders30d: { count: number; gmv: Money } | null;
+  payoutHold: { isOnHold: boolean; heldCount: number; heldAmount: Money } | null;
 }
+
+export interface VendorKycEntry {
+  kycItemId: string;
+  state: string;
+  decision: string | null;
+  decisionReasonCode: string | null;
+  decisionNote: string | null;
+  submittedUtc: string;
+  dueByUtc: string;
+  decidedUtc: string | null;
+}
+
+export interface VendorDetail {
+  accountId: string;
+  businessName: string | null;
+  displayName: string | null;
+  businessType: string | null;
+  logoUrl: string | null;
+  coverImageUrl: string | null;
+  tagline: string | null;
+  description: string | null;
+  websiteUrl: string | null;
+  accountStatus: string | null;
+  isSuspended: boolean;
+  isVerified: boolean;
+  verifiedUtc: string | null;
+  createdUtc: string;
+  lastActiveUtc: string | null;
+  contact: { emailMasked: string | null; phoneMasked: string | null; email: string | null; phone: string | null; emailVerified: boolean; phoneVerified: boolean } | null;
+  profile: {
+    status: string;
+    submittedUtc: string | null;
+    approvalUtc: string | null;
+    rejectionUtc: string | null;
+    rejectionReason: string | null;
+    commissionRangeMin: number | null;
+    commissionRangeMax: number | null;
+    pickupCity: string | null;
+    pickupAddressLine: string | null;
+    isPickupEnabled: boolean;
+  } | null;
+  application: {
+    applicationId: string;
+    state: string;
+    brandName: string;
+    legalBusinessName: string;
+    countryCode: string | null;
+    city: string | null;
+    submittedUtc: string | null;
+    decisionUtc: string | null;
+    rejectionReason: string | null;
+  } | null;
+  kyc: { latest: VendorKycEntry | null; history: VendorKycEntry[] } | null;
+  stores: { id: string; name: string; kind: string; addressLine: string | null; city: string | null; phone: string | null; isActive: boolean }[];
+  team: { memberAccountId: string; displayName: string; role: string; status: string; invitedUtc: string | null; acceptedUtc: string | null }[];
+  products: { active: number; outOfStock: number; draft: number; suspended: number; archived: number; total: number } | null;
+  orders: {
+    last30d: { count: number; gmv: Money };
+    recent: { subOrderId: string; orderId: string; orderNumber: string; state: string; itemCount: number; subtotal: Money; placedUtc: string }[];
+  } | null;
+  payouts: {
+    isOnHold: boolean;
+    heldCount: number;
+    heldAmount: Money;
+    pendingCount: number;
+    pendingAmount: Money;
+    paidLast30dAmount: Money;
+    lastPaidUtc: string | null;
+    recent: { payoutId: string; state: string; netAmount: Money; requestedUtc: string; paidUtc: string | null }[];
+  } | null;
+}
+
+export const VENDOR_STATUS_FILTER = [
+  { value: 'pending', label: 'Application submitted' },
+  { value: 'under_review', label: 'Under review' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'draft', label: 'Application started' },
+  { value: 'verified', label: 'Verified badge' },
+  { value: 'suspended', label: 'Suspended' },
+];
+
+export const VENDOR_SORT = [
+  { value: 'created_desc', label: 'Newest' },
+  { value: 'created_asc', label: 'Oldest' },
+  { value: 'name_asc', label: 'Name A–Z' },
+  { value: 'name_desc', label: 'Name Z–A' },
+  { value: 'gmv30d_desc', label: 'Sales (30 days)' },
+  { value: 'orders30d_desc', label: 'Orders (30 days)' },
+  { value: 'products_desc', label: 'Most products' },
+];
 
 const enc = encodeURIComponent;
 
@@ -132,14 +222,16 @@ export const applicationsApi = {
 };
 
 export const vendorsApi = {
-  /** `GET /v1/admin/vendors` - being added by the backend. Throws ApiError with isMissingEndpoint until it ships. */
-  list: async (q: { search?: string; verified?: string; page: number; pageSize: number }, signal?: AbortSignal): Promise<Page<VendorRow>> =>
+  /** `GET /v1/admin/vendors` (feat/admin-api-gaps). Throws ApiError with isMissingEndpoint until it is deployed. */
+  list: async (q: { search?: string; status?: string; sort?: string; page: number; pageSize: number }, signal?: AbortSignal): Promise<Page<VendorRow>> =>
     toPage<VendorRow>(
-      await http.get('/v1/admin/vendors', { search: q.search || undefined, verified: q.verified || undefined, pageNumber: q.page, pageSize: q.pageSize }, signal),
+      await http.get('/v1/admin/vendors', { search: q.search || undefined, status: q.status || undefined, sort: q.sort || undefined, pageNumber: q.page, pageSize: Math.min(100, q.pageSize) }, signal),
       q.page,
       q.pageSize,
     ),
-  detail: (accountId: string, signal?: AbortSignal) => http.get<VendorRow & Record<string, unknown>>(`/v1/admin/vendors/${enc(accountId)}`, undefined, signal),
+  detail: (accountId: string, signal?: AbortSignal) => http.get<VendorDetail>(`/v1/admin/vendors/${enc(accountId)}`, undefined, signal),
+  suspend: (accountId: string, reason: string) => http.post<VendorRow>(`/v1/admin/vendors/${enc(accountId)}/suspend`, { reason }),
+  reinstate: (accountId: string, note: string | null) => http.post<VendorRow>(`/v1/admin/vendors/${enc(accountId)}/reinstate`, { note }),
 };
 
 export function isMissing(error: unknown): boolean {

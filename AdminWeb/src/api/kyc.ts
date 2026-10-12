@@ -1,14 +1,15 @@
 /**
  * KYC review - StyleMint.Modules.Admin KycController (`/v1/admin/kyc`). Enums travel as NUMBERS in bodies and DTOs
  * (no global string-enum converter); the detail's document fields are enum NAMES because the server calls
- * ToString() on them. Riders are not in this queue (no Courier applicant kind) - see couriers.ts.
+ * ToString() on them. Riders are reviewed through couriers.ts; once the backend adds Courier = 4 they also appear here.
  */
 import { http } from './client';
 import { toPage, type Page } from './paging';
 
-export const APPLICANT_KIND = { Creator: 1, Vendor: 2, Customer: 3 } as const;
-export type KycApplicantKind = 1 | 2 | 3;
-export type KycApplicantType = 'Creator' | 'Vendor' | 'Customer';
+/** Courier = 4 arrives with feat/admin-api-gaps (riders join the unified queue); older servers reject it as a filter. */
+export const APPLICANT_KIND = { Creator: 1, Vendor: 2, Customer: 3, Courier: 4 } as const;
+export type KycApplicantKind = 1 | 2 | 3 | 4;
+export type KycApplicantType = 'Creator' | 'Vendor' | 'Customer' | 'Courier';
 export const REVIEW_STATE = { Pending: 1, InReview: 2, Decided: 3 } as const;
 export type KycReviewState = 1 | 2 | 3;
 export const DECISION = { Approved: 1, RejectedRetryable: 2, RejectedTerminal: 3 } as const;
@@ -43,8 +44,8 @@ export const REASON_LABEL: Record<KycReasonCode, string> = {
 export function reasonCodesFor(decision: KycDecision, kind: KycApplicantKind): KycReasonCode[] {
   if (decision === DECISION.Approved) return [];
   const codes: KycReasonCode[] = decision === DECISION.RejectedRetryable ? [...RETRYABLE_REASONS] : [...TERMINAL_REASONS];
-  // A buyer has no product categories.
-  return kind === APPLICANT_KIND.Customer ? codes.filter((c) => c !== 'CATEGORY_MISSING') : codes;
+  // Only vendors and creators have product categories.
+  return kind === APPLICANT_KIND.Customer || kind === APPLICANT_KIND.Courier ? codes.filter((c) => c !== 'CATEGORY_MISSING') : codes;
 }
 
 export interface KycReviewItem {
@@ -115,6 +116,10 @@ export interface KycApplicationDetail {
   stateProvince: string | null;
   postalCode: string | null;
   previousAttempts: KycPreviousAttempt[] | null;
+  /** Courier items only (feat/admin-api-gaps). */
+  vehicle?: string | null;
+  homeArea?: string | null;
+  courierState?: string | null;
 }
 
 export interface KycQueueFilter {

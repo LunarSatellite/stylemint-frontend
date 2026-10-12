@@ -1,69 +1,114 @@
-import { Avatar, Badge, Button, Group, Select, Skeleton, Stack, Text, TextInput } from '@mantine/core';
+import { Alert, Avatar, Badge, Button, Chip, Group, Image, Select, SimpleGrid, Skeleton, Stack, Table, Text, TextInput, Timeline } from '@mantine/core';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
-import { IconEyeOff, IconEye, IconSearch } from '@tabler/icons-react';
-import { PRODUCT_STATE, PRODUCT_TONE, productsApi, type ProductRow } from '@/api/catalog';
+import { IconAlertTriangle, IconEye, IconEyeOff, IconSearch, IconStarFilled } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import { isMissing } from '@/api/people';
+import {
+  PRODUCT_SORT,
+  PRODUCT_STATUS_FILTER,
+  PRODUCT_STATUS_LABEL,
+  PRODUCT_STATUS_TONE,
+  productsApi,
+  TAKEDOWN_REASONS,
+  type AdminProduct,
+  type AdminProductDetail,
+} from '@/api/products';
 import { useAuth } from '@/auth/guards';
 import { useActionDialog } from '@/components/ActionDialog';
-import { FieldGrid, IdText, StatusBadge, TwoLine, When } from '@/components/Bits';
+import { FieldGrid, IdText, TwoLine, When } from '@/components/Bits';
 import { DataTable, type Column } from '@/components/DataTable';
 import { DetailDrawer } from '@/components/DetailDrawer';
 import { PageHeader } from '@/components/PageHeader';
-import { NotAvailableBlock, SectionCard } from '@/components/StateBlocks';
+import { ErrorBlock, NotAvailableBlock, SectionCard } from '@/components/StateBlocks';
 import { useListState } from '@/hooks/useListState';
-import { fmtMoney } from '@/lib/format';
+import { fmtMoney, fmtNumber, humanize } from '@/lib/format';
 
-const nameOf = (p: ProductRow) => p.title || p.name || 'Untitled product';
-const stateOf = (p: ProductRow) => p.state ?? p.status ?? null;
-
-function StateBadge({ value }: { value: number | string | null }) {
-  if (typeof value === 'number')
-    return (
-      <Badge variant="light" color={PRODUCT_TONE[value] ?? 'gray'}>
-        {PRODUCT_STATE[value] ?? value}
+function Status({ p }: { p: Pick<AdminProduct, 'status' | 'unpublished'> }) {
+  return (
+    <Group gap={4} wrap="nowrap">
+      <Badge variant="light" color={PRODUCT_STATUS_TONE[p.status] ?? 'gray'}>
+        {PRODUCT_STATUS_LABEL[p.status] ?? humanize(p.status)}
       </Badge>
-    );
-  return <StatusBadge value={value} />;
+      {p.status === 'Suspended' && (
+        <Text size="xs" c="dimmed" style={{ whiteSpace: 'nowrap' }}>
+          {p.unpublished ? 'by an admin' : 'vendor suspended'}
+        </Text>
+      )}
+    </Group>
+  );
+}
+
+function priceText(p: AdminProduct) {
+  if (!p.price) return '—';
+  return p.price.min === p.price.max ? fmtMoney(p.price.min, p.price.currency) : `${fmtMoney(p.price.min, p.price.currency)} – ${fmtMoney(p.price.max, p.price.currency)}`;
 }
 
 /**
- * Every vendor's products, with moderation. Built against `GET /v1/admin/products` (and suspend/reinstate), which the
- * backend is adding; until it answers, the page says the list isn't available rather than showing an empty catalogue.
+ * Every vendor's products with moderation: find a listing, see stock, sales and reports, take it down with a reason
+ * the vendor is shown, and restore it when fixed.
  */
 export function ProductsPage() {
-  const { can } = useAuth();
-  const list = useListState(['state', 'vendor'] as const);
+  const list = useListState(['status', 'vendor', 'sort', 'flagged', 'unpublished', 'oos'] as const);
+  const f = list.filters;
   const query = useQuery({
-    queryKey: ['products', 'list', list.search, list.filters.state, list.filters.vendor, list.page, list.pageSize],
-    queryFn: ({ signal }) => productsApi.list({ search: list.search, state: list.filters.state, vendorAccountId: list.filters.vendor, page: list.page, pageSize: list.pageSize }, signal),
+    queryKey: ['products', 'list', list.search, f, list.page, list.pageSize],
+    queryFn: ({ signal }) =>
+      productsApi.list(
+        {
+          search: list.search,
+          status: f.status,
+          vendorAccountId: f.vendor,
+          sort: f.sort,
+          flagged: f.flagged === '1',
+          unpublished: f.unpublished === '1',
+          outOfStock: f.oos === '1',
+          page: list.page,
+          pageSize: list.pageSize,
+        },
+        signal,
+      ),
     placeholderData: keepPreviousData,
     retry: false,
   });
 
-  const columns: Column<ProductRow>[] = [
+  const columns: Column<AdminProduct>[] = [
     {
       key: 'product',
       header: 'Product',
       render: (p) => (
         <Group gap="sm" wrap="nowrap">
-          <Avatar src={p.primaryImageUrl ?? p.thumbnailUrl} radius="sm" size={38} alt="">
-            {nameOf(p).slice(0, 1)}
+          <Avatar src={p.thumbnailUrl} radius="sm" size={40} alt="">
+            {p.name.slice(0, 1)}
           </Avatar>
-          <TwoLine primary={nameOf(p)} secondary={p.categoryName} />
+          <TwoLine primary={p.name} secondary={p.categoryName} />
+          {p.flagged && (
+            <Badge size="xs" color="amber" variant="filled" title={`${p.openModerationItems} open report(s)`}>
+              Reported
+            </Badge>
+          )}
         </Group>
       ),
     },
-    { key: 'vendor', header: 'Vendor', render: (p) => p.vendorName ?? <IdText value={p.vendorAccountId ?? null} /> },
-    { key: 'price', header: 'Price', align: 'right', visibleFrom: 'sm', render: (p) => fmtMoney(p.priceAmount ?? p.price ?? null, p.currency) },
-    { key: 'state', header: 'State', render: (p) => <StateBadge value={stateOf(p)} /> },
-    { key: 'updated', header: 'Updated', visibleFrom: 'md', render: (p) => <When value={p.updatedUtc ?? p.createdUtc ?? null} relative /> },
+    { key: 'vendor', header: 'Vendor', visibleFrom: 'sm', render: (p) => p.vendorName ?? <IdText value={p.vendorAccountId} /> },
+    { key: 'price', header: 'Price', align: 'right', visibleFrom: 'md', render: (p) => <Text size="sm" style={{ whiteSpace: 'nowrap' }}>{priceText(p)}</Text> },
+    {
+      key: 'stock',
+      header: 'Stock',
+      align: 'right',
+      visibleFrom: 'lg',
+      render: (p) => (p.stock ? <Text size="sm" c={p.stock.outOfStock ? 'signal' : undefined}>{fmtNumber(p.stock.totalOnHand)}</Text> : '—'),
+    },
+    { key: 'sold', header: 'Sold 30d', align: 'right', visibleFrom: 'lg', render: (p) => fmtNumber(p.unitsSold30d) },
+    { key: 'status', header: 'Status', render: (p) => <Status p={p} /> },
   ];
+
+  const toggle = (key: 'flagged' | 'unpublished' | 'oos') => list.setFilter(key, f[key] === '1' ? null : '1');
 
   return (
     <>
-      <PageHeader title="Products" description="The catalogue across every vendor. Suspend a listing that breaks the rules; reinstate it when fixed." />
+      <PageHeader title="Products" description="The catalogue across every vendor. Take a listing down with a reason the vendor sees; restore it when it is fixed." />
       {isMissing(query.error) ? (
-        <NotAvailableBlock what="The cross-vendor product list" detail="The backend is adding GET /v1/admin/products and its moderation actions. This page is built for it and fills in as soon as it ships - nothing is hidden." />
+        <NotAvailableBlock what="The cross-vendor product list" detail="GET /v1/admin/products ships with the backend branch feat/admin-api-gaps. This page is built for it and fills in once that is deployed." />
       ) : (
         <DataTable
           label="Products"
@@ -81,92 +126,231 @@ export function ProductsPage() {
           filtered={list.filtered}
           emptyTitle="No products yet"
           toolbar={
-            <Group gap="md" align="flex-end" wrap="wrap">
-              <TextInput label="Search" placeholder="Product name" leftSection={<IconSearch size={14} />} w={280} value={list.searchInput} onChange={(e) => list.setSearchInput(e.currentTarget.value)} />
-              <Select
-                label="State"
-                w={170}
-                clearable
-                placeholder="Any state"
-                data={Object.entries(PRODUCT_STATE).map(([value, label]) => ({ value, label }))}
-                value={list.filters.state || null}
-                onChange={(v) => list.setFilter('state', v)}
-              />
-            </Group>
+            <Stack gap="sm">
+              <Group gap="md" align="flex-end" wrap="wrap">
+                <TextInput label="Search" placeholder="Name, SKU or product ID" leftSection={<IconSearch size={14} />} w={280} value={list.searchInput} onChange={(e) => list.setSearchInput(e.currentTarget.value)} />
+                <Select label="Status" w={160} clearable placeholder="Any" data={PRODUCT_STATUS_FILTER} value={f.status || null} onChange={(v) => list.setFilter('status', v)} />
+                <Select label="Sort" w={180} data={PRODUCT_SORT} value={f.sort || 'updated_desc'} onChange={(v) => list.setFilter('sort', v === 'updated_desc' ? null : v)} allowDeselect={false} />
+              </Group>
+              <Group gap="xs">
+                <Chip size="sm" checked={f.flagged === '1'} onChange={() => toggle('flagged')}>
+                  Reported
+                </Chip>
+                <Chip size="sm" checked={f.unpublished === '1'} onChange={() => toggle('unpublished')}>
+                  Taken down
+                </Chip>
+                <Chip size="sm" checked={f.oos === '1'} onChange={() => toggle('oos')}>
+                  Out of stock
+                </Chip>
+                {f.vendor && (
+                  <Group gap={6}>
+                    <Text size="sm" c="dimmed">
+                      Vendor
+                    </Text>
+                    <IdText value={f.vendor} />
+                    <Button size="compact-xs" variant="subtle" onClick={() => list.setFilter('vendor', null)}>
+                      Clear
+                    </Button>
+                  </Group>
+                )}
+              </Group>
+            </Stack>
           }
         />
       )}
-      <ProductDrawer id={list.selected} row={query.data?.items.find((p) => p.id === list.selected)} onClose={() => list.open(null)} canModerate={can('moderateProducts')} />
+      <ProductDrawer id={list.selected} onClose={() => list.open(null)} />
     </>
   );
 }
 
-function ProductDrawer({ id, row, onClose, canModerate }: { id: string | null; row?: ProductRow; onClose: () => void; canModerate: boolean }) {
+function ProductDrawer({ id, onClose }: { id: string | null; onClose: () => void }) {
+  const { can } = useAuth();
   const queryClient = useQueryClient();
   const [dialog, open] = useActionDialog();
-  const detail = useQuery({ queryKey: ['products', 'detail', id], queryFn: ({ signal }) => productsApi.detail(id!, signal), enabled: !!id, retry: false });
-  const p = detail.data ?? row;
-  const state = p ? stateOf(p) : null;
-  const suspended = state === 5 || state === 'Suspended';
-
-  const act = (suspend: boolean) =>
-    open({
-      title: suspend ? `Suspend “${p ? nameOf(p) : 'product'}”` : `Reinstate “${p ? nameOf(p) : 'product'}”`,
-      consequence: suspend
-        ? 'Shoppers stop seeing the listing everywhere - search, reels, collections - until it is reinstated. The vendor is told why.'
-        : 'The listing returns to the catalogue in its previous state.',
-      confirmLabel: suspend ? 'Suspend listing' : 'Reinstate listing',
-      danger: suspend,
-      fields: [{ name: 'reason', kind: 'textarea', label: suspend ? 'Reason (shown to the vendor)' : 'Reason', required: true, minLength: 5 }],
-      run: (v) => (suspend ? productsApi.suspend(id!, v.reason!.trim()) : productsApi.reinstate(id!, v.reason!.trim())),
-      success: suspend ? 'Listing suspended.' : 'Listing reinstated.',
-      onDone: () => void queryClient.invalidateQueries({ queryKey: ['products'] }),
-    });
+  const q = useQuery({ queryKey: ['products', 'detail', id], queryFn: ({ signal }) => productsApi.detail(id!, signal), enabled: !!id });
+  const p = q.data;
+  const done = (r: unknown) => {
+    queryClient.setQueryData(['products', 'detail', id], r as AdminProductDetail);
+    void queryClient.invalidateQueries({ queryKey: ['products', 'list'] });
+  };
+  const canTakeDown = p && !p.unpublished && p.status !== 'Draft' && p.status !== 'Archived';
 
   return (
     <DetailDrawer
       opened={!!id}
       onClose={onClose}
-      title={p ? nameOf(p) : 'Product'}
-      subtitle={p?.vendorName ?? undefined}
-      badges={p && <StateBadge value={state} />}
+      title={p?.name ?? 'Product'}
+      subtitle={p ? [p.vendorName, p.categoryName].filter(Boolean).join(' · ') : undefined}
+      badges={p && <Status p={p} />}
       actions={
-        canModerate &&
-        p && (
-          <Button size="sm" variant={suspended ? 'default' : 'light'} color={suspended ? undefined : 'signal'} leftSection={suspended ? <IconEye size={16} /> : <IconEyeOff size={16} />} onClick={() => act(!suspended)}>
-            {suspended ? 'Reinstate' : 'Suspend listing'}
-          </Button>
+        p &&
+        can('moderateProducts') && (
+          <>
+            {canTakeDown && (
+              <Button
+                size="sm"
+                variant="light"
+                color="signal"
+                leftSection={<IconEyeOff size={16} />}
+                onClick={() =>
+                  open({
+                    title: `Take down “${p.name}”`,
+                    consequence: 'The listing disappears from search, reels, collections and the shop, and the vendor gets an email with your reason. You can restore it later.',
+                    confirmLabel: 'Take down listing',
+                    danger: true,
+                    fields: [
+                      { name: 'code', kind: 'select', label: 'Reason category', options: TAKEDOWN_REASONS },
+                      { name: 'reason', kind: 'textarea', label: 'Reason (shown to the vendor)', required: true, minLength: 3 },
+                    ],
+                    run: (v) => productsApi.unpublish(p.id, v.reason!.trim(), v.code || null),
+                    success: 'Listing taken down.',
+                    onDone: done,
+                  })
+                }
+              >
+                Take down…
+              </Button>
+            )}
+            {p.unpublished && (
+              <Button
+                size="sm"
+                leftSection={<IconEye size={16} />}
+                onClick={() =>
+                  open({
+                    title: `Restore “${p.name}”`,
+                    consequence: 'The listing goes live again (unless the vendor’s whole account is suspended - then it returns when they are reinstated).',
+                    confirmLabel: 'Restore listing',
+                    fields: [{ name: 'note', kind: 'textarea', label: 'Note (audit log)' }],
+                    run: (v) => productsApi.restore(p.id, v.note?.trim() || null),
+                    success: 'Listing restored.',
+                    onDone: done,
+                  })
+                }
+              >
+                Restore
+              </Button>
+            )}
+          </>
         )
       }
     >
       {dialog}
-      {!p ? (
-        <Skeleton height={200} radius="lg" />
+      {q.error ? (
+        <ErrorBlock error={q.error} onRetry={() => void q.refetch()} />
+      ) : !p ? (
+        <Stack>
+          <Skeleton height={160} radius="lg" />
+          <Skeleton height={200} radius="lg" />
+        </Stack>
       ) : (
         <Stack gap="lg">
-          {(p.primaryImageUrl || p.thumbnailUrl) && (
-            <div className="sm-doc-frame">
-              <img src={p.primaryImageUrl ?? p.thumbnailUrl ?? ''} alt={nameOf(p)} loading="lazy" />
-            </div>
+          {p.unpublished && (
+            <Alert color="signal" variant="light" icon={<IconEyeOff size={16} />} title="Taken down by an admin">
+              {p.unpublished.reasonCode ? `${humanize(p.unpublished.reasonCode)} - ` : ''}
+              {p.unpublished.reason} · <When value={p.unpublished.atUtc} />
+            </Alert>
+          )}
+          {p.moderation && p.moderation.openItems.length > 0 && (
+            <Alert color="amber" variant="light" icon={<IconAlertTriangle size={16} />} title={`${p.moderation.openItems.length} open report(s)`}>
+              <Stack gap={4}>
+                {p.moderation.openItems.map((m) => (
+                  <Group key={m.moderationItemId} gap={6}>
+                    <Text size="sm">{m.reportReasonCode ? humanize(m.reportReasonCode) : humanize(m.source)}</Text>
+                    <Text size="xs" c="dimmed">
+                      <When value={m.submittedUtc} relative />
+                    </Text>
+                    {can('viewModeration') && (
+                      <Button size="compact-xs" variant="subtle" component={Link} to={`/moderation?state=all&open=${encodeURIComponent(m.moderationItemId)}`}>
+                        Open report
+                      </Button>
+                    )}
+                  </Group>
+                ))}
+              </Stack>
+            </Alert>
+          )}
+          {p.images.length > 0 && (
+            <SimpleGrid cols={{ base: 3, sm: 5 }} spacing="xs">
+              {[...p.images]
+                .sort((a, b) => a.sortOrder - b.sortOrder)
+                .map((img) => (
+                  <a key={img.id} href={img.url} target="_blank" rel="noopener noreferrer" aria-label="Open image full size">
+                    <Image src={img.url} alt="" radius="md" h={96} fit="cover" />
+                  </a>
+                ))}
+            </SimpleGrid>
           )}
           <SectionCard title="Listing">
             <FieldGrid
+              cols={3}
               fields={[
-                { label: 'Name', value: nameOf(p) },
-                { label: 'Category', value: p.categoryName },
-                { label: 'Price', value: fmtMoney(p.priceAmount ?? p.price ?? null, p.currency) },
-                { label: 'Publicly listed', value: p.isPubliclyListed == null ? null : p.isPubliclyListed ? 'Yes' : 'No' },
-                { label: 'Vendor', value: p.vendorName ?? <IdText value={p.vendorAccountId ?? null} /> },
+                { label: 'Price', value: priceText(p) },
+                { label: 'On hand', value: p.stock ? `${fmtNumber(p.stock.totalOnHand)} across ${p.stock.variantCount} variant(s)` : null },
+                { label: 'Sold', value: p.unitsSold != null ? `${fmtNumber(p.unitsSold)} (${fmtNumber(p.unitsSold30d)} in 30 days)` : null },
+                {
+                  label: 'Rating',
+                  value: p.averageRating != null ? (
+                    <Group gap={4}>
+                      <IconStarFilled size={12} color="var(--mantine-color-amber-6)" />
+                      {p.averageRating.toFixed(1)} ({p.reviewCount ?? 0})
+                    </Group>
+                  ) : null,
+                },
+                { label: 'In a reel', value: p.hasReel == null ? null : p.hasReel ? 'Yes' : 'No' },
+                { label: 'Processing time', value: p.processingTimeDays != null ? `${p.processingTimeDays} day(s)` : null },
+                { label: 'Restriction', value: p.restrictionLevel },
+                { label: 'Created', value: <When value={p.createdUtc} /> },
+                { label: 'Updated', value: <When value={p.updatedUtc} /> },
+                { label: 'Short description', value: p.shortDescription, wide: true },
+                { label: 'Vendor', value: <IdText value={p.vendorAccountId} /> },
                 { label: 'Product ID', value: <IdText value={p.id} /> },
-                { label: 'Created', value: <When value={p.createdUtc ?? null} /> },
-                { label: 'Updated', value: <When value={p.updatedUtc ?? null} /> },
               ]}
             />
+            {p.longDescriptionMarkdown && (
+              <Text size="sm" mt="md" style={{ whiteSpace: 'pre-wrap' }} lineClamp={12}>
+                {p.longDescriptionMarkdown}
+              </Text>
+            )}
           </SectionCard>
-          {detail.error && !isMissing(detail.error) && (
-            <Text size="sm" c="dimmed">
-              Showing the list row; the full detail couldn’t be loaded.
-            </Text>
+          {p.variants.length > 0 && (
+            <SectionCard title={`Variants (${p.variants.length})`}>
+              <Table.ScrollContainer minWidth={420}>
+                <Table aria-label="Variants">
+                  <Table.Thead>
+                    <Table.Tr>
+                      <Table.Th>SKU</Table.Th>
+                      <Table.Th style={{ textAlign: 'right' }}>Price</Table.Th>
+                      <Table.Th style={{ textAlign: 'right' }}>On hand</Table.Th>
+                    </Table.Tr>
+                  </Table.Thead>
+                  <Table.Tbody>
+                    {p.variants.map((v) => (
+                      <Table.Tr key={v.id}>
+                        <Table.Td>
+                          <span className="sm-mono">{v.sku}</span> {v.isDefault && <Badge size="xs" variant="outline">Default</Badge>}
+                        </Table.Td>
+                        <Table.Td style={{ textAlign: 'right' }}>{fmtMoney(v.price.amount, v.price.currency)}</Table.Td>
+                        <Table.Td style={{ textAlign: 'right' }}>{v.trackInventory ? fmtNumber(v.quantityOnHand) : 'Not tracked'}</Table.Td>
+                      </Table.Tr>
+                    ))}
+                  </Table.Tbody>
+                </Table>
+              </Table.ScrollContainer>
+            </SectionCard>
+          )}
+          {p.moderation && p.moderation.history.length > 0 && (
+            <SectionCard title="Moderation history">
+              <Timeline bulletSize={14} lineWidth={2}>
+                {p.moderation.history.map((h, i) => (
+                  <Timeline.Item key={i} title={humanize(h.action)}>
+                    <Text size="sm">{[h.reasonCode ? humanize(h.reasonCode) : null, h.reason].filter(Boolean).join(' - ') || '—'}</Text>
+                    <Text size="xs" c="dimmed">
+                      <When value={h.atUtc} /> · <IdText value={h.byAdminId} />
+                    </Text>
+                  </Timeline.Item>
+                ))}
+              </Timeline>
+            </SectionCard>
           )}
         </Stack>
       )}

@@ -125,7 +125,16 @@ function KycCase({ item, detail }: { item: KycReviewItem; detail: KycApplication
   const suggested: KycReasonCode | null = missing.length > 0 ? 'DOCS_UNCLEAR' : age !== null && age < 18 ? 'UNDERAGE' : null;
   const assignedToMe = item.assignedReviewerId && claims?.adminAccountId && item.assignedReviewerId === claims.adminAccountId;
 
-  const applicantFields = isCustomer
+  const isCourier = detail.applicantKind === APPLICANT_KIND.Courier;
+  const applicantFields = isCourier
+    ? [
+        { label: 'Name', value: detail.displayName },
+        { label: 'Government ID', value: detail.documentNumberMasked ?? (detail.documentNumberLast4 ? `•••• ${detail.documentNumberLast4}` : null) },
+        { label: 'Vehicle', value: detail.vehicle ? humanize(detail.vehicle) : null },
+        { label: 'Home area', value: detail.homeArea ? <span className="sm-mono">{detail.homeArea}</span> : null },
+        { label: 'Rider state', value: detail.courierState ? humanize(detail.courierState) : null },
+      ]
+    : isCustomer
     ? [
         { label: 'Full name', value: detail.fullName },
         {

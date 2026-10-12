@@ -39,7 +39,8 @@ export const CAPABILITIES = {
   riderEscrow: ['SuperAdmin', 'PayoutsOps'],
 
   // vendors
-  viewVendors: ['SuperAdmin', 'KycReviewer', 'SupportAgent', 'Readonly'],
+  viewVendors: ALL,
+  suspendVendors: ['SuperAdmin', 'SupportAgent'],
   /** The onboarding application list (Onboarding AdminKycController) is KycReviewer-only. */
   viewVendorApplications: ['SuperAdmin', 'KycReviewer'],
   verifyVendors: ['SuperAdmin', 'KycReviewer'],
@@ -51,7 +52,7 @@ export const CAPABILITIES = {
   orderCare: ['SuperAdmin', 'SupportAgent'],
 
   // products
-  viewProducts: ['SuperAdmin', 'ContentMod', 'SupportAgent', 'Readonly'],
+  viewProducts: ['SuperAdmin', 'ContentMod', 'SupportAgent', 'KycReviewer', 'Readonly'],
   moderateProducts: ['SuperAdmin', 'ContentMod'],
 
   // customers

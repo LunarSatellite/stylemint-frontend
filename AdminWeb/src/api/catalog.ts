@@ -1,6 +1,6 @@
 /**
  * Campaigns, collections, popular searches (Catalog module, ContentMod), content queues (reels link health,
- * social-feed reports, model-drafted recipes) and the cross-vendor product list the backend is adding.
+ * social-feed reports, model-drafted recipes). Products are in products.ts.
  */
 import { http } from './client';
 import { toPage, type Page } from './paging';
@@ -95,26 +95,6 @@ export interface PopularSearch {
 
 export const PRODUCT_STATE: Record<number, string> = { 1: 'Draft', 2: 'Active', 3: 'Out of stock', 4: 'Archived', 5: 'Suspended' };
 export const PRODUCT_TONE: Record<number, string> = { 1: 'gray', 2: 'forest', 3: 'amber', 4: 'gray', 5: 'signal' };
-
-/** As the backend agent is adding it; optional fields are shown when present. */
-export interface ProductRow {
-  id: string;
-  title?: string | null;
-  name?: string | null;
-  vendorAccountId?: string | null;
-  vendorName?: string | null;
-  state?: number | string | null;
-  status?: number | string | null;
-  priceAmount?: number | null;
-  price?: number | null;
-  currency?: string | null;
-  primaryImageUrl?: string | null;
-  thumbnailUrl?: string | null;
-  categoryName?: string | null;
-  isPubliclyListed?: boolean | null;
-  createdUtc?: string | null;
-  updatedUtc?: string | null;
-}
 
 export const REEL_STATE: Record<number, string> = { 1: 'Draft', 2: 'Processing', 3: 'Published', 4: 'Unpublished', 5: 'Deleted on source', 6: 'Pending approval' };
 export const REEL_PLATFORM: Record<number, string> = { 1: 'Instagram', 2: 'TikTok', 3: 'YouTube Shorts', 4: 'Facebook' };
@@ -217,22 +197,4 @@ export const contentApi = {
   recipeDrafts: (skip: number, take: number, signal?: AbortSignal) => http.get<RecipeDraft[]>('/v1/admin/recipes/llm-drafts-pending-review', { skip, take }, signal),
   promoteRecipe: (id: string) => http.post<unknown>(`/v1/admin/recipes/${enc(id)}/promote-to-curated`),
   hideRecipe: (id: string, reason: string) => http.post<unknown>(`/v1/admin/recipes/${enc(id)}/hide`, { reason }),
-};
-
-export const productsApi = {
-  /** `GET /v1/admin/products` - being added by the backend; 404 until it ships. */
-  list: async (f: { search?: string; state?: string; vendorAccountId?: string; page: number; pageSize: number }, signal?: AbortSignal): Promise<Page<ProductRow>> =>
-    toPage<ProductRow>(
-      await http.get(
-        '/v1/admin/products',
-        { search: f.search || undefined, state: f.state || undefined, vendorAccountId: f.vendorAccountId || undefined, pageNumber: f.page, pageSize: f.pageSize },
-        signal,
-      ),
-      f.page,
-      f.pageSize,
-    ),
-  detail: (id: string, signal?: AbortSignal) => http.get<ProductRow & Record<string, unknown>>(`/v1/admin/products/${enc(id)}`, undefined, signal),
-  /** Moderation (contract pending): suspend hides a listing from shoppers; reinstate returns it. */
-  suspend: (id: string, reason: string) => http.post<unknown>(`/v1/admin/products/${enc(id)}/suspend`, { reason }),
-  reinstate: (id: string, reason: string) => http.post<unknown>(`/v1/admin/products/${enc(id)}/reinstate`, { reason }),
 };

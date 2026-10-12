@@ -25,6 +25,7 @@ import { DetailDrawer } from '@/components/DetailDrawer';
 import { PageHeader } from '@/components/PageHeader';
 import { SectionCard } from '@/components/StateBlocks';
 import { useListState } from '@/hooks/useListState';
+import { Link } from 'react-router-dom';
 
 const options = (m: Record<number, string>) => Object.entries(m).map(([value, label]) => ({ value, label }));
 
@@ -138,7 +139,20 @@ function ModerationDrawer({ item, id, onClose }: { item: ModerationItem | null; 
             <FieldGrid
               fields={[
                 { label: 'Content', value: TARGET_KIND[m.targetKind] },
-                { label: 'Content ID', value: <IdText value={m.targetId} /> },
+                {
+                  label: 'Content ID',
+                  value:
+                    m.targetKind === 6 && can('viewProducts') ? (
+                      <Group gap={6}>
+                        <IdText value={m.targetId} />
+                        <Button size="compact-xs" variant="light" component={Link} to={`/products?open=${encodeURIComponent(m.targetId)}`}>
+                          Open product
+                        </Button>
+                      </Group>
+                    ) : (
+                      <IdText value={m.targetId} />
+                    ),
+                },
                 { label: 'Reported for', value: m.reportReasonCode ? REPORT_REASON[m.reportReasonCode] ?? m.reportReasonCode : null },
                 { label: 'Source', value: MOD_SOURCE[m.source] },
                 { label: 'Reporter', value: <IdText value={m.reporterAccountId} /> },

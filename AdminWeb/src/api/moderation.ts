@@ -2,7 +2,8 @@
 import { http } from './client';
 import { toPage, type Page } from './paging';
 
-export const TARGET_KIND: Record<number, string> = { 1: 'Reel', 2: 'Review', 3: 'Reel comment', 4: 'Profile', 5: 'Recommendation reply' };
+/** Product = 6 arrives with feat/admin-api-gaps: hide/remove on a product unpublishes it. */
+export const TARGET_KIND: Record<number, string> = { 1: 'Reel', 2: 'Review', 3: 'Reel comment', 4: 'Profile', 5: 'Recommendation reply', 6: 'Product' };
 export const MOD_STATE: Record<number, string> = { 1: 'Open', 2: 'In review', 3: 'Decided' };
 export const MOD_STATE_TONE: Record<number, string> = { 1: 'amber', 2: 'blue', 3: 'gray' };
 export const MOD_SOURCE: Record<number, string> = { 1: 'User report', 2: 'Automated scanner', 3: 'Admin spotted' };

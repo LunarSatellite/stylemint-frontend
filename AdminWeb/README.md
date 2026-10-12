@@ -70,12 +70,17 @@ URL) + a `DetailDrawer`; every write goes through `useActionDialog` (states the 
 the audit reason, handles step-up, toasts). Loading, error, forbidden and empty are distinct states -
 "could not load" is never shown as "none".
 
-## Not on the server yet (pages degrade, nothing is faked)
+## Endpoints from `feat/admin-api-gaps` (built against `wt/admin-api-contract.md`)
 
-- `GET /v1/admin/dashboard/summary` - the dashboard shows live work-queue counts meanwhile.
-- `GET /v1/admin/vendors` (+ detail) - Vendors falls back to onboarding vendor applications.
-- `GET /v1/admin/products` (+ `suspend`/`reinstate`) - Products says it is not available yet.
-- No order-by-id, order search, payment list, payout detail or customer detail endpoints exist.
+Until that backend branch is deployed these answer a bare 404 and the pages degrade - nothing is faked:
+
+- `GET /v1/admin/dashboard/summary` - the dashboard counts each work queue from its own list meanwhile.
+- `GET /v1/admin/vendors`, `/{id}`, `/{id}/suspend|reinstate` - Vendors falls back to onboarding applications.
+- `GET /v1/admin/products`, `/{id}`, `/{id}/unpublish|restore` - Products says it is not available yet.
+- KYC `applicantKind = 4` (riders in the unified queue) and moderation `targetKind = 6` (products) are
+  understood; the Riders tab keeps using the courier endpoints, which work before and after.
+
+The API has no order-by-id, order search, payment list, payout detail or customer detail endpoints.
 
 ## Deploy
 
