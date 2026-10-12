@@ -6,6 +6,9 @@
  * refresh token and no refresh endpoint: "refreshing" means getting a new id_token from the IdP without a prompt and
  * exchanging it again.
  *
+ * Approved admins can also sign in with Google (`/auth/google`, ID token), Facebook (`/auth/facebook`, access token)
+ * or their email + password (`/auth/password`). All of them answer with the same token response.
+ *
  * Where the token lives: in memory, mirrored to this TAB's sessionStorage so a reload does not sign the operator out
  * (sessionStorage is per tab, gone when the tab closes, and never sent anywhere by the browser). It is never put in
  * localStorage or a cookie. Logout and an expired/revoked session clear it, and the logout is broadcast to the other
@@ -41,8 +44,15 @@ export interface Session {
   expiresAt: number;
   claims: AdminClaims;
   /** How it was obtained, which decides how it can be renewed. */
-  via: 'sso' | 'key';
+  via: SignInVia;
 }
+
+/**
+ * `sso` (corporate IdP, renewable silently), `key` (the environment's access key), and the approved-admin methods:
+ * `google`, `facebook`, `password`. Only `sso` can renew without a prompt; the others sign in again.
+ */
+export type SignInVia = 'sso' | 'key' | 'google' | 'facebook' | 'password';
+const VIAS: readonly SignInVia[] = ['sso', 'key', 'google', 'facebook', 'password'];
 
 export type EndReason = 'expired' | 'revoked' | 'security' | 'signedOut';
 
@@ -147,7 +157,7 @@ export function restoreSession(now = Date.now()): Session | null {
       sessionStorage.removeItem(STORAGE_KEY);
       return null;
     }
-    const session: Session = { token: stored.token, expiresAt: stored.expiresAt, claims, via: stored.via === 'key' ? 'key' : 'sso' };
+    const session: Session = { token: stored.token, expiresAt: stored.expiresAt, claims, via: VIAS.includes(stored.via) ? stored.via : 'sso' };
     emit({ session, ended: null });
     return session;
   } catch {
@@ -182,7 +192,25 @@ export const authApi = {
 
 /** Exchanges an identity token (id_token or access key) for an admin session and makes it current. */
 export async function signInWithIdToken(idToken: string, via: Session['via']): Promise<Session> {
-  const login = await request<AdminLoginSession>('/v1/admin/auth/sso', { method: 'POST', body: { idToken }, anonymous: true });
+  return exchange('/v1/admin/auth/sso', { idToken }, via);
+}
+
+/** A Google ID token (Google Identity Services); the server checks it and that its verified email is an admin's. */
+export function signInWithGoogle(idToken: string): Promise<Session> {
+  return exchange('/v1/admin/auth/google', { idToken }, 'google');
+}
+
+/** A Facebook user access token (JS SDK); the server checks it with Graph and matches the account's email. */
+export function signInWithFacebook(accessToken: string): Promise<Session> {
+  return exchange('/v1/admin/auth/facebook', { accessToken }, 'facebook');
+}
+
+export function signInWithPassword(email: string, password: string): Promise<Session> {
+  return exchange('/v1/admin/auth/password', { email: email.trim(), password }, 'password');
+}
+
+async function exchange(path: string, body: Record<string, string>, via: SignInVia): Promise<Session> {
+  const login = await request<AdminLoginSession>(path, { method: 'POST', body, anonymous: true });
   const session = sessionFromLogin(login, via);
   setSession(session);
   return session;

@@ -1,11 +1,12 @@
 import { Alert, Badge, Button, Checkbox, Group, Skeleton, Stack, Table, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { IconShieldLock } from '@tabler/icons-react';
-import { ADMIN_STATE_LABEL, adminsApi, ROLE_BY_NUMBER, type AdminAccount } from '@/api/admins';
+import { useState } from 'react';
+import { IconShieldLock, IconUserPlus } from '@tabler/icons-react';
+import { ADMIN_STATE_LABEL, adminsApi, ROLE_BY_NUMBER, SIGN_IN_METHOD_LABEL, signInMethodsOf, type AdminAccount } from '@/api/admins';
 import { messageOf } from '@/api/errors';
 import { useAuth } from '@/auth/guards';
-import { ADMIN_ROLES, roleLabel } from '@/auth/roles';
+import { ADMIN_ROLES, ROLE_DESCRIPTIONS, roleLabel } from '@/auth/roles';
 import { withStepUp } from '@/auth/stepUp';
 import { useActionDialog } from '@/components/ActionDialog';
 import { FieldGrid, IdText, TwoLine, When } from '@/components/Bits';
@@ -14,8 +15,9 @@ import { DetailDrawer } from '@/components/DetailDrawer';
 import { PageHeader } from '@/components/PageHeader';
 import { ErrorBlock, SectionCard } from '@/components/StateBlocks';
 import { useListState } from '@/hooks/useListState';
+import { InviteAdminDialog } from './InviteAdminDialog';
 
-const roleNames = (a: AdminAccount) => a.roles.map((r) => ROLE_BY_NUMBER[r.role] ?? String(r.role));
+const roleNames = (a: AdminAccount) => (a.roles ?? []).map((r) => ROLE_BY_NUMBER[r.role] ?? String(r.role));
 
 /**
  * Admin accounts and their roles. Every change here asks for your authenticator code (step-up), and a role change
@@ -23,6 +25,8 @@ const roleNames = (a: AdminAccount) => a.roles.map((r) => ROLE_BY_NUMBER[r.role]
  */
 export function AdminsPage() {
   const list = useListState([] as const, { pageSize: 50 });
+  const queryClient = useQueryClient();
+  const [inviting, setInviting] = useState(false);
   const q = useQuery({ queryKey: ['admins', list.page, list.pageSize], queryFn: ({ signal }) => adminsApi.list(list.page, list.pageSize, signal), placeholderData: keepPreviousData });
   const columns: Column<AdminAccount>[] = [
     { key: 'name', header: 'Admin', render: (a) => <TwoLine primary={a.displayName} secondary={a.email} /> },
@@ -30,7 +34,7 @@ export function AdminsPage() {
       key: 'roles',
       header: 'Roles',
       render: (a) =>
-        a.roles.length === 0 ? (
+        (a.roles ?? []).length === 0 ? (
           <Badge color="amber" variant="light">
             No role - waiting for access
           </Badge>
@@ -45,11 +49,31 @@ export function AdminsPage() {
         ),
     },
     { key: 'state', header: 'State', render: (a) => <Badge variant="dot" color={a.state === 1 ? 'forest' : 'gray'}>{ADMIN_STATE_LABEL[a.state]}</Badge> },
-    { key: 'login', header: 'Last sign-in', visibleFrom: 'md', render: (a) => <When value={a.lastLoginUtc} relative /> },
+    { key: 'methods', header: 'Sign-in methods', visibleFrom: 'md', render: (a) => <SignInMethods admin={a} /> },
+    {
+      key: 'login',
+      header: 'Last sign-in',
+      visibleFrom: 'md',
+      render: (a) => (
+        <TwoLine
+          primary={<When value={a.lastSignInUtc ?? a.lastLoginUtc} relative />}
+          secondary={a.lastSignInMethod ? `with ${SIGN_IN_METHOD_LABEL[a.lastSignInMethod.toLowerCase()] ?? a.lastSignInMethod}` : undefined}
+        />
+      ),
+    },
   ];
   return (
     <>
-      <PageHeader title="Admins & roles" description="Who can use this console and what they can do. New people appear here after their first sign-in, with no role." />
+      <PageHeader
+        title="Admins & roles"
+        description="Who can use this console and what they can do. Invite someone by email - they sign in with Google, Facebook or a password on that address. People who arrive through single sign-on appear here with no role."
+        actions={
+          <Button leftSection={<IconUserPlus size={16} />} onClick={() => setInviting(true)}>
+            Invite admin
+          </Button>
+        }
+      />
+      <InviteAdminDialog opened={inviting} onClose={() => setInviting(false)} onInvited={() => void queryClient.invalidateQueries({ queryKey: ['admins'] })} />
       <DataTable
         label="Admin accounts"
         columns={columns}
@@ -176,7 +200,7 @@ function AdminDrawer({ admin: a, opened, onClose }: { admin: AdminAccount | null
                 <Checkbox
                   key={r}
                   label={roleLabel(r)}
-                  description={DESCRIPTIONS[r]}
+                  description={ROLE_DESCRIPTIONS[r]}
                   checked={held.has(r)}
                   disabled={toggleRole.isPending || (self && r === 'SuperAdmin')}
                   onChange={(e) => toggleRole.mutate({ role: r, grant: e.currentTarget.checked })}
@@ -193,8 +217,8 @@ function AdminDrawer({ admin: a, opened, onClose }: { admin: AdminAccount | null
             <FieldGrid
               fields={[
                 { label: 'Email', value: a.email },
-                { label: 'Signs in with', value: a.ssoSubject.startsWith('lead360:') ? 'Lead360 console' : 'Single sign-on' },
-                { label: 'Last sign-in', value: <When value={a.lastLoginUtc} /> },
+                { label: 'Signs in with', value: <SignInMethods admin={a} /> },
+                { label: 'Last sign-in', value: <When value={a.lastSignInUtc ?? a.lastLoginUtc} /> },
                 { label: 'Created', value: <When value={a.createdUtc} /> },
                 { label: 'Admin ID', value: <IdText value={a.id} /> },
               ]}
@@ -250,11 +274,17 @@ function AdminDrawer({ admin: a, opened, onClose }: { admin: AdminAccount | null
   );
 }
 
-const DESCRIPTIONS: Record<string, string> = {
-  SuperAdmin: 'Everything, including roles, payouts overrides and platform settings.',
-  KycReviewer: 'KYC and applications, rider identity checks, vendor badges.',
-  ContentMod: 'Moderation, content queues, campaigns, collections, discovery.',
-  SupportAgent: 'Tickets, returns, order care, customers, privacy requests.',
-  PayoutsOps: 'Payouts, refunds, hiding test orders, rider escrow.',
-  Readonly: 'Look at queues, orders and logs without changing anything.',
-};
+/** Google / Facebook / Password / SSO, from the server's `signInMethods` - a dash until that field exists. */
+function SignInMethods({ admin }: { admin: AdminAccount }) {
+  const methods = signInMethodsOf(admin);
+  if (!methods || methods.length === 0) return <Text span c="dimmed">—</Text>;
+  return (
+    <Group gap={4}>
+      {methods.map((m) => (
+        <Badge key={m} size="sm" variant="outline" color="slate">
+          {m}
+        </Badge>
+      ))}
+    </Group>
+  );
+}

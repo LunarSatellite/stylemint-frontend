@@ -73,31 +73,38 @@ describe('route guards', () => {
   });
 });
 
-describe('sign-in page', () => {
+/** An API that predates `GET /v1/admin/auth/methods` (bare 404): the older single sign-on and access key are the way in. */
+const LEGACY = '/v1/admin/auth/methods';
+
+describe('sign-in page against an older server', () => {
   it('signs in with an access key and lands where the operator was going', async () => {
     const token = fakeAdminJwt(['SupportAgent']);
     const { calls } = mockFetch((req) => {
+      if (req.path === LEGACY) return undefined;
       if (req.path === '/v1/admin/auth/sso')
         return { body: { accessToken: token, expiresAtUtc: new Date(Date.now() + 3600_000).toISOString(), adminAccountId: 'x', email: 'e', displayName: 'd', roles: [4] } };
       return { body: { items: [], totalCount: 0, pageNumber: 1, pageSize: 50 } };
     });
     const router = renderApp(`/login?next=${encodeURIComponent('/customers')}`);
     await userEvent.type(await screen.findByLabelText('Access key'), 'bootstrap-access-key-123');
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in with access key' }));
     await waitFor(() => expect(router.state.location.pathname).toBe('/customers'));
-    expect(calls[0]!.body).toEqual({ idToken: 'bootstrap-access-key-123' });
+    expect(calls.find((c) => c.path === '/v1/admin/auth/sso')!.body).toEqual({ idToken: 'bootstrap-access-key-123' });
+    // No password form: that server has no password sign-in.
+    expect(screen.queryByLabelText('Password')).not.toBeInTheDocument();
   });
 
   it('says why a key was refused', async () => {
-    mockFetch(() => ({ status: 401, body: { errorCode: 'auth.unauthorized', title: 'Invalid identity token.', status: 401 } }));
+    mockFetch((req) => (req.path === LEGACY ? undefined : { status: 401, body: { errorCode: 'auth.unauthorized', title: 'Invalid identity token.', status: 401 } }));
     renderApp('/login');
     await userEvent.type(await screen.findByLabelText('Access key'), 'wrong-key-wrong-key-wrong');
-    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in with access key' }));
     expect(await screen.findByText(/That sign-in was not accepted/)).toBeInTheDocument();
   });
 
   it('offers single sign-on when an identity provider is configured', async () => {
     setConfigForTests({ sso: { authority: 'https://login.example.com', clientId: 'admin', responseType: 'code', scope: 'openid', providerName: 'Microsoft' } });
+    mockFetch(() => undefined);
     renderApp('/login');
     expect(await screen.findByRole('button', { name: 'Continue with Microsoft' })).toBeInTheDocument();
     // The key form is folded away behind a link.
@@ -105,6 +112,7 @@ describe('sign-in page', () => {
   });
 
   it('explains an expired session', async () => {
+    mockFetch(() => undefined);
     renderApp('/login?reason=expired');
     expect(await screen.findByText(/Your session expired/)).toBeInTheDocument();
   });

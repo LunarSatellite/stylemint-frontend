@@ -109,3 +109,13 @@ export function can(roles: readonly string[] | undefined | null, capability: Cap
 export function roleLabel(role: string): string {
   return (ROLE_LABELS as Record<string, string>)[role] ?? role;
 }
+
+/** One line per role, for the role pickers on the Admins page. */
+export const ROLE_DESCRIPTIONS: Record<AdminRole, string> = {
+  SuperAdmin: 'Everything, including roles, payouts overrides and platform settings.',
+  KycReviewer: 'KYC and applications, rider identity checks, vendor badges.',
+  ContentMod: 'Moderation, content queues, campaigns, collections, discovery.',
+  SupportAgent: 'Tickets, returns, order care, customers, privacy requests.',
+  PayoutsOps: 'Payouts, refunds, hiding test orders, rider escrow.',
+  Readonly: 'Look at queues, orders and logs without changing anything.',
+};

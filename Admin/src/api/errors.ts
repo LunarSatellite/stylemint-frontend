@@ -79,10 +79,15 @@ const KNOWN: Record<string, string> = {
   'system.rate_limited': 'Too many requests. Please wait a moment and try again.',
   'system.internal_error': 'Something went wrong on the server.',
   'system.service_unavailable': 'A service this needs is unavailable right now. Try again shortly.',
+  // Admin sign-in (Google / Facebook / email + password). One answer for every refusal, so nothing is enumerable.
+  'admin_auth.invalid_credentials': 'That sign-in was not accepted.',
+  'admin_auth.locked': 'Too many failed sign-in attempts for this email. Sign-in is locked for 15 minutes.',
+  'admin_auth.token_invalid': 'This link has expired or has already been used.',
+  'admin_auth.method_unavailable': 'That way of signing in is not set up on the server right now.',
 };
 
 /** Codes whose meaning the operator must act on in a specific way: our wording beats the server's. */
-const PREFER_OWN = /^(auth\.|mfa\.|admin\.(account|session|mfa|acr|ip|rate_limited|step_up))/;
+const PREFER_OWN = /^(auth\.|mfa\.|admin_auth\.|admin\.(account|session|mfa|acr|ip|rate_limited|step_up))/;
 
 function pickString(obj: Record<string, unknown>, ...keys: string[]): string | undefined {
   for (const key of keys) {

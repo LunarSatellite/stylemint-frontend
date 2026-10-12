@@ -1,6 +1,7 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { installSession } from '@/auth/session';
 import { mockFetch, signInAs, type Captured } from '@/test/utils';
+import { passwordApi } from './adminAuth';
 import { adminsApi, meApi } from './admins';
 import { contentApi, popularSearchesApi } from './catalog';
 import { couriersApi } from './couriers';
@@ -57,6 +58,9 @@ const WRITES: [string, () => Promise<unknown>][] = [
   ['recipe hide', () => contentApi.hideRecipe(ID, 'r')],
   ['replan', () => deliveryApi.replan(ID, 3, null)],
   ['admin revoke sessions', () => adminsApi.revokeAllSessions(ID, 'left the company')],
+  ['admin invite', () => adminsApi.invite({ email: 'a@b.test', displayName: 'A', roles: [2] })],
+  ['admin password reset request', () => passwordApi.requestReset('a@b.test')],
+  ['admin password set', () => passwordApi.set('token', 'a good password 1')],
 ];
 
 describe('what a write sends is what the endpoint accepts', () => {

@@ -13,6 +13,7 @@ import { colorSchemeManager } from '@/components/Chrome';
 import { Shell } from '@/components/Shell';
 import { LoginPage } from '@/features/auth/LoginPage';
 import { SsoCallbackPage } from '@/features/auth/SsoCallbackPage';
+import { SetPasswordPage } from '@/features/auth/SetPasswordPage';
 import { AwaitingAccessPage } from '@/features/auth/AwaitingAccessPage';
 import { NotFoundPage } from '@/features/NotFoundPage';
 import { cssVariablesResolver, theme } from '@/theme';
@@ -73,6 +74,8 @@ function guarded(capability: Capability, node: ReactNode) {
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
   { path: '/sso/callback', element: <SsoCallbackPage /> },
+  // Reset and invitation links: /admin/set-password?token=…
+  { path: '/set-password', element: <SetPasswordPage /> },
   {
     path: '/',
     element: (
