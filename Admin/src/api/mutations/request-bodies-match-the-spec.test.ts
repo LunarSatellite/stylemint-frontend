@@ -74,6 +74,12 @@ const SENDS: { file: string; method: 'post' | 'put' | 'delete'; path: string; ke
     path: '/v1/admin/social-feed/posts/{postId}/remove',
     keys: ['reason'],
   },
+  {
+    file: 'useRecipeActions.ts',
+    method: 'post',
+    path: '/v1/admin/recipes/{id}/hide',
+    keys: ['reason'],
+  },
 ];
 
 function bodyPropertiesOf(path: string, method: string): string[] {

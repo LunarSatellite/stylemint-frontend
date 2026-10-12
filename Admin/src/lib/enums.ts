@@ -159,3 +159,19 @@ export const PostReportState = {
   Duplicate: 5,
 } as const;
 export type PostReportState = (typeof PostReportState)[keyof typeof PostReportState];
+
+/**
+ * Where a reel recipe came from, from `RecipeOrigin.cs`.
+ *
+ * `LlmDrafted` is the one with a review queue: a model wrote it and
+ * nobody has signed it off. Promoting it to `PlatformCurated` is the
+ * act of a person taking responsibility for it, which is why that
+ * distinction is shown rather than collapsed into "recipe".
+ */
+export const RecipeOrigin = {
+  BrandAuthored: 1,
+  PlatformCurated: 2,
+  LlmDrafted: 3,
+  CreatorFork: 4,
+} as const;
+export type RecipeOrigin = (typeof RecipeOrigin)[keyof typeof RecipeOrigin];

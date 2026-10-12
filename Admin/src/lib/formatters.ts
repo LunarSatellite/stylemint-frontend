@@ -13,6 +13,7 @@ import {
   VehicleKind,
   PostReportReason,
   PostReportState,
+  RecipeOrigin,
 } from './enums';
 
 export const KycStateLabel: Record<number, string> = {
@@ -131,4 +132,11 @@ export const PostReportStateLabel: Record<number, string> = {
   [PostReportState.Actioned]: 'Actioned',
   [PostReportState.Dismissed]: 'Dismissed',
   [PostReportState.Duplicate]: 'Duplicate',
+};
+
+export const RecipeOriginLabel: Record<number, string> = {
+  [RecipeOrigin.BrandAuthored]: 'Brand authored',
+  [RecipeOrigin.PlatformCurated]: 'Platform curated',
+  [RecipeOrigin.LlmDrafted]: 'Drafted by a model',
+  [RecipeOrigin.CreatorFork]: 'Creator fork',
 };
