@@ -5,6 +5,8 @@ import { KycQueuePage } from '@/features/kyc/KycQueuePage';
 import { ModerationQueuePage } from '@/features/moderation/ModerationQueuePage';
 import { AdminAccountsPage } from '@/features/admins/AdminAccountsPage';
 import { AuditLogPage } from '@/features/audit/AuditLogPage';
+import { FeatureFlagsPage } from '@/features/flags/FeatureFlagsPage';
+import { MySecurityPage } from '@/features/security/MySecurityPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 
 /** A section that exists in the nav but has no screen yet. */
@@ -36,9 +38,9 @@ export const router = createBrowserRouter([
       // hang them on, so there is nothing honest to render yet.
       { path: 'payouts', element: <NotBuiltYet name="Payouts" /> },
       { path: 'admins', element: <AdminAccountsPage /> },
-      { path: 'flags', element: <NotBuiltYet name="Feature flags" /> },
+      { path: 'flags', element: <FeatureFlagsPage /> },
       { path: 'audit', element: <AuditLogPage /> },
-      { path: 'settings/mfa', element: <NotBuiltYet name="My security" /> },
+      { path: 'settings/mfa', element: <MySecurityPage /> },
       { path: 'forbidden', element: <NotBuiltYet name="Not permitted" /> },
     ],
   },
