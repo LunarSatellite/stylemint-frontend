@@ -3,15 +3,17 @@ import { useAdminAccounts, type AdminAccount } from '@/api/queries/useAdminAccou
 import {
   useDisableAdmin,
   useEnableAdmin,
+  useGrantRole,
   useRemoveAdminMfa,
   useRevokeAllSessions,
+  useRevokeRole,
 } from '@/api/mutations/useAdminAccountActions';
 import { DataTable, type Column } from '@/components/DataTable';
 import { ListState } from '@/components/ListState';
 import { PageHeader } from '@/components/PageHeader';
 import { ConfirmDialog, type ConfirmRequest } from '@/components/ConfirmDialog';
 import { useAuth } from '@/auth/store';
-import { AdminAccountState } from '@/lib/enums';
+import { AdminAccountState, AdminRole } from '@/lib/enums';
 import { AdminRoleLabel, labelOf } from '@/lib/formatters';
 import { utcDate } from '@/lib/dates';
 import type { AdminFilter } from '@/api/queryKeys';
@@ -42,6 +44,8 @@ export function AdminAccountsPage() {
   const enable = useEnableAdmin(filter);
   const revokeSessions = useRevokeAllSessions(filter);
   const removeMfa = useRemoveAdminMfa(filter);
+  const grantRole = useGrantRole(filter);
+  const revokeRole = useRevokeRole(filter);
 
   const name = (a: AdminAccount) => a.displayName || a.email;
   const isMe = (a: AdminAccount) => a.id === me?.sub;
@@ -59,8 +63,51 @@ export function AdminAccountsPage() {
     { header: 'Email', cell: (a) => a.email },
     {
       header: 'Roles',
-      cell: (a) =>
-        a.roles.length ? a.roles.map((r) => labelOf(AdminRoleLabel, r)).join(', ') : 'No roles',
+      cell: (a) => (
+        <div className="flex flex-wrap gap-1">
+          {ROLES.map((role) => {
+            const held = a.roles.includes(role);
+            const roleName = labelOf(AdminRoleLabel, role);
+            return (
+              <button
+                key={role}
+                type="button"
+                aria-pressed={held}
+                disabled={isMe(a)}
+                onClick={() =>
+                  setPending({
+                    request: held
+                      ? {
+                          title: `Take ${roleName} away from ${name(a)}?`,
+                          body: `${name(a)} loses everything that role allows, immediately.`,
+                          confirmLabel: `Revoke ${roleName}`,
+                          tone: 'danger',
+                        }
+                      : {
+                          title: `Give ${name(a)} the ${roleName} role?`,
+                          body: ROLE_GRANTS[role] ?? `${name(a)} gains everything that role allows.`,
+                          confirmLabel: `Grant ${roleName}`,
+                        },
+                    run: () =>
+                      (held ? revokeRole : grantRole).mutate({
+                        adminAccountId: a.id,
+                        role,
+                        roleName,
+                      }),
+                  })
+                }
+                className={`rounded border px-1.5 py-0.5 text-[10px] font-bold transition-colors disabled:opacity-40 ${
+                  held
+                    ? 'border-primary/40 bg-primary/15 text-primary'
+                    : 'border-surface-border text-text-muted hover:bg-surface-2'
+                }`}
+              >
+                {roleName}
+              </button>
+            );
+          })}
+        </div>
+      ),
     },
     {
       header: 'State',
@@ -175,8 +222,8 @@ export function AdminAccountsPage() {
       </div>
 
       <p className="text-xs text-text-muted">
-        Each of these asks for your authenticator code before it runs. Role grants are not wired
-        up yet.
+        Every action here asks for your authenticator code before it runs. A highlighted role is
+        one the operator holds — click it to take it away.
       </p>
 
       <ConfirmDialog
@@ -190,6 +237,32 @@ export function AdminAccountsPage() {
     </section>
   );
 }
+
+/** Shown in the order a person would reason about: most power first. */
+const ROLES = [
+  AdminRole.SuperAdmin,
+  AdminRole.KycReviewer,
+  AdminRole.ContentMod,
+  AdminRole.SupportAgent,
+  AdminRole.PayoutsOps,
+  AdminRole.Readonly,
+];
+
+/**
+ * What a role actually lets someone do, from the backend's own
+ * comments on the enum. A grant dialog that says "gains everything
+ * that role allows" tells the person granting it nothing.
+ */
+const ROLE_GRANTS: Record<number, string> = {
+  [AdminRole.SuperAdmin]:
+    'Everything in this console, including granting roles to other operators and removing their MFA.',
+  [AdminRole.KycReviewer]: 'Review creator and vendor applications, and approve or reject them.',
+  [AdminRole.ContentMod]:
+    'Work the moderation queue, including hiding and removing content and suspending authors.',
+  [AdminRole.SupportAgent]: 'Tickets, and read-only access to order and customer information.',
+  [AdminRole.PayoutsOps]: 'Hold and release payouts, and issue manual refunds.',
+  [AdminRole.Readonly]: 'Analytics and lookups. No writes anywhere.',
+};
 
 function Action({
   label,
