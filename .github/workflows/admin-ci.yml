@@ -1,0 +1,72 @@
+# The checks that only matter if they run.
+#
+# Three of the tests in Admin/ are not unit tests of behaviour — they are
+# guards against mistakes that are invisible everywhere else:
+#
+#   - request-bodies-match-the-spec: a mutation sending `reasonCode` where
+#     the API wants `decisionReasonCode`. ASP.NET ignores the unknown field,
+#     the request returns 200, and the reviewer's reason is dropped. This
+#     already happened once.
+#   - step-up-is-not-optional: a sensitive write wired to a plain
+#     useMutation. The server asks for a step-up, nothing handles it, and
+#     the operator gets a toast telling them to verify with nothing to
+#     verify against.
+#   - the StepUpDialog mount check: zero copies means the mutation hangs for
+#     ever; two means both try to settle one promise.
+#
+# None is visible to TypeScript and none fails against a live server. A
+# guard that runs only when somebody remembers is a comment.
+name: Admin CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push makes the older run's answer irrelevant.
+concurrency:
+  group: admin-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: Admin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # 24 to match the toolchain this was built on; jsdom pulls undici 8,
+      # which needs a newer Node than early 20.x.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: Admin/package-lock.json
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Tests
+        run: npm test
+
+      # `request-bodies.json` is generated from the backend spec and
+      # committed, so the contract guard works here with only this
+      # repository checked out. Regenerating it must be a deliberate act
+      # recorded in a commit, not something CI does silently against
+      # whatever the backend looks like today.
+      - name: The contract artifact is committed
+        run: test -s src/api/request-bodies.json
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_API_BASE_URL: http://localhost:5020
+          VITE_SSO_AUTHORITY: https://sso.invalid
+          VITE_SSO_CLIENT_ID: ci
+          VITE_SSO_REDIRECT_URI: http://localhost:5173/sso/callback
