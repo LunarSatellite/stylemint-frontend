@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { ActionIcon, Avatar, Badge, Button, Group, Select, Skeleton, Stack, Table, Text } from '@mantine/core';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
 import { IconPlus, IconTrash } from '@tabler/icons-react';

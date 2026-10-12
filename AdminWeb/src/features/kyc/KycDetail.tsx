@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Anchor, Badge, Button, Divider, Group, Skeleton, Stack, Text, Timeline, Title } from '@mantine/core';
+import { Alert, Anchor, Badge, Button, Divider, Skeleton, Stack, Text, Timeline } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
 import { IconAlertTriangle, IconHandGrab, IconPhoto } from '@tabler/icons-react';
@@ -280,9 +280,6 @@ function KycCase({ item, detail }: { item: KycReviewItem; detail: KycApplication
       ) : can('decideKyc') ? (
         <>
           <Divider />
-          <Title order={3} fz="h4" visuallyHidden>
-            Decide
-          </Title>
           <KycDecisionForm item={item} suggestedReason={suggested} />
         </>
       ) : (

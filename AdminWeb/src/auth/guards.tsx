@@ -1,4 +1,4 @@
-import { useCallback, type ReactNode } from 'react';
+import { useCallback, useMemo, type ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { Button, Center, Stack, Text, Title } from '@mantine/core';
 import { IconLock } from '@tabler/icons-react';
@@ -9,7 +9,7 @@ import { useSession } from './session';
 /** The signed-in admin and what their roles allow. */
 export function useAuth() {
   const { session } = useSession();
-  const roles = session?.claims.roles ?? [];
+  const roles = useMemo(() => session?.claims.roles ?? [], [session]);
   const can = useCallback((capability: Capability) => canFor(roles, capability), [roles]);
   return { session, claims: session?.claims ?? null, roles, can };
 }

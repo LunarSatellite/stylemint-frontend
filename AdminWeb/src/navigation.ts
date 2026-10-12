@@ -1,4 +1,3 @@
-import type { ComponentType } from 'react';
 import {
   IconActivity,
   IconAdjustments,
@@ -29,7 +28,7 @@ import {
 } from '@tabler/icons-react';
 import type { Capability } from './auth/roles';
 
-type Icon = ComponentType<{ size?: number; stroke?: number; 'aria-hidden'?: boolean }>;
+type Icon = typeof IconHome;
 
 export interface Destination {
   id: string;

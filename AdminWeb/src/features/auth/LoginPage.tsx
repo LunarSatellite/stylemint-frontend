@@ -162,7 +162,7 @@ export function LoginPage() {
                   Continue with {sso.providerName ?? 'single sign-on'}
                 </Button>
               ) : (
-                <Alert color="slate" variant="light" icon={<IconInfoCircle size={16} />}>
+                <Alert color="slate" variant="light" icon={<IconInfoCircle size={16} />} role="status">
                   Single sign-on is not configured for this console yet. Use the access key your platform team issued.
                 </Alert>
               )}

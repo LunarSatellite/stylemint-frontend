@@ -82,7 +82,7 @@ export function DiscoveryPage() {
       <DataTable
         label="Popular searches"
         columns={columns}
-        page={q.data ? toPage(q.data, 1, 1000) : undefined}
+        page={q.data ? toPage<PopularSearch>(q.data, 1, 1000) : undefined}
         isLoading={q.isLoading}
         error={q.error}
         onRetry={() => void q.refetch()}

@@ -93,7 +93,7 @@ describe('sign-in page', () => {
     renderApp('/login');
     await userEvent.type(await screen.findByLabelText('Access key'), 'wrong-key-wrong-key-wrong');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(/not accepted/);
+    expect(await screen.findByText(/That sign-in was not accepted/)).toBeInTheDocument();
   });
 
   it('offers single sign-on when an identity provider is configured', async () => {

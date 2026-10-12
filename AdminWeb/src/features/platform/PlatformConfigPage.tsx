@@ -94,7 +94,7 @@ export function PlatformConfigPage() {
       <DataTable
         label="Platform settings"
         columns={columns}
-        page={q.data ? toPage(rows, 1, 10000) : undefined}
+        page={q.data ? toPage<PlatformConfigEntry>(rows, 1, 10000) : undefined}
         isLoading={q.isLoading}
         error={q.error}
         onRetry={() => void q.refetch()}

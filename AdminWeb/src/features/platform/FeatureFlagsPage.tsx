@@ -41,12 +41,12 @@ export function FeatureFlagsPage() {
       consequence: clear ? 'That role or account goes back to the default.' : 'Set it on or off for one role or one account, regardless of the default.',
       confirmLabel: clear ? 'Remove override' : 'Save override',
       fields: [
-        { name: 'role', kind: 'select', label: 'For a role', options: [{ value: '', label: '—' }, ...Object.values(ROLE_KIND).map((r) => ({ value: r, label: r }))] },
+        { name: 'role', kind: 'select', label: 'For a role', options: [{ value: 'none', label: 'No role' }, ...Object.values(ROLE_KIND).map((r) => ({ value: r, label: r }))] },
         { name: 'account', kind: 'text', label: '…or for one account ID' },
         ...(clear ? [] : [{ name: 'enabled', kind: 'checkbox' as const, label: 'Enabled', defaultValue: 'true' }]),
       ],
       run: (v) => {
-        const role = v.role || null;
+        const role = v.role && v.role !== 'none' ? v.role : null;
         const account = v.account?.trim() || null;
         if ((role ? 1 : 0) + (account ? 1 : 0) !== 1) return Promise.reject(new Error('Choose a role or enter an account ID - exactly one.'));
         if (account && !GUID.test(account)) return Promise.reject(new Error('That is not an account ID.'));
@@ -161,7 +161,7 @@ export function FeatureFlagsPage() {
       <DataTable
         label="Feature flags"
         columns={columns}
-        page={q.data ? toPage(rows, 1, 10000) : undefined}
+        page={q.data ? toPage<FeatureFlag>(rows, 1, 10000) : undefined}
         isLoading={q.isLoading}
         error={q.error}
         onRetry={() => void q.refetch()}

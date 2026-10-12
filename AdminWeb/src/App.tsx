@@ -17,7 +17,7 @@ import { AwaitingAccessPage } from '@/features/auth/AwaitingAccessPage';
 import { NotFoundPage } from '@/features/NotFoundPage';
 import { cssVariablesResolver, theme } from '@/theme';
 
-function page<T extends Record<string, ComponentType>>(loader: () => Promise<T>, name: keyof T) {
+function page(loader: () => Promise<Record<string, unknown>>, name: string) {
   return lazy(() => loader().then((m) => ({ default: m[name] as ComponentType })));
 }
 
@@ -136,9 +136,12 @@ export function App() {
     restoreSession();
     void loadConfig().finally(() => setReady(true));
     // Nothing one operator loaded may be shown to the next one signing in on this tab.
-    return subscribe(() => {
+    const off = subscribe(() => {
       if (!getSession()) queryClient.clear();
     });
+    return () => {
+      off();
+    };
   }, [queryClient]);
 
   return (

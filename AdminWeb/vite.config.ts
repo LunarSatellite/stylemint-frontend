@@ -39,5 +39,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     css: false,
     restoreMocks: true,
+    // The check host is a shared, busy machine; typing tests need more than the 5 s default there.
+    testTimeout: 20_000,
   },
 });

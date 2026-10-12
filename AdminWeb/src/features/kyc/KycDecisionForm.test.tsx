@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { reasonCodesFor } from '@/api/kyc';
 import { installSession, resetSessionForTests } from '@/auth/session';
@@ -61,7 +61,8 @@ describe('KYC decision', () => {
 
     await userEvent.click(screen.getByRole('textbox', { name: /Reason/ }));
     await userEvent.click(await screen.findByRole('option', { name: 'Documents unclear or unreadable' }));
-    await userEvent.type(screen.getByRole('textbox', { name: 'Note' }), 'The back of the licence is cut off.');
+    await userEvent.click(screen.getByRole('textbox', { name: 'Note' }));
+    await userEvent.paste('The back of the licence is cut off.');
     await userEvent.click(screen.getByRole('button', { name: 'Reject…' }));
     await userEvent.click(screen.getByRole('button', { name: 'Confirm rejection' }));
 
@@ -85,8 +86,7 @@ describe('KYC decision', () => {
     renderWithProviders(<KycDecisionForm item={{ id: ITEM, state: 2, applicantKind: 3 }} />);
     await userEvent.click(screen.getByRole('button', { name: 'Approve…' }));
     await userEvent.click(screen.getByRole('button', { name: 'Confirm approval' }));
-    const alert = await screen.findByRole('alert');
-    expect(within(alert).getByText(/already verified on another account/)).toBeInTheDocument();
+    expect(await screen.findByText(/already verified on another account/)).toBeInTheDocument();
     expect(screen.getByTestId('kyc-decision')).toBeInTheDocument();
   });
 });

@@ -108,7 +108,7 @@ function PostReports() {
   return (
     <>
       {dialog}
-      <DataTable label="Post reports" columns={columns} page={q.data ? toPage(q.data, 1, 1000) : undefined} isLoading={q.isLoading} error={q.error} onRetry={() => void q.refetch()} rowKey={(r) => r.id} emptyTitle="No open reports" />
+      <DataTable label="Post reports" columns={columns} page={q.data ? toPage<PostReport>(q.data, 1, 1000) : undefined} isLoading={q.isLoading} error={q.error} onRetry={() => void q.refetch()} rowKey={(r) => r.id} emptyTitle="No open reports" />
     </>
   );
 }
@@ -170,7 +170,7 @@ function BrokenLinks() {
   return (
     <>
       {dialog}
-      <DataTable label="Broken reel links" columns={columns} page={q.data ? toPage(q.data, 1, 1000) : undefined} isLoading={q.isLoading} error={q.error} onRetry={() => void q.refetch()} rowKey={(l) => l.reelId} emptyTitle="Every reel link works" />
+      <DataTable label="Broken reel links" columns={columns} page={q.data ? toPage<FailingReelLink>(q.data, 1, 1000) : undefined} isLoading={q.isLoading} error={q.error} onRetry={() => void q.refetch()} rowKey={(l) => l.reelId} emptyTitle="Every reel link works" />
     </>
   );
 }
@@ -225,7 +225,7 @@ function RecipeDrafts() {
       <DataTable
         label="Recipe drafts"
         columns={columns}
-        page={q.data ? toPage(q.data, list.page, take) : undefined}
+        page={q.data ? toPage<RecipeDraft>(q.data, list.page, take) : undefined}
         isLoading={q.isLoading}
         error={q.error}
         onRetry={() => void q.refetch()}
