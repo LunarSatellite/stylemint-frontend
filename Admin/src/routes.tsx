@@ -7,6 +7,8 @@ import { AdminAccountsPage } from '@/features/admins/AdminAccountsPage';
 import { AuditLogPage } from '@/features/audit/AuditLogPage';
 import { FeatureFlagsPage } from '@/features/flags/FeatureFlagsPage';
 import { MySecurityPage } from '@/features/security/MySecurityPage';
+import { AudioPage } from '@/features/audio/AudioPage';
+import { CouriersPage } from '@/features/couriers/CouriersPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 
 /** A section that exists in the nav but has no screen yet. */
@@ -34,6 +36,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/kyc" replace /> },
       { path: 'kyc', element: <KycQueuePage /> },
       { path: 'moderation', element: <ModerationQueuePage /> },
+      { path: 'audio', element: <AudioPage /> },
+      { path: 'couriers', element: <CouriersPage /> },
       // Payouts has four actions in the API and no list endpoint to
       // hang them on, so there is nothing honest to render yet.
       { path: 'payouts', element: <NotBuiltYet name="Payouts" /> },

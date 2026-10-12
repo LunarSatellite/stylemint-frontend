@@ -87,3 +87,50 @@ export const KycDecision = {
   RejectedTerminal: 3,
 } as const;
 export type KycDecision = (typeof KycDecision)[keyof typeof KycDecision];
+
+/**
+ * Audio track state, from `Modules.Audio/Enums/MusicTrackRefState.cs`.
+ *
+ * `LinksBroken` is set by a daily health check when every source link
+ * for a track has gone: the track stops surfacing until someone fixes
+ * or retires it. It is not the same as `Hidden`, which is a deliberate
+ * decision, usually a rights-holder complaint. A queue that conflates
+ * them mixes "this broke" with "we took this down", and only one of
+ * those is anybody's to fix.
+ */
+export const MusicTrackState = {
+  Active: 1,
+  Hidden: 2,
+  LinksBroken: 3,
+} as const;
+export type MusicTrackState = (typeof MusicTrackState)[keyof typeof MusicTrackState];
+
+/** Courier lifecycle, from `CourierProfileState.cs`. */
+export const CourierProfileState = {
+  Applied: 1,
+  KycInReview: 2,
+  Rejected: 3,
+  Onboarded: 4,
+  Active: 5,
+  Suspended: 6,
+  Banned: 7,
+} as const;
+export type CourierProfileState =
+  (typeof CourierProfileState)[keyof typeof CourierProfileState];
+
+/** `DeliveryTier.cs`. Pro is the highest, Neighbor the entry level. */
+export const DeliveryTier = {
+  Pro: 1,
+  Traveler: 2,
+  Neighbor: 3,
+} as const;
+export type DeliveryTier = (typeof DeliveryTier)[keyof typeof DeliveryTier];
+
+export const VehicleKind = {
+  Foot: 1,
+  Bicycle: 2,
+  Motorcycle: 3,
+  Car: 4,
+  Van: 5,
+} as const;
+export type VehicleKind = (typeof VehicleKind)[keyof typeof VehicleKind];

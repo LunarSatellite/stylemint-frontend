@@ -7,6 +7,10 @@ import {
   ModerationItemState,
   ModerationSource,
   ModerationTargetKind,
+  MusicTrackState,
+  CourierProfileState,
+  DeliveryTier,
+  VehicleKind,
 } from './enums';
 
 export const KycStateLabel: Record<number, string> = {
@@ -74,4 +78,34 @@ export const KycDecisionLabel: Record<number, string> = {
   [KycDecision.Approved]: 'Approved',
   [KycDecision.RejectedRetryable]: 'Rejected — may reapply',
   [KycDecision.RejectedTerminal]: 'Rejected — final',
+};
+
+export const MusicTrackStateLabel: Record<number, string> = {
+  [MusicTrackState.Active]: 'Active',
+  [MusicTrackState.Hidden]: 'Hidden',
+  [MusicTrackState.LinksBroken]: 'Links broken',
+};
+
+export const CourierStateLabel: Record<number, string> = {
+  [CourierProfileState.Applied]: 'Applied',
+  [CourierProfileState.KycInReview]: 'KYC in review',
+  [CourierProfileState.Rejected]: 'Rejected',
+  [CourierProfileState.Onboarded]: 'Onboarded',
+  [CourierProfileState.Active]: 'Active',
+  [CourierProfileState.Suspended]: 'Suspended',
+  [CourierProfileState.Banned]: 'Banned',
+};
+
+export const DeliveryTierLabel: Record<number, string> = {
+  [DeliveryTier.Pro]: 'Pro',
+  [DeliveryTier.Traveler]: 'Traveler',
+  [DeliveryTier.Neighbor]: 'Neighbor',
+};
+
+export const VehicleLabel: Record<number, string> = {
+  [VehicleKind.Foot]: 'On foot',
+  [VehicleKind.Bicycle]: 'Bicycle',
+  [VehicleKind.Motorcycle]: 'Motorcycle',
+  [VehicleKind.Car]: 'Car',
+  [VehicleKind.Van]: 'Van',
 };
