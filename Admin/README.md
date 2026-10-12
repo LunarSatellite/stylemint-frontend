@@ -1,103 +1,89 @@
-# stylemint-admin-fe
+# StyleMint Admin (web)
 
-Internal desktop console for Style Mint operators. Talks to the Style Mint
-API directly at `/v1/admin/*` — it does not go through Lead360.
+The operations console for StyleMint, served at `https://stylemint.voyageritnepal.com/admin/`.
+Vite + React 18 + TypeScript + Mantine 7 + TanStack Query + React Router, styled to match Voyager CX
+(forest palette, Inter, the same app shell, cards, tables and states).
 
-## Running it
+It talks to the StyleMint API on the **same origin** (`/v1/admin/...`) with the admin JWT - no API
+URL, no CORS.
+
+## Sign-in
+
+`POST /v1/admin/auth/sso { idToken }` turns an identity token into an admin JWT (60 min by default).
+Two ways to get the identity token:
+
+- **Single sign-on** (OIDC, authorization code + PKCE, or implicit `id_token`) against the IdP the
+  backend's `Admin:Oidc:Authority` trusts. Configure the console at deploy time with
+  `/admin/config.json` (see `public/config.example.json`) or at build time with `VITE_SSO_*`.
+  The `clientId` must be the IdP app whose audience the backend accepts, with
+  `https://<host>/admin/sso/callback` as a redirect URI.
+- **Access key**: the environment's `Admin:Oidc:DevSharedSecret` (env `ADMIN_DEV_SSO_SECRET`),
+  for environments without an IdP. It is posted once and never stored.
+
+There is **no refresh token** on the admin API. The session (token + expiry) lives in memory and in
+this tab's `sessionStorage` (survives a reload, gone with the tab, never in localStorage or a
+cookie). Five minutes before expiry the console renews silently through the IdP (`prompt=none` in a
+hidden iframe) or offers a one-click renewal; a 401 that cannot be recovered ends the session with a
+reason (expired / revoked / security), and logout is broadcast to other tabs.
+
+A new SSO user is auto-registered **with no roles**; they see a "waiting for access" screen until a
+Super Admin grants one (Platform → Admins & roles). Roles come from the JWT `admin_role` claim and
+drive the menu and route guards (`src/auth/roles.ts`, copied from the controllers'
+`[RequireAdminRole]` attributes). The server authorises every call again.
+
+Sensitive writes (`[RequireStepUpMfa]`: role grants, disabling admins, ending their sessions,
+resetting their MFA, forcing payouts) answer `403 admin.step_up.required`; the console asks for a
+TOTP code once (`POST /v1/admin/auth/mfa/totp/verify`) and replays the write. Operators enrol TOTP
+under **My security**.
+
+## Develop and check
 
 ```bash
-npm install
-cp .env.example .env.local   # then fill in the SSO values
-npm run dev
+npm ci
+npm run dev          # http://localhost:5180/admin/, /v1 proxied to VITE_DEV_API
+npm run typecheck && npm run lint && npm test -- --run && npm run build
 ```
 
-`src/env.ts` throws on startup if a variable is missing. That is deliberate:
-a missing API base URL otherwise sends requests to the console's own origin,
-which 404 as HTML and surface much later as JSON parse errors.
-
-Until SSO is configured, `?devToken=<jwt>` seeds the auth store. It is behind
-`import.meta.env.DEV`, which Vite replaces with a literal `false` in a
-production build, so the branch is dropped entirely — verified by grepping the
-bundle, not assumed.
-
-## Types and contracts
+For this repository the checks run on the build host in Docker (never on the Windows workstation):
 
 ```bash
-npm run codegen
+docker run --rm -v ~/web-admin-check:/app -w /app node:22-alpine \
+  sh -c "npm ci && npm run typecheck && npm run lint && npm test -- --run && npm run build"
 ```
 
-Writes two committed artifacts from `../../stylemint-backend/swagger-spec.json`:
+`src/api/request-bodies.json` freezes the request-body field names from the backend's OpenAPI spec;
+`request-bodies-match-the-spec.test.ts` runs the real API client against a recording fetch and fails
+if a write sends a field the endpoint would silently ignore. Regenerate it with
+`npm run contract:extract -- path/to/swagger.json`.
 
-- `src/api/schema.ts` — generated types
-- `src/api/request-bodies.json` — the field names each endpoint accepts, read
-  by the contract guard so it works in CI with only this repository checked out
+## Layout
 
-## Screens
+```
+src/api/         one typed module per area; client.ts (fetch, bearer, Idempotency-Key, 401 handling), errors.ts, paging.ts
+src/auth/        session (SSO exchange, storage, expiry), oidc (PKCE), stepUp, roles (capabilities), guards
+src/components/  Shell (AppShell + sidebar), DataTable, DetailDrawer, ActionDialog (reason + confirm + step-up + toast), state blocks
+src/features/    one folder per page
+```
 
-| Area | State |
-|---|---|
-| KYC review | queue, decide, optimistic, step-up |
-| Moderation | queue, all six outcomes |
-| Post reports | queue; post actions and report resolution kept separate |
-| Recipe drafts | model-written recipes awaiting sign-off |
-| Featured matches | approval queue with the fairness audit above it |
-| Audio | broken-links queue and all tracks; hide and restore |
-| Couriers | lookup by ID, seven of nine operations |
-| Admin accounts | roles, disable/enable, revoke sessions, remove MFA |
-| Audit log | list and filter |
-| Feature flags | list |
-| Popular searches | list and toggle |
-| My security | MFA status and sessions |
-| Payouts | **not built** — see below |
+Every list is `DataTable` + `useListState` (page, size, search, filters and the open item live in the
+URL) + a `DetailDrawer`; every write goes through `useActionDialog` (states the consequence, collects
+the audit reason, handles step-up, toasts). Loading, error, forbidden and empty are distinct states -
+"could not load" is never shown as "none".
 
-## What is not built, and why
+## Endpoints from `feat/admin-api-gaps` (built against `wt/admin-api-contract.md`)
 
-**Payouts, reels, reputation, insurance, payments** have admin write endpoints
-and no admin read. There is nothing honest to list them against, so the screens
-do not exist. Tracked in
-[stylemint-backend#133](https://github.com/LunarSatellite/stylemint-backend/issues/133).
+Until that backend branch is deployed these answer a bare 404 and the pages degrade - nothing is faked:
 
-**Couriers** is a lookup rather than a browse for the same reason — nine
-operations, no list endpoint. `GET /v1/courier/{id}` is not admin-scoped, so
-the page says a failure may mean "not permitted" rather than "not found".
+- `GET /v1/admin/dashboard/summary` - the dashboard counts each work queue from its own list meanwhile.
+- `GET /v1/admin/vendors`, `/{id}`, `/{id}/suspend|reinstate` - Vendors falls back to onboarding applications.
+- `GET /v1/admin/products`, `/{id}`, `/{id}/unpublish|restore` - Products says it is not available yet.
+- KYC `applicantKind = 4` (riders in the unified queue) and moderation `targetKind = 6` (products) are
+  understood; the Riders tab keeps using the courier endpoints, which work before and after.
 
-## Four paging conventions
+The API has no order-by-id, order search, payment list, payout detail or customer detail endpoints.
 
-Worth knowing before adding a list, because getting it wrong looks like missing
-data rather than a bug:
+## Deploy
 
-| Shape | Used by |
-|---|---|
-| `PagedList` — `pageNumber`, `totalPages` | most admin lists |
-| `CursorList` — `cursor`, `nextCursor`, `hasMore` | audio, matchmaking |
-| bare array + `take` | social-feed reports |
-| bare array + `skip`/`take` | recipe drafts |
-
-## The guards
-
-`npm test` runs the usual unit tests and three checks that exist because the
-mistakes they catch are invisible to TypeScript and to a live server:
-
-- **`request-bodies-match-the-spec`** — every field a mutation posts must exist
-  on the endpoint. ASP.NET ignores unknown properties, so sending `reasonCode`
-  where the API wants `decisionReasonCode` returns 200 and silently drops the
-  reviewer's reason. This already happened once.
-- **`step-up-is-not-optional`** — any call to one of the eight step-up
-  endpoints must use `useMutationWithStepUp`. A plain mutation gets
-  `mfa.step_up_required` back, has no idea what it means, and shows the
-  operator a toast telling them to verify with nothing to verify against.
-- **the `StepUpDialog` mount check** — exactly one mount. Zero leaves the
-  mutation pending for ever; two have both copies racing to settle one promise.
-
-Each is mutation-tested: break the thing it guards and it fails, naming the file.
-
-## Two rules worth knowing before editing
-
-**The token lives in memory only.** Not localStorage, not a cookie. A refresh
-signs the operator out until the silent SSO frame completes, and that cost is
-paid on purpose — this console can revoke sessions, force payouts and strip MFA
-from other admins.
-
-**Switch on `errorCode`, never on HTTP status.** A 401 can mean "log in again",
-"your token was replayed" or "someone ended your session", and those want three
-different screens.
+`npm run build` writes `dist/` for the `/admin/` base path. Serve it as static files with an SPA
+fallback to `/admin/index.html` (see the nginx block in the hand-off notes), and optionally drop a
+`config.json` next to `index.html` to turn on single sign-on.

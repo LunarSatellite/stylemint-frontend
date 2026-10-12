@@ -1,132 +1,112 @@
 import { useEffect, useRef, useState } from 'react';
-import { api } from '@/api/client';
-import { errorCodeOf, getErrorMessage } from '@/api/errors';
-import { useStepUpDialog } from './useMutationWithStepUp';
+import { Alert, Anchor, Button, Group, Modal, PinInput, Stack, Text } from '@mantine/core';
+import { IconShieldLock } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
+import { ApiError, messageOf } from '@/api/errors';
+import { registerStepUpPrompt, StepUpCancelled, verifyTotp } from './stepUp';
 
 /**
- * The TOTP challenge that stands between an operator and the eight
- * actions that can demand it.
- *
- * It renders once, in `AppShell`. That is not a style preference: the
- * step-up store hands out a promise that only `succeed()` or
- * `cancel()` resolves, so if nothing renders this component the
- * promise never settles and the mutation that opened it hangs for
- * ever, with the button spinning and no error. Mounting it per page
- * would make that true for every page that forgot.
- *
- * Verification posts to `/auth/mfa/totp/verify` with `{ code }` —
- * `VerifyMfaVm`, read from the spec.
+ * The one step-up prompt, mounted once in the shell. A write that needs a fresh second factor waits on it; a correct
+ * code resolves the wait and the write is sent again, a cancel rejects it and nothing is changed.
  */
 export function StepUpDialog() {
-  const isOpen = useStepUpDialog((s) => s.isOpen);
-  const succeed = useStepUpDialog((s) => s.succeed);
-  const cancel = useStepUpDialog((s) => s.cancel);
-
+  const [open, setOpen] = useState(false);
   const [code, setCode] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [notEnrolled, setNotEnrolled] = useState(false);
+  const pending = useRef<{ resolve: () => void; reject: (e: unknown) => void } | null>(null);
 
   useEffect(() => {
-    if (!isOpen) return;
-    setCode('');
-    setError(null);
-    setBusy(false);
-    inputRef.current?.focus();
-  }, [isOpen]);
+    registerStepUpPrompt(
+      () =>
+        new Promise<void>((resolve, reject) => {
+          pending.current?.reject(new StepUpCancelled());
+          pending.current = { resolve, reject };
+          setCode('');
+          setError(null);
+          setNotEnrolled(false);
+          setOpen(true);
+        }),
+    );
+    return () => registerStepUpPrompt(null);
+  }, []);
 
-  // Escape cancels, which rejects the waiting mutation rather than
-  // leaving it pending.
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') cancel();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [isOpen, cancel]);
+  const cancel = () => {
+    if (busy) return;
+    setOpen(false);
+    pending.current?.reject(new StepUpCancelled());
+    pending.current = null;
+  };
 
-  if (!isOpen) return null;
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  const submit = async (value = code) => {
+    if (value.length < 6 || busy) return;
     setBusy(true);
     setError(null);
     try {
-      await api.post('/v1/admin/auth/mfa/totp/verify', { code });
-      succeed();
-    } catch (err) {
-      const errorCode = errorCodeOf(err);
-      setError(getErrorMessage(errorCode));
-      // A lockout is not something to retry against; close so the
-      // operator reads the real message rather than typing into a
-      // field that cannot succeed for fifteen minutes.
-      if (errorCode === 'mfa.totp.locked') cancel();
+      await verifyTotp(value);
+      setOpen(false);
+      pending.current?.resolve();
+      pending.current = null;
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.code === 'admin.mfa.not_enrolled') setNotEnrolled(true);
+      setError(messageOf(caught));
+      setCode('');
     } finally {
       setBusy(false);
     }
-  }
+  };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-6"
-      role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) cancel();
-      }}
-    >
+    <Modal opened={open} onClose={cancel} title={<Text fw={650}>Confirm it’s you</Text>} size="sm" closeOnClickOutside={false}>
       <form
-        onSubmit={submit}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="stepup-title"
-        className="w-full max-w-sm rounded-2xl border border-surface-border bg-bg-elevated p-6 shadow-soft"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void submit();
+        }}
       >
-        <h2 id="stepup-title" className="text-sm font-extrabold text-text-primary">
-          Confirm it is you
-        </h2>
-        <p className="mt-1 text-xs leading-5 text-text-muted">
-          This action needs a fresh check. Enter the six-digit code from your authenticator app.
-        </p>
-
-        <label className="mt-4 flex flex-col gap-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-            Authentication code
-          </span>
-          <input
-            ref={inputRef}
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="123456"
-            className="rounded-lg border border-surface-border bg-bg-card px-3 py-2 text-lg font-normal tracking-[0.3em] text-text-primary placeholder:text-text-muted placeholder:tracking-normal"
-          />
-        </label>
-
-        {error && (
-          <p role="alert" className="mt-3 text-xs font-semibold text-text-secondary">
-            {error}
-          </p>
-        )}
-
-        <div className="mt-5 flex gap-2">
-          <button
-            type="button"
-            onClick={cancel}
-            className="flex-1 rounded-lg border border-surface-border px-3 py-2 text-sm font-bold text-text-secondary hover:bg-surface-2"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={busy || code.length !== 6}
-            className="flex-1 rounded-lg bg-primary px-3 py-2 text-sm font-bold text-bg-primary disabled:opacity-40"
-          >
-            {busy ? 'Checking…' : 'Confirm'}
-          </button>
-        </div>
+        <Stack gap="md">
+          <Group gap="sm" wrap="nowrap" align="flex-start">
+            <IconShieldLock size={22} aria-hidden style={{ flexShrink: 0, marginTop: 2 }} />
+            <Text size="sm">This change needs a fresh check. Enter the 6-digit code from your authenticator app. You won’t be asked again for five minutes.</Text>
+          </Group>
+          <Group justify="center">
+            <PinInput
+              length={6}
+              type="number"
+              oneTimeCode
+              autoFocus
+              value={code}
+              onChange={setCode}
+              onComplete={(v) => void submit(v)}
+              disabled={busy}
+              aria-label="Authenticator code"
+              error={!!error}
+            />
+          </Group>
+          {error && (
+            <Alert color="signal" variant="light" role="alert">
+              {error}
+              {notEnrolled && (
+                <>
+                  {' '}
+                  <Anchor component={Link} to="/security" onClick={cancel} size="sm">
+                    Set up two-step verification
+                  </Anchor>
+                </>
+              )}
+            </Alert>
+          )}
+          <Group justify="flex-end" gap="sm">
+            <Button variant="default" onClick={cancel} disabled={busy}>
+              Cancel
+            </Button>
+            <Button type="submit" loading={busy} disabled={code.length < 6}>
+              Confirm
+            </Button>
+          </Group>
+        </Stack>
       </form>
-    </div>
+    </Modal>
   );
 }

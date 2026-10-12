@@ -15,7 +15,8 @@ import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const specPath = resolve(here, '../../../stylemint-backend/swagger-spec.json');
+// Pass the spec path (e.g. a swagger.json downloaded from the API) or fall back to the old sibling checkout.
+const specPath = process.argv[2] ? resolve(process.argv[2]) : resolve(here, '../../../stylemint-backend/swagger-spec.json');
 const outPath = resolve(here, '../src/api/request-bodies.json');
 
 const spec = JSON.parse(readFileSync(specPath, 'utf8'));
