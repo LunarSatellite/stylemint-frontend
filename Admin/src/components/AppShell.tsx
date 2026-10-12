@@ -11,6 +11,7 @@ import {
 import { useAuth } from '@/auth/store';
 import { AdminRole } from '@/lib/enums';
 import { cn } from '@/lib/cn';
+import { StepUpDialog } from '@/auth/StepUpDialog';
 
 /**
  * The shell: a sidebar of the sections this operator can actually use,
@@ -94,6 +95,12 @@ export function AppShell() {
       <main tabIndex={0} className="flex-1 overflow-auto p-6">
         <Outlet />
       </main>
+
+      {/* Once, here. The step-up store hands out a promise that only
+          this component resolves, so a page that renders its own copy
+          -- or a layout that renders none -- leaves the mutation that
+          opened it pending for ever. */}
+      <StepUpDialog />
     </div>
   );
 }
