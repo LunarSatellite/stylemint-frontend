@@ -1,0 +1,9 @@
+{
+  "sso": {
+    "authority": "https://login.microsoftonline.com/<tenant-id>/v2.0",
+    "clientId": "<admin-console-client-id>",
+    "responseType": "code",
+    "scope": "openid profile email",
+    "providerName": "Microsoft"
+  }
+}

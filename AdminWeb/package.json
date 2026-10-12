@@ -1,0 +1,55 @@
+{
+  "name": "stylemint-admin-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings=0",
+    "test": "vitest",
+    "contract:extract": "node scripts/extract-request-bodies.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.1.1",
+    "@mantine/core": "^7.17.8",
+    "@mantine/dates": "^7.17.8",
+    "@mantine/hooks": "^7.17.8",
+    "@mantine/modals": "^7.17.8",
+    "@mantine/notifications": "^7.17.8",
+    "@tabler/icons-react": "^3.31.0",
+    "@tanstack/react-query": "^5.66.0",
+    "dayjs": "^1.11.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.13.5",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "jsdom": "^26.0.0",
+    "postcss": "^8.5.3",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1",
+    "typescript": "~5.7.3",
+    "typescript-eslint": "^8.25.0",
+    "vite": "^6.2.0",
+    "vitest": "^3.0.7"
+  }
+}
