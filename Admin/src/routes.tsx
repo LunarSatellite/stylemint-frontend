@@ -11,6 +11,7 @@ import { AudioPage } from '@/features/audio/AudioPage';
 import { CouriersPage } from '@/features/couriers/CouriersPage';
 import { PostReportsPage } from '@/features/social-feed/PostReportsPage';
 import { RecipeDraftsPage } from '@/features/recipes/RecipeDraftsPage';
+import { FeaturedMatchesPage } from '@/features/matchmaking/FeaturedMatchesPage';
 import { LoginPage } from '@/features/auth/LoginPage';
 
 /** A section that exists in the nav but has no screen yet. */
@@ -42,6 +43,7 @@ export const router = createBrowserRouter([
       { path: 'couriers', element: <CouriersPage /> },
       { path: 'post-reports', element: <PostReportsPage /> },
       { path: 'recipe-drafts', element: <RecipeDraftsPage /> },
+      { path: 'featured', element: <FeaturedMatchesPage /> },
       // Payouts has four actions in the API and no list endpoint to
       // hang them on, so there is nothing honest to render yet.
       { path: 'payouts', element: <NotBuiltYet name="Payouts" /> },

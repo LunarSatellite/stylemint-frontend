@@ -80,6 +80,20 @@ const SENDS: { file: string; method: 'post' | 'put' | 'delete'; path: string; ke
     path: '/v1/admin/recipes/{id}/hide',
     keys: ['reason'],
   },
+  // `note`, not `reason` -- this corner of the API calls the same idea
+  // something different, and habit would have sent the wrong field.
+  {
+    file: 'useFeaturedActions.ts',
+    method: 'post',
+    path: '/v1/admin/matchmaking/featured/{id}/approve',
+    keys: ['note'],
+  },
+  {
+    file: 'useFeaturedActions.ts',
+    method: 'post',
+    path: '/v1/admin/matchmaking/featured/{id}/reject',
+    keys: ['note'],
+  },
 ];
 
 function bodyPropertiesOf(path: string, method: string): string[] {

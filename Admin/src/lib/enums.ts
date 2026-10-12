@@ -175,3 +175,14 @@ export const RecipeOrigin = {
   CreatorFork: 4,
 } as const;
 export type RecipeOrigin = (typeof RecipeOrigin)[keyof typeof RecipeOrigin];
+
+/** `FeaturedMatchState.cs`. Approved and Pushed are different things. */
+export const FeaturedMatchState = {
+  PendingReview: 1,
+  Approved: 2,
+  Rejected: 3,
+  Pushed: 4,
+  Acted: 5,
+} as const;
+export type FeaturedMatchState =
+  (typeof FeaturedMatchState)[keyof typeof FeaturedMatchState];

@@ -14,6 +14,7 @@ import {
   PostReportReason,
   PostReportState,
   RecipeOrigin,
+  FeaturedMatchState,
 } from './enums';
 
 export const KycStateLabel: Record<number, string> = {
@@ -139,4 +140,12 @@ export const RecipeOriginLabel: Record<number, string> = {
   [RecipeOrigin.PlatformCurated]: 'Platform curated',
   [RecipeOrigin.LlmDrafted]: 'Drafted by a model',
   [RecipeOrigin.CreatorFork]: 'Creator fork',
+};
+
+export const FeaturedMatchStateLabel: Record<number, string> = {
+  [FeaturedMatchState.PendingReview]: 'Pending review',
+  [FeaturedMatchState.Approved]: 'Approved, not yet pushed',
+  [FeaturedMatchState.Rejected]: 'Rejected',
+  [FeaturedMatchState.Pushed]: 'Pushed to users',
+  [FeaturedMatchState.Acted]: 'Acted on by a user',
 };
