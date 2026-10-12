@@ -132,7 +132,6 @@ export function LoginPage() {
       placeholder="you@gmail.com or 98XXXXXXXX"
       description={mode === 'password' ? undefined : 'Nepali numbers: we add +977 for you.'}
       autoComplete="username"
-      inputMode="email"
       size="md"
       required
       value={identifier}

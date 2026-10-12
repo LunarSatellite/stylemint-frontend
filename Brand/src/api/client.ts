@@ -184,12 +184,12 @@ export async function requestRaw(path: string, opts: RequestOptions = {}): Promi
   const token = opts.anonymous ? null : (bridge?.getAccessToken() ?? null);
   let res = await send(path, opts, token);
   if (res.status === 401 && !opts.anonymous && bridge) {
+    // A refused refresh ends the session itself; a transient failure (offline, 5xx) keeps it and
+    // this request simply fails.
     const refreshed = await bridge.refresh();
     if (refreshed) {
       res = await send(path, opts, bridge.getAccessToken());
-    }
-    if (res.status === 401) {
-      bridge.onAuthLost();
+      if (res.status === 401) bridge.onAuthLost();
     }
   }
   if (!res.ok) throw await toApiError(res);

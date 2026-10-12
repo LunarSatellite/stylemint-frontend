@@ -159,20 +159,29 @@ async function withRefreshLock<T>(fn: () => Promise<T>): Promise<T> {
 export function refresh(): Promise<boolean> {
   if (inflight) return inflight;
   inflight = withRefreshLock(async () => {
-    // Read inside the lock: another tab may have rotated the token a moment ago.
+    // Another tab may have rotated a shared token a moment ago; give its broadcast a beat to land,
+    // then read inside the lock.
+    if (channel) await new Promise((r) => setTimeout(r, 25));
     const stored = readRefreshToken();
-    if (!stored) return false;
+    if (!stored) {
+      // Signed in on this page but the token is gone (storage cleared or blocked): start over.
+      if (state.status !== 'loading' && state.status !== 'signedOut') endSession('Your session has ended. Please sign in again.');
+      return false;
+    }
     try {
       const res = await authApi.refresh(stored.token);
       const claims = applyTokens(res, stored.remember);
+      // A duplicated tab holds a copy of the same token in its own sessionStorage: tell it.
+      channel?.postMessage({ type: 'rotated', from: stored.token, to: res.refreshToken });
       const roles = rolesOf(claims);
       if (state.status === 'signedIn' || state.status === 'needsPassword' || state.status === 'notVendor') {
         setState({ roles, sessionId: res.sessionId, accountId: res.accountId });
       }
       return true;
     } catch (e) {
-      // A network failure keeps the session (it may come back); a refused token ends it.
-      if (e instanceof ApiError && e.isOffline) return false;
+      // Offline, rate-limited or a server error keeps the session (it may come back); only a
+      // refused token (invalid, expired, reused, session gone) ends it.
+      if (e instanceof ApiError && (e.isOffline || e.status === 429 || e.status >= 500)) return false;
       endSession('Your session has ended. Please sign in again.');
       return false;
     }
@@ -250,6 +259,11 @@ export async function bootstrap(): Promise<void> {
     channel = new BroadcastChannel(CHANNEL);
     channel.onmessage = (ev) => {
       if (ev.data === 'signed-out' && state.status !== 'signedOut') endSession('You signed out in another tab.', false);
+      const msg = ev.data as { type?: string; from?: string; to?: string } | null;
+      if (msg && msg.type === 'rotated' && msg.from && msg.to) {
+        const stored = readRefreshToken();
+        if (stored && stored.token === msg.from) writeRefreshToken(msg.to, stored.remember);
+      }
     };
   }
   setAuthBridge({
