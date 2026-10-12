@@ -6,6 +6,7 @@ import {
   Flag,
   Music2,
   Truck,
+  MessageSquareWarning,
   ShieldCheck,
   SlidersHorizontal,
   Users,
@@ -35,6 +36,7 @@ interface Section {
 const SECTIONS: Section[] = [
   { to: '/kyc', label: 'KYC review', icon: BadgeCheck, roles: [AdminRole.SuperAdmin, AdminRole.KycReviewer] },
   { to: '/moderation', label: 'Moderation', icon: Flag, roles: [AdminRole.SuperAdmin, AdminRole.ContentMod] },
+  { to: '/post-reports', label: 'Post reports', icon: MessageSquareWarning, roles: [AdminRole.SuperAdmin, AdminRole.ContentMod] },
   { to: '/audio', label: 'Audio', icon: Music2, roles: [AdminRole.SuperAdmin, AdminRole.ContentMod] },
   { to: '/couriers', label: 'Couriers', icon: Truck, roles: [AdminRole.SuperAdmin, AdminRole.SupportAgent] },
   { to: '/payouts', label: 'Payouts', icon: Banknote, roles: [AdminRole.SuperAdmin, AdminRole.PayoutsOps] },

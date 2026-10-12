@@ -134,3 +134,28 @@ export const VehicleKind = {
   Van: 5,
 } as const;
 export type VehicleKind = (typeof VehicleKind)[keyof typeof VehicleKind];
+
+/** Why a post was reported, from `PostReportReason.cs`. */
+export const PostReportReason = {
+  Spam: 1,
+  Harassment: 2,
+  HateSpeech: 3,
+  SexualContent: 4,
+  SelfHarm: 5,
+  Violence: 6,
+  Misinformation: 7,
+  IntellectualProperty: 8,
+  Scam: 9,
+  OtherIllegal: 10,
+} as const;
+export type PostReportReason = (typeof PostReportReason)[keyof typeof PostReportReason];
+
+/** `PostReportState.cs`. Actioned and Dismissed are both closed. */
+export const PostReportState = {
+  Open: 1,
+  UnderReview: 2,
+  Actioned: 3,
+  Dismissed: 4,
+  Duplicate: 5,
+} as const;
+export type PostReportState = (typeof PostReportState)[keyof typeof PostReportState];

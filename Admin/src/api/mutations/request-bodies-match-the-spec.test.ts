@@ -56,6 +56,24 @@ const SENDS: { file: string; method: 'post' | 'put' | 'delete'; path: string; ke
     path: '/v1/admin/couriers/{courierProfileId}/suspend',
     keys: ['reason'],
   },
+  {
+    file: 'useSocialFeedActions.ts',
+    method: 'post',
+    path: '/v1/admin/social-feed/reports/{reportId}/resolve',
+    keys: ['reason'],
+  },
+  {
+    file: 'useSocialFeedActions.ts',
+    method: 'post',
+    path: '/v1/admin/social-feed/posts/{postId}/hide',
+    keys: ['reason'],
+  },
+  {
+    file: 'useSocialFeedActions.ts',
+    method: 'post',
+    path: '/v1/admin/social-feed/posts/{postId}/remove',
+    keys: ['reason'],
+  },
 ];
 
 function bodyPropertiesOf(path: string, method: string): string[] {

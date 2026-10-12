@@ -11,6 +11,8 @@ import {
   CourierProfileState,
   DeliveryTier,
   VehicleKind,
+  PostReportReason,
+  PostReportState,
 } from './enums';
 
 export const KycStateLabel: Record<number, string> = {
@@ -108,4 +110,25 @@ export const VehicleLabel: Record<number, string> = {
   [VehicleKind.Motorcycle]: 'Motorcycle',
   [VehicleKind.Car]: 'Car',
   [VehicleKind.Van]: 'Van',
+};
+
+export const PostReportReasonLabel: Record<number, string> = {
+  [PostReportReason.Spam]: 'Spam',
+  [PostReportReason.Harassment]: 'Harassment',
+  [PostReportReason.HateSpeech]: 'Hate speech',
+  [PostReportReason.SexualContent]: 'Sexual content',
+  [PostReportReason.SelfHarm]: 'Self-harm',
+  [PostReportReason.Violence]: 'Violence',
+  [PostReportReason.Misinformation]: 'Misinformation',
+  [PostReportReason.IntellectualProperty]: 'Intellectual property',
+  [PostReportReason.Scam]: 'Scam',
+  [PostReportReason.OtherIllegal]: 'Other illegal content',
+};
+
+export const PostReportStateLabel: Record<number, string> = {
+  [PostReportState.Open]: 'Open',
+  [PostReportState.UnderReview]: 'Under review',
+  [PostReportState.Actioned]: 'Actioned',
+  [PostReportState.Dismissed]: 'Dismissed',
+  [PostReportState.Duplicate]: 'Duplicate',
 };
