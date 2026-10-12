@@ -44,6 +44,12 @@ const SENDS: { file: string; method: 'post' | 'put' | 'delete'; path: string; ke
     path: '/v1/admin/moderation/{moderationItemId}/decide',
     keys: ['action', 'decisionNote'],
   },
+  {
+    file: 'useAudioTrackActions.ts',
+    method: 'post',
+    path: '/v1/admin/audio/tracks/{trackId}/hide',
+    keys: ['reason'],
+  },
 ];
 
 function bodyPropertiesOf(path: string, method: string): string[] {

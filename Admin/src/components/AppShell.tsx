@@ -4,6 +4,7 @@ import {
   Banknote,
   FileClock,
   Flag,
+  Music2,
   ShieldCheck,
   SlidersHorizontal,
   Users,
@@ -33,6 +34,7 @@ interface Section {
 const SECTIONS: Section[] = [
   { to: '/kyc', label: 'KYC review', icon: BadgeCheck, roles: [AdminRole.SuperAdmin, AdminRole.KycReviewer] },
   { to: '/moderation', label: 'Moderation', icon: Flag, roles: [AdminRole.SuperAdmin, AdminRole.ContentMod] },
+  { to: '/audio', label: 'Audio', icon: Music2, roles: [AdminRole.SuperAdmin, AdminRole.ContentMod] },
   { to: '/payouts', label: 'Payouts', icon: Banknote, roles: [AdminRole.SuperAdmin, AdminRole.PayoutsOps] },
   { to: '/admins', label: 'Admin accounts', icon: Users, roles: [AdminRole.SuperAdmin] },
   { to: '/flags', label: 'Feature flags', icon: SlidersHorizontal, roles: [AdminRole.SuperAdmin] },

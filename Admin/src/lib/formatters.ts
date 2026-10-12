@@ -7,6 +7,7 @@ import {
   ModerationItemState,
   ModerationSource,
   ModerationTargetKind,
+  MusicTrackState,
 } from './enums';
 
 export const KycStateLabel: Record<number, string> = {
@@ -74,4 +75,10 @@ export const KycDecisionLabel: Record<number, string> = {
   [KycDecision.Approved]: 'Approved',
   [KycDecision.RejectedRetryable]: 'Rejected — may reapply',
   [KycDecision.RejectedTerminal]: 'Rejected — final',
+};
+
+export const MusicTrackStateLabel: Record<number, string> = {
+  [MusicTrackState.Active]: 'Active',
+  [MusicTrackState.Hidden]: 'Hidden',
+  [MusicTrackState.LinksBroken]: 'Links broken',
 };

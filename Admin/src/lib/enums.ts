@@ -87,3 +87,20 @@ export const KycDecision = {
   RejectedTerminal: 3,
 } as const;
 export type KycDecision = (typeof KycDecision)[keyof typeof KycDecision];
+
+/**
+ * Audio track state, from `Modules.Audio/Enums/MusicTrackRefState.cs`.
+ *
+ * `LinksBroken` is set by a daily health check when every source link
+ * for a track has gone: the track stops surfacing until someone fixes
+ * or retires it. It is not the same as `Hidden`, which is a deliberate
+ * decision, usually a rights-holder complaint. A queue that conflates
+ * them mixes "this broke" with "we took this down", and only one of
+ * those is anybody's to fix.
+ */
+export const MusicTrackState = {
+  Active: 1,
+  Hidden: 2,
+  LinksBroken: 3,
+} as const;
+export type MusicTrackState = (typeof MusicTrackState)[keyof typeof MusicTrackState];
