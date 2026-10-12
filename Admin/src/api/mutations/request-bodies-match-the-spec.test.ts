@@ -50,6 +50,12 @@ const SENDS: { file: string; method: 'post' | 'put' | 'delete'; path: string; ke
     path: '/v1/admin/audio/tracks/{trackId}/hide',
     keys: ['reason'],
   },
+  {
+    file: 'useCourierActions.ts',
+    method: 'post',
+    path: '/v1/admin/couriers/{courierProfileId}/suspend',
+    keys: ['reason'],
+  },
 ];
 
 function bodyPropertiesOf(path: string, method: string): string[] {
