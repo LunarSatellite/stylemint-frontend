@@ -1,147 +1,84 @@
-# StyleMint Brand Studio — Frontend
+# StyleMint Seller Center (`Brand/`)
 
-Vendor-facing SPA for the StyleMint platform. Vendors author briefs, track analytics, and manage creator partnerships. Admins manage goal templates and vendor policies.
+Vendor-facing web app: orders, products, delivery, payouts, returns/questions and store settings
+for StyleMint sellers. Served at `https://stylemint.voyageritnepal.com/seller/` (Vite `base: '/seller/'`,
+router basename `/seller`). Many sellers use it on a phone — every list has a card layout below the
+`sm` breakpoint and the shell has a bottom tab bar.
 
-API surfaces:
-- `/v1/vendor/*` — vendor role
-- `/v1/admin/brand-studio/*` — admin role
-
----
-
-## Dev commands
-
-```bash
-npm install             # install dependencies
-npm run dev             # Vite dev server → http://localhost:5173
-npm run build           # production build
-npm run build -- --mode analyze   # bundle visualizer (run before any import-touching PR)
-npm run codegen         # regenerate src/api/schema.ts from OpenAPI spec
-npm run typecheck       # tsc --noEmit
-npm run lint            # ESLint
-npm run test            # Vitest (unit + integration)
-npm run test:coverage   # Vitest with coverage report
-npm run test:e2e        # Playwright end-to-end
-npm run test:e2e:ui     # Playwright with interactive UI
-```
-
----
-
-## Environment variables
-
-```bash
-# .env.local
-VITE_API_BASE_URL=http://localhost:8080
-```
-
-The app throws at startup if `VITE_API_BASE_URL` is missing. No silent fallbacks.
-
----
+The previous "Brand Studio" spec that lived here (briefs, creator partnerships, Tailwind/Radix) was
+replaced on 2026-10-12 by the decisions in `D:\Stylemint\wt\web-apps-plan.md`.
 
 ## Stack
 
-| Layer | Library |
-|---|---|
-| Bundler | Vite 5 |
-| UI | React 18 + TypeScript 5 strict |
-| Routing | React Router v6 (data routers) |
-| Server state | TanStack Query v5 |
-| Virtual lists | TanStack Virtual v3 |
-| Client state | Zustand |
-| HTTP | axios |
-| Forms | React Hook Form + Zod |
-| UI primitives | Radix UI |
-| Styling | Tailwind CSS + clsx + tailwind-merge |
-| Tables | TanStack Table v8 |
-| Charts | ECharts via echarts-for-react (Canvas only) |
-| Dates | date-fns + date-fns-tz (TZ: Asia/Kathmandu) |
-| Toasts | sonner |
-| Icons | lucide-react |
-| API types | openapi-typescript (generated) |
-| Unit tests | Vitest 2 + Testing Library + MSW 2 |
-| E2E tests | Playwright |
+Vite 5 · React 18 · TypeScript strict · Mantine 7 (core, dates, notifications, modals, dropzone) ·
+React Router 6 · TanStack Query 5 · zod · @tabler/icons-react · @microsoft/signalr (lazy-loaded) ·
+Vitest + Testing Library.
 
----
+Design = Voyager CX (`~/voyager/cx/apps/admin-web` on the VPS, read-only): forest palette, slate
+neutrals, Inter Variable, headings 650, radius 12, soft shadows, accent rails. Tokens live in
+`src/theme.ts` (Mantine) and `src/index.css` (`--sm-*` CSS variables, light + dark). The Admin app
+uses the same values.
 
-## Project structure
+## Commands — run on the VPS only, never on Windows
 
-Full layout and route tree → `.claude/references/folder-structure.md`
+```bash
+# from Windows: copy Brand/ (no node_modules/dist) to ~/web-seller-check/ on the VPS, then there:
+docker run --rm -v ~/web-seller-check:/app -w /app node:22-alpine sh -c \
+  "npm ci && npm run typecheck && npm run lint && npm test -- --run && npm run build"
+```
 
-Key rules:
-- `src/pages/` — thin wrappers, compose features only
-- `src/features/` — all domain logic and UI
-- `src/components/ui/` — Radix + Tailwind primitives, never import Radix directly in features
-- `src/api/queries/` — TanStack Query hooks (read)
-- `src/api/mutations/` — TanStack Query hooks (write)
-- `src/api/schema.ts` — generated, committed to git, never regenerate in CI
+Scripts: `dev` (proxies `/v1` + `/hubs` to `VITE_DEV_API`, default production), `build`,
+`typecheck`, `lint`, `test`.
 
----
+## API
 
-## Architecture decisions
+- Same origin: every call is `/v1/...` (nginx proxies it). No base URL env var, no CORS.
+- `src/api/client.ts` is the only HTTP client: bearer token, one refresh-and-retry on 401,
+  `Idempotency-Key` (fresh UUID) on every POST/PUT/PATCH/DELETE, RFC 7807 → `ApiError`
+  (`code` = backend `errorCode`, message from `title`/`detail`/`errors`).
+- **Wire format:** camelCase; StyleMint enums are **integers** (sub-order state, product state,
+  identifier type…) except where a DTO declares strings (delivery-routing states, rider-rating tags,
+  EMI `approvalMode`). Cursor paging: `PagedResult<T> { items, totalCount, nextCursor, hasMore }` —
+  use `useCursorList` for page-by-page navigation.
+- No server-side search on orders/products: the UI fetches a 100-item page and filters locally.
+- Optional features (EMI, rider profile) hide themselves when the endpoint 404s with no errorCode
+  (`isMissingEndpoint`).
 
-### Auth
-- JWT stored in Zustand memory only — never `localStorage`, never cookies
-- Silent refresh at 80% of token TTL via `scheduleSilentRefresh()`
-- Cross-tab logout via `BroadcastChannel('sm_auth')`
-- Multi-team vendors carry `X-Vendor-Account-Id` header — only when non-null in Zustand
+## Auth (`src/auth/`)
 
-### Data fetching
-- All server state in TanStack Query — nothing else in Zustand except auth + `draftingBrief`
-- Query keys in `bsQk` factory — see `.claude/references/query-keys.md`
-- Brief detail: `staleTime: 30s`, `gcTime: 0` (large payload, evict on unmount)
-- Dashboard / analytics: `staleTime: 60s`
-- Never retry on 4xx — fail fast and show the error
+- Sign-in: email or phone (normalised to `+977…` E.164) + password → `POST /v1/auth/login`
+  (`identifierType` 1 Email / 2 Phone, `deviceFingerprint`, `devicePlatform: 3`).
+- "Sign in with a code": `POST /v1/auth/login-otp/request` → `/verify` (5 digits). Then
+  `GET /v1/registration/{id}/status`; if `hasPassword` is false the seller must create one with the
+  **authenticated** `PUT /v1/accounts/{id}/password`. Never call the anonymous
+  `/v1/registration/{id}/set-password`.
+- Role gate: JWT `roles` must contain `Vendor`; otherwise `/application` shows the vendor
+  application (`GET /v1/vendor/application`) or "not a seller account".
+- Access token in memory; refresh token in sessionStorage (localStorage with "keep me signed in").
+  Refresh is single-flight and serialised across tabs with the Web Locks API, because the backend
+  rotates refresh tokens and revokes the session on reuse. Silent refresh at 80 % of the TTL.
+- Sign out revokes only this session (`POST /v1/accounts/{id}/sessions/{sid}/revoke`); "Sign out
+  everywhere" uses `POST /v1/auth/logout {allSessions:true}`.
 
-### Mutations
-- Axios interceptor auto-attaches `Idempotency-Key` on POST/PATCH/PUT/DELETE
-- Brief PATCH sends only `dirtyFields` from React Hook Form — never the full object
-- Every PATCH/lock/fork/retire includes `rowVersion` for optimistic concurrency
-- `409 state.concurrency_conflict` → invalidate query + toast "Refreshing…"
-- `system.rate_limited` → read `Retry-After`, disable button, toast
-- Switch on `errorCode` string — never on HTTP status number
+## Live updates
 
-### Performance
-- Every page is `lazy()` — zero eager page imports in `router.tsx`
-- Route chunks prefetched on nav-link hover via dynamic `import()`
-- Lists > 50 rows use `useVirtualizer` — no exceptions
-- Infinite / growing lists use `useInfiniteQuery` with cursor — never offset pagination
-- Analytics aggregation (> 90 day windows) runs in a Web Worker off the main thread
-- ECharts renders Canvas — never Recharts (SVG degrades above ~500 nodes)
+`src/lib/live.ts` connects to `/hubs/notifications` (`live` events, see
+`D:\Stylemint\wt\realtime-contract.md`) and invalidates `['orders']`, `['delivery']`, `['home']`.
+Order screens also poll (30 s lists, 15 s moving order detail, 5 s open delivery request).
 
-### Styling
-- Design tokens are CSS variables in `src/index.css` — see `.claude/references/design-tokens.md`
-- Never hardcode hex colors in components or ECharts options
-- Always use `cn()` (clsx + tailwind-merge) for conditional class composition
+## Layout
 
----
+```
+src/api/            client, paging types, useCursorList
+src/auth/           session store, auth endpoints, JWT, identifier + password policy
+src/components/     Shell (AppShell + bottom tab bar), PageHeader, SectionCard, KpiTile, StateBlocks, Pager…
+src/features/<area> api.ts (typed endpoints) + pages + components + tests
+```
 
-## Reference files
+## Rules
 
-All in `.claude/references/` — read the relevant one before writing code:
-
-| File | When to read |
-|---|---|
-| `architecture.md` | **starting any new feature** — mental models, data flow, state decisions, error architecture, feature checklist |
-| `auth.md` | anything touching login, token, guards, axios interceptors, silent refresh, BroadcastChannel logout |
-| `folder-structure.md` | scaffolding anything new, checking where a file belongs |
-| `query-keys.md` | adding a query hook, wiring a mutation's invalidation |
-| `error-codes.md` | handling API errors, writing error toasts |
-| `enums.md` | using any status, state, or kind value from the API |
-| `design-tokens.md` | styling components, configuring ECharts colors |
-| `testing.md` | writing tests, adding MSW handlers, setting up Playwright |
-| `performance.md` | adding a new list/table, touching imports, configuring Vite chunks |
-| `component-conventions.md` | creating a component, typing props, applying branded IDs |
-
----
-
-## Non-negotiable rules
-
-- `dangerouslySetInnerHTML` — never
-- `localStorage` / cookies for auth — never
-- Recharts — never (use ECharts Canvas)
-- Hardcoded hex colors — never (use CSS variables)
-- Magic number enums — never (use `src/lib/enums.ts`)
-- Raw `string` for entity IDs — never (use branded types from `src/lib/brands.ts`)
-- `schema.ts` regeneration in CI — never (commit it, generate locally)
-- Offset pagination on growing lists — never (use cursor + `useInfiniteQuery`)
-- Eager page imports in `router.tsx` — never (use `lazy()`)
-- Lists > 50 rows without `useVirtualizer` — never
+- Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),
+  empty state, paging. Destructive or customer-visible actions confirm first. Toast on success.
+- Money via `formatMoney` ("Rs 1,234"), never hand-formatted.
+- No `dangerouslySetInnerHTML`. No auth tokens in localStorage unless "keep me signed in".
+- Do not touch `../Admin/` (separate app, separate branch).
