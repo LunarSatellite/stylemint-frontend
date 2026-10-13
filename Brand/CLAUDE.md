@@ -52,6 +52,11 @@ Scripts: `dev` (proxies `/v1` + `/hubs` to `VITE_DEV_API`, default production), 
   `GET /v1/registration/{id}/status`; if `hasPassword` is false the seller must create one with the
   **authenticated** `PUT /v1/accounts/{id}/password`. Never call the anonymous
   `/v1/registration/{id}/set-password`.
+- "Continue with Google / Apple / Facebook" (`src/auth/social.ts`, `src/auth/thirdParty.ts`,
+  `features/auth/SocialSignIn.tsx` + `ProviderButtons.tsx`): buttons only for providers
+  `GET /v1/auth/oauth/web-config` reports (404 → none); SDKs lazy-loaded on the login page only;
+  token → `POST /v1/auth/oauth/{provider}/native` → same `establish()` with `checkPassword: false`
+  (no forced password). CSP for the SDK origins: README "Deploy".
 - Role gate: JWT `roles` must contain `Vendor`; otherwise `/application` shows the vendor
   application (`GET /v1/vendor/application`) or "not a seller account".
 - Access token in memory; refresh token in sessionStorage (localStorage with "keep me signed in").

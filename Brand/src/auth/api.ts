@@ -82,7 +82,7 @@ function browserModel(): string {
   return `${browser}${os ? ` on ${os}` : ''} (Seller Center)`.slice(0, 100);
 }
 
-function deviceBinding() {
+export function deviceBinding() {
   return {
     deviceFingerprint: deviceFingerprint(),
     devicePlatform: DEVICE_PLATFORM_WEB,

@@ -8,6 +8,7 @@ import { establish } from '../../auth/session';
 import { useSession } from '../../auth/useSession';
 import { surfaces } from '../../theme';
 import { AuthLayout } from './AuthLayout';
+import { SocialSignIn } from './SocialSignIn';
 
 type Mode = 'password' | 'code-request' | 'code-verify';
 
@@ -48,6 +49,8 @@ export function LoginPage() {
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [socialBusy, setSocialBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [otp, setOtp] = useState<{ parsed: Extract<ParsedIdentifier, { ok: true }>; sent: OtpRequested } | null>(null);
 
@@ -64,6 +67,7 @@ export function LoginPage() {
   const submitPassword = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     const parsed = parse();
     if (!parsed) return;
     if (!password) {
@@ -73,7 +77,7 @@ export function LoginPage() {
     setBusy(true);
     try {
       const res = await authApi.login(parsed.type, parsed.value, password);
-      await establish(res, { remember, checkPassword: false });
+      await establish(res, { remember, checkPassword: false, method: 'password' });
     } catch (err) {
       setError(loginError(err));
     } finally {
@@ -111,7 +115,7 @@ export function LoginPage() {
     setBusy(true);
     try {
       const res = await authApi.verifyOtp(otp.parsed.type, otp.parsed.value, value);
-      await establish(res, { remember, checkPassword: true });
+      await establish(res, { remember, checkPassword: true, method: 'code' });
     } catch (err) {
       setError(otpError(err));
       setCode('');
@@ -159,12 +163,28 @@ export function LoginPage() {
                 Use the email or phone number of your StyleMint seller account.
               </Text>
             </div>
-            {endedReason && !error && (
+            {endedReason && !error && !info && (
               <Alert color="gray" variant="light" icon={<IconInfoCircle size={16} />}>
                 {endedReason}
               </Alert>
             )}
             {errorAlert}
+            {info && !error && (
+              <Alert color="gray" variant="light" icon={<IconInfoCircle size={16} />} data-testid="login-info">
+                {info}
+              </Alert>
+            )}
+            <SocialSignIn
+              remember={remember}
+              disabled={busy}
+              onStart={() => {
+                setError(null);
+                setInfo(null);
+              }}
+              onError={setError}
+              onInfo={setInfo}
+              onBusyChange={setSocialBusy}
+            />
             {identifierField}
             <PasswordInput
               label="Password"
@@ -175,7 +195,7 @@ export function LoginPage() {
               onChange={(ev) => setPassword(ev.currentTarget.value)}
             />
             {rememberBox}
-            <Button type="submit" loading={busy} fullWidth size="md">
+            <Button type="submit" loading={busy} disabled={socialBusy} fullWidth size="md">
               Sign in
             </Button>
           </Stack>
@@ -185,8 +205,10 @@ export function LoginPage() {
             fullWidth
             size="md"
             leftSection={<IconMessage2Code size={18} />}
+            disabled={socialBusy}
             onClick={() => {
               setError(null);
+              setInfo(null);
               setMode('code-request');
             }}
           >

@@ -50,7 +50,7 @@ function ChangePasswordCard() {
   };
 
   return (
-    <SectionCard title={hasPassword ? 'Change password' : 'Create a password'} description={hasPassword ? undefined : 'You sign in with codes today. A password is faster.'}>
+    <SectionCard title={hasPassword ? 'Change password' : 'Create a password'} description={hasPassword ? undefined : 'You sign in with a code, or with Google, Apple or Facebook, today. A password gives you another way in.'}>
       <Stack gap="sm" maw={420}>
         {error && (
           <Alert color="signal" variant="light" role="alert">

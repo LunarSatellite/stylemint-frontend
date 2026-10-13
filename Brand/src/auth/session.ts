@@ -18,6 +18,9 @@ const CHANNEL = 'sm-seller-auth';
 
 export type AuthStatus = 'loading' | 'signedOut' | 'needsPassword' | 'notVendor' | 'signedIn';
 
+/** How this tab signed in. Unknown (null) after a reload resumed the session from its refresh token. */
+export type SignInMethod = 'password' | 'code' | 'google' | 'apple' | 'facebook';
+
 export interface SessionState {
   status: AuthStatus;
   accountId: string | null;
@@ -25,6 +28,9 @@ export interface SessionState {
   roles: string[];
   /** Why the last session ended, for the sign-in page. */
   endedReason: string | null;
+  signInMethod: SignInMethod | null;
+  /** The server created a brand-new account for this sign-in (e.g. a provider email no account had). */
+  newAccount: boolean;
 }
 
 interface Tokens {
@@ -33,7 +39,15 @@ interface Tokens {
   claims: AccessClaims | null;
 }
 
-const initial: SessionState = { status: 'loading', accountId: null, sessionId: null, roles: [], endedReason: null };
+const initial: SessionState = {
+  status: 'loading',
+  accountId: null,
+  sessionId: null,
+  roles: [],
+  endedReason: null,
+  signInMethod: null,
+  newAccount: false,
+};
 
 let state: SessionState = initial;
 let tokens: Tokens | null = null;
@@ -205,8 +219,12 @@ function endSession(reason: string | null, broadcast = true) {
 
 export interface EstablishOptions {
   remember: boolean;
-  /** After a code sign-in: check whether the account has a password yet. */
+  /**
+   * After a code sign-in: check whether the account has a password yet. Not after Google / Apple / Facebook: the
+   * provider is a credential of its own (the Security page still offers "Create a password").
+   */
   checkPassword: boolean;
+  method?: SignInMethod;
 }
 
 /**
@@ -221,7 +239,14 @@ export async function establish(res: AuthResponse, opts: EstablishOptions): Prom
     if (ok) claims = tokens?.claims ?? claims;
   }
   const roles = rolesOf(claims);
-  const base = { accountId: res.accountId, sessionId: res.sessionId, roles, endedReason: null };
+  const base = {
+    accountId: res.accountId,
+    sessionId: res.sessionId,
+    roles,
+    endedReason: null,
+    signInMethod: opts.method ?? null,
+    newAccount: res.isNewAccount === true,
+  };
   if (!isVendor(claims)) {
     setState({ ...base, status: 'notVendor' });
     return 'notVendor';

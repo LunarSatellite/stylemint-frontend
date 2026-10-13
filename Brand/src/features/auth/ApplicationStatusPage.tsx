@@ -4,6 +4,8 @@ import { IconCircleCheck, IconClock, IconFileText, IconRefresh, IconX } from '@t
 import { useQuery } from '@tanstack/react-query';
 import { api, ApiError } from '../../api/client';
 import { recheckRoles, signOut } from '../../auth/session';
+import { PROVIDER_NAME } from '../../auth/social';
+import { useSession } from '../../auth/useSession';
 import { LoadingBlock, ErrorBlock } from '../../components/StateBlocks';
 import { formatDate, formatDateTime } from '../../lib/format';
 import { surfaces } from '../../theme';
@@ -47,6 +49,8 @@ async function fetchApplication(): Promise<VendorApplication | null> {
  */
 export function ApplicationStatusPage() {
   const app = useQuery({ queryKey: ['vendor-application'], queryFn: fetchApplication });
+  const { signInMethod, newAccount } = useSession();
+  const viaProvider = signInMethod === 'google' || signInMethod === 'apple' || signInMethod === 'facebook' ? PROVIDER_NAME[signInMethod] : null;
   const [checking, setChecking] = useState(false);
   const [stillPending, setStillPending] = useState(false);
 
@@ -79,10 +83,24 @@ export function ApplicationStatusPage() {
       ) : !app.data ? (
         <Stack gap="md" data-testid="not-a-seller">
           <Title order={3}>This account isn’t a seller account</Title>
-          <Text size="sm" c={surfaces.textMuted}>
-            You signed in, but this StyleMint account has not applied to sell. Apply in the StyleMint app (Profile → Become
-            a seller). Once your application is approved, come back here and sign in again.
-          </Text>
+          {viaProvider ? (
+            <>
+              <Text size="sm" c={surfaces.textMuted} data-testid="not-a-seller-provider">
+                {newAccount
+                  ? `No StyleMint seller account uses the email on this ${viaProvider} account, so this signed you in to a new, empty StyleMint account instead.`
+                  : `The StyleMint account linked to this ${viaProvider} account has no shop.`}
+              </Text>
+              <Alert color="amber" variant="light">
+                Sign out, then sign in with the phone number or email your shop was registered with (password or a code).
+                To use {viaProvider} next time, the {viaProvider} account must use the same email as your shop.
+              </Alert>
+            </>
+          ) : (
+            <Text size="sm" c={surfaces.textMuted}>
+              You signed in, but this StyleMint account has not applied to sell. Apply in the StyleMint app (Profile →
+              Become a seller). Once your application is approved, come back here and sign in again.
+            </Text>
+          )}
           {signOutButton}
         </Stack>
       ) : (
