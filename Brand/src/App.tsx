@@ -25,6 +25,16 @@ const CarePage = lazy(() => import('./features/care/CarePage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const SecurityPage = lazy(() => import('./features/settings/SecurityPage'));
 const NotFoundPage = lazy(() => import('./features/NotFoundPage'));
+// Customers & CRM (OmniFlow CRM workspace per seller, see features/crm/session.ts).
+const CrmLayout = lazy(() => import('./features/crm/components').then((m) => ({ default: m.CrmLayout })));
+const CrmCustomersPage = lazy(() => import('./features/crm/CustomersPage'));
+const CrmCustomerProfilePage = lazy(() => import('./features/crm/CustomerProfilePage'));
+const CrmTasksPage = lazy(() => import('./features/crm/TasksPage'));
+const CrmSegmentsPage = lazy(() => import('./features/crm/SegmentsPage'));
+const CrmCampaignsPage = lazy(() => import('./features/crm/CampaignsPage'));
+const CrmFeedbackPage = lazy(() => import('./features/crm/FeedbackPage'));
+const CrmDealsPage = lazy(() => import('./features/crm/DealsPage'));
+const CrmReportsPage = lazy(() => import('./features/crm/ReportsPage'));
 
 export function createQueryClient() {
   return new QueryClient({
@@ -128,6 +138,18 @@ export function AppRoutes() {
         <Route path="care" element={<CarePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/security" element={<SecurityPage />} />
+        <Route path="crm" element={<CrmLayout />}>
+          <Route index element={<Navigate to="customers" replace />} />
+          <Route path="customers" element={<CrmCustomersPage />} />
+          <Route path="customers/:id" element={<CrmCustomerProfilePage />} />
+          <Route path="tasks" element={<CrmTasksPage />} />
+          <Route path="segments" element={<CrmSegmentsPage />} />
+          <Route path="campaigns" element={<CrmCampaignsPage />} />
+          <Route path="feedback" element={<CrmFeedbackPage />} />
+          <Route path="deals" element={<CrmDealsPage />} />
+          <Route path="reports" element={<CrmReportsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

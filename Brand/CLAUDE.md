@@ -75,6 +75,30 @@ src/components/     Shell (AppShell + bottom tab bar), PageHeader, SectionCard, 
 src/features/<area> api.ts (typed endpoints) + pages + components + tests
 ```
 
+## Customers & CRM (`src/features/crm/`)
+
+Each seller has a private Lead360/OmniFlow CRM workspace (plan + backend contract:
+`D:\Stylemint\wt\seller-crm-plan.md`, section "Backend notes").
+
+- **Session** (`session.ts`): `POST /v1/vendor/crm/session` with the StyleMint token →
+  `{ accessToken, expiresUtc, tenantId, role, businessName }`. CRM token in memory only, single-flight,
+  re-requested 60 s before `expiresUtc` and on any CRM 401 (one retry); dropped on sign-out.
+  404 / 503 `seller_crm.disabled` → "CRM is being set up"; 403 → not available.
+- **Client** (`client.ts`): `/api/v1/crm/...` (nginx proxies `/api` to the same API). OmniFlow envelope
+  `{ success, data, message }` / paged `{ data[], totalCount, pageNumber, pageSize, totalPages }` is
+  unwrapped to `CrmPage<T>`; errors become the same `ApiError`. Integer enums, camelCase.
+- **Buyer privacy**: every CRM response goes through `redactPii` — phone/email fields are dropped and
+  phone numbers / emails inside text are masked. Never render buyer contact details; contact goes
+  through StyleMint campaigns/surveys, only to buyers with marketing consent (show consent counts).
+- **Roles** (`roles.ts`): vendor Owner/Admin → everything; Member → `Agent`: no delete, no segment
+  discovery, no automations toggle, no survey sends. Use `IfCan` / `RequireCap` / `useCan`.
+- Pages: Customers (`crm/seller/customers`), profile (seller customer + contact tags + merged
+  timeline of activity events and sync signals, notes = comments, follow-up tasks, NPS/feedback,
+  deals), Tasks & calendar, Segments (built-in + rule segments stored per workspace in this browser
+  + AI segments), Campaigns & automations, Feedback, Deals & quotes, Reports. All lazy chunks.
+- Every CRM query key starts with `'crm'` (`CRM_KEY`). Detail views use `DetailSheet` (bottom sheet
+  on a phone).
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),

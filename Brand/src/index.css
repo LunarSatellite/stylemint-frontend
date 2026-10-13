@@ -265,7 +265,8 @@ body {
   bottom: 0;
   z-index: 150;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
   background: var(--sm-header-bg);
   border-top: 1px solid var(--sm-border);
   backdrop-filter: saturate(150%) blur(12px);
@@ -384,4 +385,39 @@ body {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* CRM: section chips on a phone (the sidebar lists them on larger screens). */
+.sm-crm-chip {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-raised);
+  color: var(--sm-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sm-crm-chip[aria-current='page'] {
+  background: var(--sm-active-bg);
+  border-color: transparent;
+  color: var(--sm-active-text);
+}
+
+/* CRM: deal board columns scroll sideways on a tablet/desktop. */
+.sm-crm-board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(250px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.sm-crm-row {
+  cursor: pointer;
 }

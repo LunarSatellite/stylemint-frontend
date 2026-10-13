@@ -45,6 +45,8 @@ export function authResponse(roles: string[], extra: Record<string, unknown> = {
 export interface RecordedCall {
   method: string;
   path: string;
+  /** The query string, e.g. "?page=2". */
+  search: string;
   body: unknown;
   headers: Record<string, string>;
 }
@@ -63,7 +65,7 @@ export function mockApi(routes: Record<string, Handler | { status?: number; body
     const headers = (init?.headers ?? {}) as Record<string, string>;
     let body: unknown = undefined;
     if (typeof init?.body === 'string') body = JSON.parse(init.body);
-    const call: RecordedCall = { method, path: url.pathname, body, headers };
+    const call: RecordedCall = { method, path: url.pathname, search: url.search, body, headers };
     calls.push(call);
     const key = `${method} ${url.pathname}`;
     const route = routes[key];
