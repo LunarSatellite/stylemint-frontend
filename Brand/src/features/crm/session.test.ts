@@ -47,6 +47,15 @@ describe('CRM session', () => {
     expect(crmSession.getState().status).toBe('ready');
   });
 
+  it('keeps a still-valid token when a background refresh hits a server blip', async () => {
+    let n = 0;
+    mockApi({ [SESSION]: () => (++n === 1 ? { body: sessionBody('Owner', 'crm-token-1') } : { status: 502, body: { title: 'Bad gateway' } }) });
+    await crmSession.acquire();
+    await crmSession.acquire(true);
+    expect(crmSession.getState().status).toBe('ready');
+    expect(crmSession.currentToken()).toBe('crm-token-1');
+  });
+
   it('re-requests the session on a 401 from the CRM and retries the call once', async () => {
     let n = 0;
     let first = true;

@@ -24,6 +24,7 @@ export const CRM_SESSION_PATH = '/v1/vendor/crm/session';
 const REFRESH_LEAD_MS = 60_000;
 const MIN_DELAY_MS = 5_000;
 const DEFAULT_LIFETIME_MS = 15 * 60_000;
+const RETRY_MS = 20_000;
 
 export type CrmSessionStatus = 'idle' | 'loading' | 'ready' | 'unavailable' | 'forbidden' | 'error';
 
@@ -111,6 +112,14 @@ export function acquire(force = false): Promise<string | null> {
     })
     .catch((error: unknown) => {
       if (gen !== generation) return null;
+      // A background refresh that hit a blip (offline, 5xx) keeps the still-valid token and tries again soon.
+      if (state.status === 'ready' && token && token.expiresMs - Date.now() > 10_000 && classify(error) === 'error') {
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => {
+          void acquire(true);
+        }, RETRY_MS);
+        return token.value;
+      }
       token = null;
       schedule();
       setState({ status: classify(error), error, role: null, tenantId: null, areas: null, businessName: null });
