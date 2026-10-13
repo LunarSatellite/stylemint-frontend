@@ -1,4 +1,4 @@
-import { Suspense, useEffect, type ComponentType } from 'react';
+import { Suspense, useEffect, useMemo, type ComponentType } from 'react';
 import {
   ActionIcon,
   AppShell,
@@ -19,11 +19,18 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import {
   IconBuildingStore,
+  IconCalendarEvent,
   IconCash,
+  IconChartBar,
   IconChevronDown,
   IconDots,
   IconHome,
   IconLifebuoy,
+  IconBriefcase,
+  IconMessageStar,
+  IconSpeakerphone,
+  IconUsers,
+  IconUsersGroup,
   IconLogout,
   IconMoon,
   IconPackage,
@@ -38,6 +45,9 @@ import { useQuery } from '@tanstack/react-query';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from '../auth/session';
 import { useAccount } from '../auth/useSession';
+import { useCrmSession, useVisibleAreas } from '../features/crm/hooks';
+import type { CrmAreaKey } from '../features/crm/roles';
+import { crmSession } from '../features/crm/session';
 import { ordersApi } from '../features/orders/api';
 import { useLiveUpdates } from '../lib/live';
 import { initialsOf } from '../lib/format';
@@ -73,12 +83,47 @@ const NAV: { section?: string; items: NavItem[] }[] = [
   },
 ];
 
+const CRM_ICONS: Record<CrmAreaKey, ComponentType<IconProps>> = {
+  customers: IconUsers,
+  tasks: IconCalendarEvent,
+  segments: IconUsersGroup,
+  campaigns: IconSpeakerphone,
+  feedback: IconMessageStar,
+  deals: IconBriefcase,
+  reports: IconChartBar,
+};
+
 const TABS: NavItem[] = [
   { to: '/', label: 'Home', icon: IconHome, end: true },
   { to: '/orders', label: 'Orders', icon: IconReceipt, badge: 'newOrders' },
   { to: '/products', label: 'Products', icon: IconPackage },
+  { to: '/crm', label: 'Customers', icon: IconUsers },
   { to: '/payouts', label: 'Payouts', icon: IconCash },
 ];
+
+/** The sidebar: fixed groups plus the CRM group, which follows the seller's CRM role. */
+function useNav() {
+  const crmAreas = useVisibleAreas();
+  return useMemo(() => {
+    const crmGroup: { section?: string; items: NavItem[] } = {
+      section: 'Customers & CRM',
+      items: crmAreas.map((a) => ({ to: a.to, label: a.label, icon: CRM_ICONS[a.key] })),
+    };
+    return [NAV[0], NAV[1], crmGroup, ...NAV.slice(2)];
+  }, [crmAreas]);
+}
+
+/** Learn the CRM role shortly after the shell opens, so the CRM menu shows only what the role can use. */
+function usePrefetchCrmSession() {
+  const { status } = useCrmSession();
+  useEffect(() => {
+    if (status !== 'idle') return;
+    const t = setTimeout(() => {
+      if (crmSession.getState().status === 'idle') void crmSession.acquire();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, [status]);
+}
 
 function useNewOrderCount() {
   return useQuery({
@@ -114,6 +159,8 @@ export function Shell() {
   const account = useAccount();
   const newOrders = useNewOrderCount();
   const live = useLiveUpdates();
+  const nav = useNav();
+  usePrefetchCrmSession();
 
   useEffect(() => {
     close();
@@ -232,7 +279,7 @@ export function Shell() {
         <AppShell.Navbar p="sm" id="main-menu" aria-label="Main menu">
           <ScrollArea style={{ flex: 1 }} type="hover" scrollbarSize={6}>
             <nav>
-              {NAV.map((group, gi) => (
+              {nav.map((group, gi) => (
                 <div key={gi}>
                   {group.section && <div className="sm-nav-section">{group.section}</div>}
                   {group.items.map((item) => {
