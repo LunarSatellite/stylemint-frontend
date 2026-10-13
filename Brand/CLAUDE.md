@@ -104,6 +104,25 @@ Each seller has a private Lead360/OmniFlow CRM workspace (plan + backend contrac
 - Every CRM query key starts with `'crm'` (`CRM_KEY`). Detail views use `DetailSheet` (bottom sheet
   on a phone).
 
+## Creators (`src/features/creators/`)
+
+Plan + backend contract: `D:\Stylemint\wt\seller-creators-plan.md` ("Backend notes"). Routes under
+`/creators/*`, sidebar group "Creators", phone chips (`CreatorsLayout`).
+
+- Sections: Find creators (`vendor/matches`, `vendor/partnerships/creators`, public creator profile /
+  reel-stats / rate-card, `vendor/creator-performance`), Partnerships (`vendor/partnerships*`, predict,
+  insurance), Agreements (`vendor/agreements*`), Briefs & campaigns (`vendor/briefs*`, applications,
+  `vendor/campaign-workspaces`), Retainers & squads (`vendor/retainers`, `retainers/{id}/*`,
+  `vendor/squads*`), Content approvals (`vendor/reel-approvals*`), Payments (`vendor/creator-performance`
+  + retainers).
+- **Commission is a fraction on the wire** (0.15 = 15 %) in Partnerships, BrandStudio and agreement
+  terms; match prefill uses basis points. Use `pct` / `commissionRange` / `toFraction` from `labels.ts`.
+- Agreement detail on the wire is `{ agreement, versions, acceptances, timeline }`; `agreementsApi`
+  flattens it (acceptances grouped per version). Signing echoes `{ versionNumber, termsHash }`.
+  The counter-party's IP address is never rendered. A missing endpoint (404) shows "being set up".
+- Confirmations inside the detail sheet use `confirmAction` from `creators/components` (z-index above
+  the sheet), not the shared one.
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),

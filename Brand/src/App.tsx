@@ -35,6 +35,17 @@ const CrmCampaignsPage = lazy(() => import('./features/crm/CampaignsPage'));
 const CrmFeedbackPage = lazy(() => import('./features/crm/FeedbackPage'));
 const CrmDealsPage = lazy(() => import('./features/crm/DealsPage'));
 const CrmReportsPage = lazy(() => import('./features/crm/ReportsPage'));
+// Creators: find creators, partnerships, agreements, briefs, retainers, approvals, payments.
+const CreatorsLayout = lazy(() => import('./features/creators/components').then((m) => ({ default: m.CreatorsLayout })));
+const FindCreatorsPage = lazy(() => import('./features/creators/FindCreatorsPage'));
+const PartnershipsPage = lazy(() => import('./features/creators/PartnershipsPage'));
+const AgreementsPage = lazy(() => import('./features/creators/AgreementsPage'));
+const AgreementEditorPage = lazy(() => import('./features/creators/AgreementEditorPage'));
+const AgreementDetailPage = lazy(() => import('./features/creators/AgreementDetailPage'));
+const CreatorCampaignsPage = lazy(() => import('./features/creators/CampaignsPage'));
+const RetainersPage = lazy(() => import('./features/creators/RetainersPage'));
+const ApprovalsPage = lazy(() => import('./features/creators/ApprovalsPage'));
+const CreatorPaymentsPage = lazy(() => import('./features/creators/PaymentsPage'));
 
 export function createQueryClient() {
   return new QueryClient({
@@ -148,6 +159,21 @@ export function AppRoutes() {
           <Route path="feedback" element={<CrmFeedbackPage />} />
           <Route path="deals" element={<CrmDealsPage />} />
           <Route path="reports" element={<CrmReportsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+        <Route path="creators" element={<CreatorsLayout />}>
+          <Route index element={<Navigate to="partnerships" replace />} />
+          <Route path="find" element={<FindCreatorsPage />} />
+          <Route path="partnerships" element={<PartnershipsPage />} />
+          <Route path="agreements" element={<AgreementsPage />} />
+          <Route path="agreements/new" element={<AgreementEditorPage mode="new" />} />
+          <Route path="agreements/:id" element={<AgreementDetailPage />} />
+          <Route path="agreements/:id/edit" element={<AgreementEditorPage mode="edit" />} />
+          <Route path="agreements/:id/amend" element={<AgreementEditorPage mode="amend" />} />
+          <Route path="campaigns" element={<CreatorCampaignsPage />} />
+          <Route path="retainers" element={<RetainersPage />} />
+          <Route path="approvals" element={<ApprovalsPage />} />
+          <Route path="payments" element={<CreatorPaymentsPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

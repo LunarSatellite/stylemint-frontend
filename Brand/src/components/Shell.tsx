@@ -20,6 +20,13 @@ import { useDisclosure } from '@mantine/hooks';
 import {
   IconBuildingStore,
   IconCalendarEvent,
+  IconCalendarRepeat,
+  IconChecklist,
+  IconCoins,
+  IconFileCertificate,
+  IconHeartHandshake,
+  IconTargetArrow,
+  IconUserSearch,
   IconCash,
   IconChartBar,
   IconChevronDown,
@@ -72,6 +79,18 @@ const NAV: { section?: string; items: NavItem[] }[] = [
       { to: '/products', label: 'Products', icon: IconPackage },
       { to: '/delivery', label: 'Delivery', icon: IconTruckDelivery },
       { to: '/care', label: 'Returns & questions', icon: IconLifebuoy },
+    ],
+  },
+  {
+    section: 'Creators',
+    items: [
+      { to: '/creators/find', label: 'Find creators', icon: IconUserSearch },
+      { to: '/creators/partnerships', label: 'Partnerships', icon: IconHeartHandshake },
+      { to: '/creators/agreements', label: 'Agreements', icon: IconFileCertificate },
+      { to: '/creators/campaigns', label: 'Briefs & campaigns', icon: IconTargetArrow },
+      { to: '/creators/retainers', label: 'Retainers & squads', icon: IconCalendarRepeat },
+      { to: '/creators/approvals', label: 'Content approvals', icon: IconChecklist },
+      { to: '/creators/payments', label: 'Creator payments', icon: IconCoins },
     ],
   },
   {
