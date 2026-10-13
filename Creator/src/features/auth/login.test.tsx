@@ -22,8 +22,8 @@ describe('Creator Studio sign-in', () => {
     await screen.findByRole('heading', { name: /sign in to creator studio/i });
   }
 
-  it('signs a vendor in with a Nepali phone number and password', async () => {
-    const calls = mockApi({ 'POST /v1/auth/login': { body: authResponse(['Customer', 'Vendor']) } });
+  it('signs a creator in with a Nepali phone number and password', async () => {
+    const calls = mockApi({ 'POST /v1/auth/login': { body: authResponse(['Customer', 'Creator']) } });
     await startAtLogin();
     const user = userEvent.setup();
     await user.type(screen.getByLabelText(/email or phone number/i), '981-234 5678');
@@ -49,7 +49,7 @@ describe('Creator Studio sign-in', () => {
     });
     await startAtLogin();
     const user = userEvent.setup();
-    await user.type(screen.getByLabelText(/email or phone number/i), 'shop@gmail.com');
+    await user.type(screen.getByLabelText(/email or phone number/i), 'asha@gmail.com');
     await user.type(screen.getByLabelText(/^password/i), 'wrong password 1');
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
     expect(await screen.findByTestId('login-error')).toHaveTextContent(/do not match/i);
@@ -72,7 +72,7 @@ describe('Creator Studio sign-in', () => {
       'POST /v1/auth/login-otp/request': {
         body: { otpId: 'o1', accountId: ACCOUNT_ID, expiresUtc: new Date().toISOString(), devPlaintextCode: null, isNewAccount: false },
       },
-      'POST /v1/auth/login-otp/verify': { body: authResponse(['Vendor']) },
+      'POST /v1/auth/login-otp/verify': { body: authResponse(['Creator']) },
       [`GET /v1/registration/${ACCOUNT_ID}/status`]: {
         body: { accountId: ACCOUNT_ID, emailVerified: true, phoneVerified: false, hasPassword: false, hasPasskey: false, termsAccepted: true, isComplete: false },
       },
@@ -81,11 +81,11 @@ describe('Creator Studio sign-in', () => {
     await startAtLogin();
     const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: /sign in with a code/i }));
-    await user.type(screen.getByLabelText(/email or phone number/i), 'Shop@Gmail.com');
+    await user.type(screen.getByLabelText(/email or phone number/i), 'Asha@Gmail.com');
     await user.click(screen.getByRole('button', { name: /send code/i }));
 
     expect(await screen.findByRole('heading', { name: /enter your code/i })).toBeInTheDocument();
-    expect(calls.find((c) => c.path === '/v1/auth/login-otp/request')!.body).toEqual({ identifierType: 1, identifier: 'shop@gmail.com' });
+    expect(calls.find((c) => c.path === '/v1/auth/login-otp/request')!.body).toEqual({ identifierType: 1, identifier: 'asha@gmail.com' });
 
     const first = document.querySelectorAll('form input')[0] as HTMLInputElement;
     await user.click(first);
@@ -95,7 +95,7 @@ describe('Creator Studio sign-in', () => {
     await waitFor(() => expect(session.getState().status).toBe('needsPassword'));
     expect(calls.find((c) => c.path === '/v1/auth/login-otp/verify')!.body).toMatchObject({ code: '48213', identifierType: 1 });
 
-    // The gate sends the seller to the mandatory password step.
+    // The gate sends the creator to the mandatory password step.
     expect(await screen.findByRole('heading', { name: /create your password/i })).toBeInTheDocument();
     const rules = screen.getByTestId('password-rules');
     expect(rules).toHaveTextContent(/12–128 characters/);
@@ -108,14 +108,14 @@ describe('Creator Studio sign-in', () => {
 
     await user.clear(screen.getByLabelText(/^new password/i));
     await user.clear(screen.getByLabelText(/confirm password/i));
-    await user.type(screen.getByLabelText(/^new password/i), 'himalaya-shop-2026');
-    await user.type(screen.getByLabelText(/confirm password/i), 'himalaya-shop-2026');
+    await user.type(screen.getByLabelText(/^new password/i), 'himalaya-reels-2026');
+    await user.type(screen.getByLabelText(/confirm password/i), 'himalaya-reels-2026');
     await user.click(screen.getByRole('button', { name: /save password/i }));
 
     await waitFor(() => expect(session.getState().status).toBe('signedIn'));
     const put = calls.find((c) => c.method === 'PUT')!;
     expect(put.path).toBe(`/v1/accounts/${ACCOUNT_ID}/password`);
-    expect(put.body).toEqual({ newPassword: 'himalaya-shop-2026' });
+    expect(put.body).toEqual({ newPassword: 'himalaya-reels-2026' });
     expect(put.headers.Authorization).toMatch(/^Bearer /);
     expect(put.headers['Idempotency-Key']).toBeTruthy();
     // Never the anonymous registration route.
@@ -127,7 +127,7 @@ describe('Creator Studio sign-in', () => {
       'POST /v1/auth/login-otp/request': {
         body: { otpId: 'o1', accountId: ACCOUNT_ID, expiresUtc: new Date().toISOString(), devPlaintextCode: null, isNewAccount: false },
       },
-      'POST /v1/auth/login-otp/verify': { body: authResponse(['Vendor']) },
+      'POST /v1/auth/login-otp/verify': { body: authResponse(['Creator']) },
       [`GET /v1/registration/${ACCOUNT_ID}/status`]: { body: { accountId: ACCOUNT_ID, hasPassword: true } },
     });
     await startAtLogin();
@@ -143,10 +143,10 @@ describe('Creator Studio sign-in', () => {
     await waitFor(() => expect(session.getState().status).toBe('signedIn'));
   });
 
-  it('turns away an account without the Vendor role', async () => {
+  it('turns away an account without the Creator role', async () => {
     mockApi({
       'POST /v1/auth/login': { body: authResponse(['Customer']) },
-      'GET /v1/vendor/application': {
+      'GET /v1/creator/application': {
         status: 404,
         body: { title: 'Not found', status: 404, errorCode: 'resource.not_found' },
       },
@@ -158,18 +158,16 @@ describe('Creator Studio sign-in', () => {
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
 
     await waitFor(() => expect(session.getState().status).toBe('notCreator'));
-    expect(await screen.findByTestId('not-a-seller')).toHaveTextContent(/isn’t a seller account/i);
+    expect(await screen.findByTestId('not-a-creator')).toHaveTextContent(/isn’t a creator account yet/i);
   });
 
   it('shows the application status to an applicant who is not approved yet', async () => {
     mockApi({
       'POST /v1/auth/login': { body: authResponse(['Customer']) },
-      'GET /v1/vendor/application': {
+      'GET /v1/creator/application': {
         body: {
           id: 'a1',
           state: 3,
-          brandName: 'Himalaya Knits',
-          legalBusinessName: 'Himalaya Knits Pvt Ltd',
           submittedAtUtc: '2026-10-01T10:00:00Z',
           expectedDecisionByUtc: '2026-10-15T10:00:00Z',
           decisionAtUtc: null,
@@ -185,6 +183,38 @@ describe('Creator Studio sign-in', () => {
     await user.click(screen.getByRole('button', { name: /^sign in$/i }));
     const status = await screen.findByTestId('application-status');
     expect(status).toHaveTextContent(/under review/i);
-    expect(status).toHaveTextContent(/Himalaya Knits/);
+    expect(status).toHaveTextContent(/expect a decision by 15 Oct 2026/i);
+  });
+
+  it('switches the Creator role on for an approved application and lets the creator in', async () => {
+    let activated = false;
+    const calls = mockApi({
+      'POST /v1/auth/login': { body: authResponse(['Customer']) },
+      'GET /v1/creator/application': {
+        body: {
+          id: 'a1',
+          state: 4,
+          submittedAtUtc: '2026-10-01T10:00:00Z',
+          expectedDecisionByUtc: null,
+          decisionAtUtc: '2026-10-03T10:00:00Z',
+          rejectionReason: null,
+          createdUtc: '2026-09-30T10:00:00Z',
+        },
+      },
+      'POST /v1/creator/activate': () => {
+        activated = true;
+        return { body: { creatorProfileId: 'cp1', profileApproved: true, creatorRoleActive: true } };
+      },
+      'POST /v1/auth/refresh': () => ({ body: authResponse(activated ? ['Customer', 'Creator'] : ['Customer'], { refreshToken: 'refresh-2' }) }),
+    });
+    await startAtLogin();
+    const user = userEvent.setup();
+    await user.type(screen.getByLabelText(/email or phone number/i), 'asha@gmail.com');
+    await user.type(screen.getByLabelText(/^password/i), 'asha-password-1');
+    await user.click(screen.getByRole('button', { name: /^sign in$/i }));
+    await user.click(await screen.findByRole('button', { name: /open creator studio/i }));
+    await waitFor(() => expect(session.getState().status).toBe('signedIn'));
+    const order = calls.map((c) => c.path).filter((p) => p === '/v1/creator/activate' || p === '/v1/auth/refresh');
+    expect(order.slice(-2)).toEqual(['/v1/creator/activate', '/v1/auth/refresh']);
   });
 });

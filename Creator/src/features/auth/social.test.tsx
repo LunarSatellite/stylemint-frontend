@@ -10,8 +10,8 @@ import { ACCOUNT_ID, authResponse, mockApi, renderWithProviders, type RecordedCa
 
 const WEB_CONFIG = 'GET /v1/auth/oauth/web-config';
 const ALL = {
-  google: { clientId: 'seller-web.apps.googleusercontent.com' },
-  apple: { servicesId: 'com.stylemint.seller.web', redirectUri: 'https://stylemint.voyageritnepal.com/seller/login' },
+  google: { clientId: 'creator-web.apps.googleusercontent.com' },
+  apple: { servicesId: 'com.stylemint.creator.web', redirectUri: 'https://stylemint.voyageritnepal.com/creator/login' },
   facebook: { appId: '998877', graphVersion: 'v21.0' },
 };
 
@@ -85,11 +85,11 @@ describe('which providers the sign-in page offers', () => {
     await startAtLogin();
 
     expect(await screen.findByTestId('gsi-button')).toBeInTheDocument();
-    expect(google.initialize).toHaveBeenCalledWith(expect.objectContaining({ client_id: 'seller-web.apps.googleusercontent.com', ux_mode: 'popup' }));
+    expect(google.initialize).toHaveBeenCalledWith(expect.objectContaining({ client_id: 'creator-web.apps.googleusercontent.com', ux_mode: 'popup' }));
     expect(google.renderButton).toHaveBeenCalledWith(expect.any(HTMLElement), expect.objectContaining({ text: 'continue_with', theme: 'outline' }));
     await readyButton(/continue with apple/i);
     expect(apple.init).toHaveBeenCalledWith(
-      expect.objectContaining({ clientId: 'com.stylemint.seller.web', redirectURI: 'https://stylemint.voyageritnepal.com/seller/login', usePopup: true, scope: 'name email' }),
+      expect.objectContaining({ clientId: 'com.stylemint.creator.web', redirectURI: 'https://stylemint.voyageritnepal.com/creator/login', usePopup: true, scope: 'name email' }),
     );
     // Apple gets the SHA-256 of the nonce, never the raw value.
     expect(apple.init.mock.calls[0][0].nonce).toMatch(/^[0-9a-f]{64}$/);
@@ -138,10 +138,10 @@ describe('which providers the sign-in page offers', () => {
     expect(
       parseWebConfig({
         Google: { ClientId: ' cid ' },
-        apple: { clientId: 'svc', redirectURI: 'https://x/seller/login' },
+        apple: { clientId: 'svc', redirectURI: 'https://x/creator/login' },
         facebook: { appId: '1', webReady: false },
       }),
-    ).toEqual({ google: { clientId: 'cid' }, apple: { servicesId: 'svc', redirectUri: 'https://x/seller/login' }, facebook: null });
+    ).toEqual({ google: { clientId: 'cid' }, apple: { servicesId: 'svc', redirectUri: 'https://x/creator/login' }, facebook: null });
     // Apple without a redirect URI cannot run its web flow.
     expect(parseWebConfig({ apple: { servicesId: 'svc' } }).apple).toBeNull();
     expect(parseWebConfig({ google: { clientId: '' } }).google).toBeNull();
@@ -149,7 +149,7 @@ describe('which providers the sign-in page offers', () => {
     expect(parseWebConfig({ facebook: { appId: '1', graphVersion: 'latest' } }).facebook).toEqual({ appId: '1', graphVersion: null });
   });
 
-  it('maps the server’s refusals to what the seller should do next', () => {
+  it('maps the server’s refusals to what the creator should do next', () => {
     const problem = (status: number, title: string, errorCode: string) => new ApiError(status, title, errorCode, { title, status, errorCode });
     expect(socialError(problem(403, 'Account is temporarily locked.', 'auth.forbidden'), 'google')).toMatch(/locked for 30 minutes/);
     expect(socialError(problem(403, 'Account is not active.', 'auth.forbidden'), 'apple')).toMatch(/not active/);
@@ -160,11 +160,11 @@ describe('which providers the sign-in page offers', () => {
 });
 
 describe('provider token handoff', () => {
-  it('Google: posts the ID token to /oauth/google/native and signs the seller in without forcing a password', async () => {
+  it('Google: posts the ID token to /oauth/google/native and signs the creator in without forcing a password', async () => {
     const google = mockGoogle('google-id-token-abc');
     const calls = mockApi({
       [WEB_CONFIG]: { body: { google: ALL.google } },
-      'POST /v1/auth/oauth/google/native': { body: authResponse(['Customer', 'Vendor']) },
+      'POST /v1/auth/oauth/google/native': { body: authResponse(['Customer', 'Creator']) },
     });
     await startAtLogin();
     await userEvent.click(await screen.findByTestId('gsi-button'));
@@ -188,11 +188,11 @@ describe('provider token handoff', () => {
 
   it('Apple: posts the identity token, the raw nonce and the first-time name to /oauth/apple/native', async () => {
     const apple = mockApple(() =>
-      Promise.resolve({ authorization: { id_token: 'apple-identity-token', code: 'c' }, user: { email: 'shop@privaterelay.appleid.com', name: { firstName: 'Asha', lastName: 'Rai' } } }),
+      Promise.resolve({ authorization: { id_token: 'apple-identity-token', code: 'c' }, user: { email: 'asha@privaterelay.appleid.com', name: { firstName: 'Asha', lastName: 'Rai' } } }),
     );
     const calls = mockApi({
       [WEB_CONFIG]: { body: { apple: ALL.apple } },
-      'POST /v1/auth/oauth/apple/native': { body: authResponse(['Vendor']) },
+      'POST /v1/auth/oauth/apple/native': { body: authResponse(['Creator']) },
     });
     await startAtLogin();
     await userEvent.click(await readyButton(/continue with apple/i));
@@ -211,7 +211,7 @@ describe('provider token handoff', () => {
     const fb = mockFacebook({ status: 'connected', authResponse: { accessToken: 'fb-access-token', userID: '42', grantedScopes: 'email,public_profile' } });
     const calls = mockApi({
       [WEB_CONFIG]: { body: { facebook: ALL.facebook } },
-      'POST /v1/auth/oauth/facebook/native': { body: authResponse(['Vendor']) },
+      'POST /v1/auth/oauth/facebook/native': { body: authResponse(['Creator']) },
     });
     await startAtLogin();
     await userEvent.click(await readyButton(/continue with facebook/i));
@@ -226,7 +226,7 @@ describe('provider token handoff', () => {
     mockGoogle();
     mockApi({
       [WEB_CONFIG]: { body: { google: ALL.google } },
-      'POST /v1/auth/oauth/google/native': { body: authResponse(['Vendor']) },
+      'POST /v1/auth/oauth/google/native': { body: authResponse(['Creator']) },
     });
     await startAtLogin();
     await userEvent.click(screen.getByLabelText(/keep me signed in/i));
@@ -237,22 +237,22 @@ describe('provider token handoff', () => {
   });
 });
 
-describe('a provider account that is not a seller', () => {
-  it('lands on "isn’t a seller account" and says to use the phone/email the shop was registered with', async () => {
+describe('a provider account that is not a creator', () => {
+  it('lands on "isn’t a creator account yet" and says to use the phone/email of the creator account', async () => {
     mockGoogle();
     mockApi({
       [WEB_CONFIG]: { body: { google: ALL.google } },
       'POST /v1/auth/oauth/google/native': { body: authResponse(['Customer'], { isNewAccount: true }) },
-      'GET /v1/vendor/application': { status: 404, body: { title: 'Not found', status: 404, errorCode: 'resource.not_found' } },
+      'GET /v1/creator/application': { status: 404, body: { title: 'Not found', status: 404, errorCode: 'resource.not_found' } },
     });
     await startAtLogin();
     await userEvent.click(await screen.findByTestId('gsi-button'));
 
     await waitFor(() => expect(session.getState().status).toBe('notCreator'));
-    const block = await screen.findByTestId('not-a-seller');
-    expect(block).toHaveTextContent(/isn’t a seller account/i);
+    const block = await screen.findByTestId('not-a-creator');
+    expect(block).toHaveTextContent(/isn’t a creator account yet/i);
     expect(block).toHaveTextContent(/new, empty StyleMint account/i);
-    expect(block).toHaveTextContent(/sign in with the phone number or email your shop was registered with/i);
+    expect(block).toHaveTextContent(/sign in with the phone number or email of your creator account/i);
     expect(screen.getByRole('button', { name: /sign out/i })).toBeInTheDocument();
   });
 
@@ -261,8 +261,8 @@ describe('a provider account that is not a seller', () => {
     mockApi({
       [WEB_CONFIG]: { body: { facebook: ALL.facebook } },
       'POST /v1/auth/oauth/facebook/native': { body: authResponse(['Customer']) },
-      'GET /v1/vendor/application': {
-        body: { id: 'a1', state: 3, brandName: 'Himalaya Knits', legalBusinessName: 'HK', submittedAtUtc: null, expectedDecisionByUtc: null, decisionAtUtc: null, rejectionReason: null, createdUtc: '2026-10-01T00:00:00Z' },
+      'GET /v1/creator/application': {
+        body: { id: 'a1', state: 3, submittedAtUtc: null, expectedDecisionByUtc: null, decisionAtUtc: null, rejectionReason: null, createdUtc: '2026-10-01T00:00:00Z' },
       },
     });
     await startAtLogin();
@@ -331,7 +331,7 @@ describe('errors', () => {
     await userEvent.click(await screen.findByTestId('gsi-button'));
     const alert = await screen.findByTestId('login-error');
     expect(alert).toHaveTextContent(/can’t be linked to your StyleMint account automatically/i);
-    expect(alert).toHaveTextContent(/phone number or email your shop was registered with/i);
+    expect(alert).toHaveTextContent(/phone number or email of your StyleMint creator account/i);
     expect(session.getState().status).toBe('signedOut');
   });
 
@@ -367,7 +367,7 @@ it('does not force "create your password" after a social sign-in even when the a
   mockGoogle();
   mockApi({
     [WEB_CONFIG]: { body: { google: ALL.google } },
-    'POST /v1/auth/oauth/google/native': { body: authResponse(['Vendor']) },
+    'POST /v1/auth/oauth/google/native': { body: authResponse(['Creator']) },
     [`GET /v1/registration/${ACCOUNT_ID}/status`]: { body: { accountId: ACCOUNT_ID, hasPassword: false } },
   });
   await startAtLogin();

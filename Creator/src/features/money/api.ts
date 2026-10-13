@@ -173,6 +173,11 @@ export const moneyApi = {
   /** Tippers are buyers: names only, any contact detail is dropped and messages masked. */
   tipsReceived: (cursor: string | null) =>
     api.get<PagedResult<TipHistoryItem>>('/v1/tips/history', { type: 'received', cursor: cursor ?? undefined, pageSize: 20 }, { privacy: 'mask-text' }),
+  /**
+   * Open boost offers. `GET /v1/creator/boost-offers` is new (lead360 PR "list a creator's boost offers"); on a
+   * server without it the call 404s and callers hide the card (`isMissingEndpoint`).
+   */
+  boostOffers: async () => (await api.get<PagedResult<BoostOffer>>('/v1/creator/boost-offers', { state: BoostOfferState.Pending, pageSize: 10 })).items,
   boostOffer: (id: string) => api.get<BoostOffer>(`/v1/creator/boost-offers/${id}`),
   acceptBoostOffer: (id: string) => api.post<BoostOffer>(`/v1/creator/boost-offers/${id}/accept`),
 };
