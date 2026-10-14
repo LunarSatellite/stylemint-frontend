@@ -35,6 +35,15 @@ const CrmCampaignsPage = lazy(() => import('./features/crm/CampaignsPage'));
 const CrmFeedbackPage = lazy(() => import('./features/crm/FeedbackPage'));
 const CrmDealsPage = lazy(() => import('./features/crm/DealsPage'));
 const CrmReportsPage = lazy(() => import('./features/crm/ReportsPage'));
+// Insights (analytics). Charts are a further lazy chunk inside these pages.
+const InsightsLayout = lazy(() => import('./features/insights/InsightsLayout'));
+const InsightsSalesPage = lazy(() => import('./features/insights/SalesPage'));
+const InsightsProductsPage = lazy(() => import('./features/insights/ProductsPage'));
+const InsightsDemandPage = lazy(() => import('./features/insights/DemandPage'));
+const InsightsReelsPage = lazy(() => import('./features/insights/ReelsPage'));
+const InsightsCreatorsPage = lazy(() => import('./features/insights/CreatorsPage'));
+const InsightsPromotionsPage = lazy(() => import('./features/insights/PromotionsPage'));
+const InsightsCustomersPage = lazy(() => import('./features/insights/CustomersPage'));
 
 export function createQueryClient() {
   return new QueryClient({
@@ -148,6 +157,17 @@ export function AppRoutes() {
           <Route path="feedback" element={<CrmFeedbackPage />} />
           <Route path="deals" element={<CrmDealsPage />} />
           <Route path="reports" element={<CrmReportsPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
+        <Route path="insights" element={<InsightsLayout />}>
+          <Route index element={<Navigate to="sales" replace />} />
+          <Route path="sales" element={<InsightsSalesPage />} />
+          <Route path="products" element={<InsightsProductsPage />} />
+          <Route path="demand" element={<InsightsDemandPage />} />
+          <Route path="reels" element={<InsightsReelsPage />} />
+          <Route path="creators" element={<InsightsCreatorsPage />} />
+          <Route path="promotions" element={<InsightsPromotionsPage />} />
+          <Route path="customers" element={<InsightsCustomersPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
         <Route path="*" element={<NotFoundPage />} />

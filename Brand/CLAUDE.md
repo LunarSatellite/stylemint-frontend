@@ -104,6 +104,31 @@ Each seller has a private Lead360/OmniFlow CRM workspace (plan + backend contrac
 - Every CRM query key starts with `'crm'` (`CRM_KEY`). Detail views use `DetailSheet` (bottom sheet
   on a phone).
 
+## Insights (`src/features/insights/`)
+
+Analytics for the seller (plan + endpoint inventory + contracts: `D:\Stylemint\wt\seller-insights-plan.md`,
+"Backend notes"). Sidebar group "Insights" + phone tab; routes `/insights/{sales,products,demand,reels,
+creators,promotions,customers}` (lazy chunks).
+
+- **Range** (`period.ts`, `InsightsLayout.tsx`): preset or custom days + "compare to previous period", kept
+  in the URL (`?range=30d`, `?from=…&to=…`, `&compare=0`) and remembered per tab in sessionStorage.
+  Pages read it with `useRange()`; query keys use `rangeKey()` (days, never milliseconds).
+- **Two data paths** (`contracts.ts` → `preferInsights`): the new vendor-scoped
+  `GET /v1/vendor/insights/{sales,products,reels,creators,promotions,demand}` (inclusive Kathmandu days
+  `from`/`to`, server-side previous period, plain NPR numbers) — and, while those 404 with no error code,
+  the older endpoints (`api.ts`: `analytics/overview|products|creators`, `creator-performance`,
+  `store/actions|digital-twin|sponsored`, `pricing/*`, `/api/v1/vendor/{demand-signals,intent-decision-board,unmet-demand}`,
+  `reel-approvals`, `partnerships`, `campaign-workspaces`, `emi/products`). `model.ts` turns either into one
+  view model per section. Widgets that only the new report can fill say "Coming soon", never "empty".
+- Every response goes through `redactPii` (no buyer phone/email, even inside search text).
+- **Widgets** (`components.tsx`): `Widget` = own loading / "could not load" + retry / coming soon / empty;
+  `DataTable` = sortable table, card list on a phone, "Export CSV" (`csv.ts`: BOM, quoting, formula-safe);
+  `KpiGrid`/`MetricTile` + `DeltaBadge` (percent or percentage points, `invert` where down is good).
+- **Charts**: `@mantine/charts` (recharts) only inside `charts.tsx`, loaded with `React.lazy` from
+  `components.tsx` — nothing else may import `@mantine/charts`, so the main bundle stays chart-free.
+  Tests mock `@mantine/charts`.
+- Customers links into the CRM areas the seller's CRM role allows (`useVisibleAreas`).
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),

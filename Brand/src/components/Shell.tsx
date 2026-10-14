@@ -22,6 +22,13 @@ import {
   IconCalendarEvent,
   IconCash,
   IconChartBar,
+  IconChartLine,
+  IconHeart,
+  IconMovie,
+  IconSearch,
+  IconShirt,
+  IconTag,
+  IconUserStar,
   IconChevronDown,
   IconDots,
   IconHome,
@@ -47,6 +54,7 @@ import { signOut } from '../auth/session';
 import { useAccount } from '../auth/useSession';
 import { useCrmSession, useVisibleAreas } from '../features/crm/hooks';
 import type { CrmAreaKey } from '../features/crm/roles';
+import { INSIGHTS_SECTIONS, type InsightsSectionKey } from '../features/insights/sections';
 import { crmSession } from '../features/crm/session';
 import { ordersApi } from '../features/orders/api';
 import { useLiveUpdates } from '../lib/live';
@@ -93,12 +101,28 @@ const CRM_ICONS: Record<CrmAreaKey, ComponentType<IconProps>> = {
   reports: IconChartBar,
 };
 
+const INSIGHTS_ICONS: Record<InsightsSectionKey, ComponentType<IconProps>> = {
+  sales: IconChartLine,
+  products: IconShirt,
+  demand: IconSearch,
+  reels: IconMovie,
+  creators: IconUserStar,
+  promotions: IconTag,
+  customers: IconHeart,
+};
+
+const INSIGHTS_GROUP: { section?: string; items: NavItem[] } = {
+  section: 'Insights',
+  items: INSIGHTS_SECTIONS.map((s) => ({ to: s.to, label: s.label, icon: INSIGHTS_ICONS[s.key] })),
+};
+
+// Payouts stays one tap away in "More" (the sidebar); Insights takes its place in the tab bar.
 const TABS: NavItem[] = [
   { to: '/', label: 'Home', icon: IconHome, end: true },
   { to: '/orders', label: 'Orders', icon: IconReceipt, badge: 'newOrders' },
   { to: '/products', label: 'Products', icon: IconPackage },
   { to: '/crm', label: 'Customers', icon: IconUsers },
-  { to: '/payouts', label: 'Payouts', icon: IconCash },
+  { to: '/insights', label: 'Insights', icon: IconChartLine },
 ];
 
 /** The sidebar: fixed groups plus the CRM group, which follows the seller's CRM role. */
@@ -109,7 +133,7 @@ function useNav() {
       section: 'Customers & CRM',
       items: crmAreas.map((a) => ({ to: a.to, label: a.label, icon: CRM_ICONS[a.key] })),
     };
-    return [NAV[0], NAV[1], crmGroup, ...NAV.slice(2)];
+    return [NAV[0], NAV[1], INSIGHTS_GROUP, crmGroup, ...NAV.slice(2)];
   }, [crmAreas]);
 }
 

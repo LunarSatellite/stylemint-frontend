@@ -138,16 +138,21 @@ export default function HomePage() {
             <SectionCard
               title="Sales"
               action={
-                <SegmentedControl
-                  size="xs"
-                  value={days}
-                  onChange={setDays}
-                  data={[
-                    { label: '7 days', value: '7' },
-                    { label: '30 days', value: '30' },
-                  ]}
-                  aria-label="Sales period"
-                />
+                <Group gap="sm" wrap="nowrap">
+                  <Anchor component={Link} to={`/insights/sales?range=${days}d`} size="sm">
+                    Insights <IconArrowRight size={12} />
+                  </Anchor>
+                  <SegmentedControl
+                    size="xs"
+                    value={days}
+                    onChange={setDays}
+                    data={[
+                      { label: '7 days', value: '7' },
+                      { label: '30 days', value: '30' },
+                    ]}
+                    aria-label="Sales period"
+                  />
+                </Group>
               }
             >
               {overview.isPending ? (
