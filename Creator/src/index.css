@@ -1,0 +1,423 @@
+/*
+ * Global surface treatment, adapted from Voyager CX. Component colour belongs in theme.ts; this
+ * file holds the tokens Mantine cannot express plus corrections to Mantine defaults.
+ */
+
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'cv05' 1, 'ss03' 1;
+
+  --sm-canvas: #f4f7f5;
+  --sm-chrome: #ffffff;
+  --sm-raised: #ffffff;
+  --sm-inset: #eef3f0;
+  --sm-border: #d5e0da;
+  --sm-border-strong: #a9bdb3;
+  --sm-text: #0d1f18;
+  --sm-text-muted: #4b6158;
+  --sm-accent: #03875a;
+  --sm-focus: #006742;
+  --sm-hover: rgba(13, 31, 24, 0.05);
+  --sm-subtle: rgba(13, 31, 24, 0.03);
+  --sm-active-text: #00563a;
+  --sm-active-bg: rgba(3, 135, 90, 0.12);
+  --sm-warn-text: #7a5800;
+  --sm-danger-text: #b3261e;
+  --sm-good-text: #00663f;
+  --sm-header-bg: rgba(255, 255, 255, 0.86);
+  --sm-row-line: #e2eae6;
+  --sm-row-hover: rgba(3, 135, 90, 0.05);
+  --sm-scroll: #b9c9c1;
+  --sm-scroll-hover: #95aa9f;
+  --sm-placeholder: #6b7d74;
+  --sm-wash-1: rgba(69, 174, 134, 0.1);
+  --sm-wash-2: rgba(31, 122, 160, 0.05);
+  --sm-shadow-low: 0 1px 2px rgba(13, 31, 24, 0.06), 0 1px 3px rgba(13, 31, 24, 0.05);
+  --sm-shadow-medium: 0 6px 16px rgba(13, 31, 24, 0.1), 0 2px 6px rgba(13, 31, 24, 0.06);
+  --sm-shadow-high: 0 18px 44px rgba(13, 31, 24, 0.16), 0 6px 14px rgba(13, 31, 24, 0.08);
+}
+
+:root[data-mantine-color-scheme='dark'] {
+  color-scheme: dark;
+  --sm-canvas: #050f0c;
+  --sm-chrome: #0a1712;
+  --sm-raised: #0e1e18;
+  --sm-inset: #132720;
+  --sm-border: #1c352c;
+  --sm-border-strong: #2b5044;
+  --sm-text: #e8f2ec;
+  --sm-text-muted: #8fb0a3;
+  --sm-accent: #45ae86;
+  --sm-focus: #6fc2a0;
+  --sm-hover: rgba(255, 255, 255, 0.04);
+  --sm-subtle: rgba(255, 255, 255, 0.022);
+  --sm-active-text: #eafaf3;
+  --sm-active-bg: rgba(69, 174, 134, 0.14);
+  --sm-warn-text: #ffd65c;
+  --sm-danger-text: #ff9a90;
+  --sm-good-text: #6fc2a0;
+  --sm-header-bg: rgba(10, 23, 18, 0.82);
+  --sm-row-line: rgba(28, 53, 44, 0.7);
+  --sm-row-hover: rgba(69, 174, 134, 0.05);
+  --sm-scroll: #24463a;
+  --sm-scroll-hover: #33604f;
+  --sm-placeholder: #949494;
+  --sm-wash-1: rgba(69, 174, 134, 0.13);
+  --sm-wash-2: rgba(31, 122, 160, 0.07);
+  --sm-shadow-low: 0 1px 2px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.24);
+  --sm-shadow-medium: 0 6px 16px rgba(0, 0, 0, 0.44), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --sm-shadow-high: 0 18px 44px rgba(0, 0, 0, 0.56), 0 6px 14px rgba(0, 0, 0, 0.36);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--sm-text);
+  line-height: 1.55;
+  background-color: var(--sm-canvas);
+  background-image:
+    radial-gradient(1100px 620px at 12% -12%, var(--sm-wash-1), transparent 62%),
+    radial-gradient(900px 520px at 88% 4%, var(--sm-wash-2), transparent 60%);
+  background-attachment: fixed;
+}
+
+/* ---------------------------------------------------------------- chrome */
+
+.mantine-AppShell-header {
+  background-color: var(--sm-header-bg);
+  border-color: var(--sm-border);
+  backdrop-filter: saturate(150%) blur(12px);
+  -webkit-backdrop-filter: saturate(150%) blur(12px);
+}
+
+.mantine-AppShell-navbar {
+  background-color: var(--sm-chrome);
+  border-color: var(--sm-border);
+  background-image: linear-gradient(180deg, rgba(69, 174, 134, 0.055) 0%, transparent 38%);
+}
+
+/* ---------------------------------------------------------------- surfaces */
+
+.mantine-Card-root,
+.mantine-Paper-root {
+  background-color: var(--sm-raised);
+  border-color: var(--sm-border);
+}
+
+.mantine-Card-root {
+  box-shadow: var(--sm-shadow-low);
+  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+}
+
+.mantine-Card-root[data-interactive='true']:hover {
+  border-color: var(--sm-border-strong);
+  box-shadow: var(--sm-shadow-medium);
+  transform: translateY(-1px);
+}
+
+.mantine-Menu-dropdown,
+.mantine-Popover-dropdown,
+.mantine-Modal-content,
+.mantine-Modal-header,
+.mantine-Drawer-content,
+.mantine-Drawer-header {
+  background-color: var(--sm-raised);
+  border-color: var(--sm-border);
+}
+
+.mantine-Menu-dropdown,
+.mantine-Popover-dropdown {
+  box-shadow: var(--sm-shadow-high);
+}
+
+/* ---------------------------------------------------------------- inputs */
+
+.mantine-Input-input {
+  background-color: var(--sm-inset);
+  border-color: var(--sm-border);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.mantine-Input-input:hover:not(:disabled):not([data-disabled]) {
+  border-color: var(--sm-border-strong);
+}
+
+.mantine-Input-input:focus,
+.mantine-Input-input:focus-within {
+  border-color: var(--sm-accent);
+  box-shadow: 0 0 0 3px rgba(69, 174, 134, 0.18);
+}
+
+.mantine-Input-input::placeholder {
+  color: var(--sm-placeholder);
+}
+
+:focus-visible {
+  outline: 2px solid var(--sm-focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------------------------------------------------------------- tables */
+
+.mantine-Table-thead th {
+  white-space: nowrap;
+  background-color: var(--sm-inset);
+  color: var(--sm-text-muted);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--sm-border) !important;
+}
+
+.mantine-Table-tbody td {
+  border-color: var(--sm-row-line) !important;
+}
+
+.mantine-Table-tbody tr:hover td {
+  background-color: var(--sm-row-hover);
+}
+
+.mantine-Table-root {
+  --table-border-color: var(--sm-border);
+}
+
+.sm-row-link {
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------- sidebar */
+
+.sm-nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px 9px 12px;
+  border-radius: 10px;
+  color: var(--sm-text-muted);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+
+.sm-nav-item:hover {
+  background: var(--sm-hover);
+  color: var(--sm-text);
+}
+
+.sm-nav-item[aria-current='page'] {
+  background: var(--sm-active-bg);
+  color: var(--sm-active-text);
+  font-weight: 600;
+}
+
+.sm-nav-item[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 3px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #6fc2a0, #159a6a);
+}
+
+.sm-nav-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sm-nav-rule {
+  height: 1px;
+  background: var(--sm-border);
+  margin: 8px 10px;
+}
+
+.sm-nav-section {
+  padding: 10px 12px 4px;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--sm-text-muted);
+}
+
+/* Phone: a bottom tab bar for the places a creator goes most. */
+.sm-tabbar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 150;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  background: var(--sm-header-bg);
+  border-top: 1px solid var(--sm-border);
+  backdrop-filter: saturate(150%) blur(12px);
+  -webkit-backdrop-filter: saturate(150%) blur(12px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.sm-tabbar a,
+.sm-tabbar button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 2px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sm-text-muted);
+  text-decoration: none;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  min-height: 56px;
+  justify-content: center;
+}
+
+.sm-tabbar [aria-current='page'] {
+  color: var(--sm-active-text);
+}
+
+@media (min-width: 48em) {
+  .sm-tabbar {
+    display: none;
+  }
+}
+
+.sm-main-pad {
+  padding-bottom: 88px;
+}
+
+@media (min-width: 48em) {
+  .sm-main-pad {
+    padding-bottom: 24px;
+  }
+}
+
+/* ---------------------------------------------------------------- scrollbars */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sm-scroll) transparent;
+}
+
+/* ---------------------------------------------------------------- printing (packing slips) */
+
+@media print {
+  .no-print,
+  .mantine-AppShell-header,
+  .mantine-AppShell-navbar,
+  .sm-tabbar {
+    display: none !important;
+  }
+  .mantine-AppShell-main {
+    padding: 0 !important;
+  }
+  body {
+    background: #fff;
+  }
+  .print-page {
+    break-after: page;
+  }
+}
+
+/* ---------------------------------------------------------------- motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.sm-skip-link {
+  position: fixed;
+  top: 8px;
+  inset-inline-start: 8px;
+  z-index: 1000;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--sm-raised);
+  color: var(--sm-text);
+  border: 2px solid var(--sm-focus);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-150%);
+}
+
+.sm-skip-link:focus {
+  transform: none;
+}
+
+#main-content:focus {
+  outline: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* CRM: section chips on a phone (the sidebar lists them on larger screens). */
+.sm-crm-chip {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--sm-border);
+  background: var(--sm-raised);
+  color: var(--sm-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sm-crm-chip[aria-current='page'] {
+  background: var(--sm-active-bg);
+  border-color: transparent;
+  color: var(--sm-active-text);
+}
+
+/* CRM: deal board columns scroll sideways on a tablet/desktop. */
+.sm-crm-board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(250px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.sm-crm-row {
+  cursor: pointer;
+}

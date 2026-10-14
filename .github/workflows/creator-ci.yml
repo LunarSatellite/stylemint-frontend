@@ -1,0 +1,33 @@
+# Creator Studio (Creator/): the same checks a contributor runs locally.
+name: Creator CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['Creator/**', '.github/workflows/creator-ci.yml']
+  pull_request:
+    paths: ['Creator/**', '.github/workflows/creator-ci.yml']
+
+concurrency:
+  group: creator-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: Creator
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: Creator/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test -- --run
+      - run: npm run build

@@ -1,136 +1,103 @@
-# StyleMint Creator Frontend
+# StyleMint Creator Studio (`Creator/`)
 
-Creator-facing SPA. Consumes `/v1/creator/*`. Creator role required on all authenticated routes.
+Creator-facing web app: reels (import, product tagging, publish), studio tools, analytics, brand
+partnerships / briefs / campaigns, earnings and payouts, public profile and storefront, community and
+settings. Served at `https://stylemint.voyageritnepal.com/creator/` (Vite `base: '/creator/'`, router
+basename `/creator`). Many creators use it on a phone — every list has a card layout below the `sm`
+breakpoint, details open in a bottom sheet, and the shell has a bottom tab bar.
 
-This file is auto-loaded by Claude Code on every session. Read it entirely. For deep detail on any topic, open the referenced file in `.claude/stylemint-creator-fe/references/`.
+It is the creator counterpart of Seller Center (`../Brand/`). The foundation (auth, HTTP client, shell,
+state blocks, theme) was **copied** from Brand — never import across apps, they build separately — and
+then adapted. Do not modify `../Admin/` or `../Brand/` from work on this app.
 
----
+The previous spec that lived here (Tailwind/Radix/Zustand/axios, `.claude/stylemint-creator-fe/`) was
+replaced on 2026-10-13 by this Mantine app, matching Seller Center. Its product rules that still hold
+are kept under "Rules" below.
 
 ## Stack
 
-Vite 5 · React 18 · TypeScript 5 strict · React Router v6 · TanStack Query v5 · Zustand · axios · React Hook Form + Zod · Radix UI + Tailwind · TanStack Virtual · date-fns-tz · sonner · lucide-react · Vitest · Playwright
+Vite 5 · React 18 · TypeScript strict · Mantine 7 (core, dates, notifications, modals, dropzone) ·
+React Router 6 · TanStack Query 5 · zod · @tabler/icons-react · @microsoft/signalr (lazy-loaded) ·
+Vitest + Testing Library.
 
----
+Design = Voyager CX, identical tokens to Seller Center: forest palette (primary filled `#00784f`), slate
+neutrals, Inter Variable, headings 650, radius 12 (sm 8, lg 16), page `#f4f7f5`, text `#0d1f18`, input
+fill `#eef3f0` / border `#d5e0da`, soft layered shadows, light + dark. Tokens: `src/theme.ts` (Mantine)
+and `src/index.css` (`--sm-*` CSS variables).
 
-## Before Writing Any Code
-
-Read the relevant reference file first:
-
-| Topic | Path |
-|---|---|
-| Folder layout + route tree | `.claude/stylemint-creator-fe/references/folder-structure.md` |
-| Query keys + staleTime + invalidation | `.claude/stylemint-creator-fe/references/query-keys.md` |
-| Error codes | `.claude/stylemint-creator-fe/references/error-codes.md` |
-| Enums | `.claude/stylemint-creator-fe/references/enums.md` |
-| Design tokens | `.claude/stylemint-creator-fe/references/design-tokens.md` |
-| Component authoring | `.claude/stylemint-creator-fe/references/component-patterns.md` |
-| State management | `.claude/stylemint-creator-fe/references/state-management.md` |
-| Forms (RHF + Zod) | `.claude/stylemint-creator-fe/references/form-patterns.md` |
-| Testing | `.claude/stylemint-creator-fe/references/testing-guide.md` |
-| Performance + bundle | `.claude/stylemint-creator-fe/references/performance-guide.md` |
-| Accessibility | `.claude/stylemint-creator-fe/references/accessibility-guide.md` |
-| Security | `.claude/stylemint-creator-fe/references/security-practices.md` |
-| Git + PR workflow | `.claude/stylemint-creator-fe/references/git-workflow.md` |
-
----
-
-## Hard Invariants — Absolute, No Exceptions
-
-```
-JWT in memory only — never localStorage, never sessionStorage, never cookies
-/analyze 429 is NOT the user's fault — always soft message, never generic error
-Audio cards → externalListenUrl handoff only — never inline playback
-All countdowns use useServerAnchoredCountdown — never raw Date.now()
-Boost offer polling uses TanStack Query refetchInterval — never setInterval
-Boost offer is FREE in v1.1 — never show payment UI
-commissionEarnedFormatted renders as-is — never reformat the raw amount
-state.duplicate on recipe citation → silently swallow, no toast
-Post-time renders in recommendation.timeZone — never device TZ or Asia/Kathmandu
-briefingVersion/reportVersion bump → re-run codegen before updating components
-Stitched-reel null fields → degrade gracefully, never crash
-ExplanationTooltip is the only way to render explanationByKey strings
-Activity timeline uses TanStack Virtual — never render all rows
-Analytics window > 365 days → block form submission client-side
-schema.ts committed to git — never regenerate in CI
-Switch on errorCode string — never on HTTP status number
-Never hardcode hex colors — use CSS variables from design tokens
-Never use dangerouslySetInnerHTML — no exceptions
-Never import Radix UI directly in feature components — use src/components/ui/ wrappers
-All pages are lazy-loaded — no page code in the initial bundle
-```
-
----
-
-## Key Patterns (Quick Reference)
-
-### Axios interceptor
-
-```ts
-api.interceptors.request.use((config) => {
-  const token = useAuth.getState().token
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  if (['post','patch','put','delete'].includes(config.method ?? ''))
-    config.headers['Idempotency-Key'] ??= newIdempotencyKey()
-  config.headers['Accept-Language'] = navigator.language || 'en'
-  return config
-})
-```
-
-### Auth store
-
-```ts
-export const useAuth = create<AuthState>((set) => ({
-  token: null, claims: null, briefingLoading: false,
-  setBriefingLoading: (v) => set({ briefingLoading: v }),
-  setToken: (token) => set({ token, claims: parseJwt(token) }),
-  clear: () => set({ token: null, claims: null }),
-}))
-```
-
-### Countdown hook
-
-```ts
-export function useServerAnchoredCountdown(serverNowUtc: string, expiresUtc: string): number {
-  const serverAnchor = useMemo(() => new Date(serverNowUtc).getTime(), [serverNowUtc])
-  const deviceAnchor = useMemo(() => Date.now(), [serverNowUtc])
-  const expiresAt    = useMemo(() => new Date(expiresUtc).getTime(), [expiresUtc])
-  const [remaining, setRemaining] = useState(0)
-  useEffect(() => {
-    const tick = () => setRemaining(Math.max(0, expiresAt - (serverAnchor + (Date.now() - deviceAnchor))))
-    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id)
-  }, [serverAnchor, deviceAnchor, expiresAt])
-  return remaining
-}
-```
-
-### Error toast
-
-```ts
-export function showErrorToast(err: unknown) {
-  const errorCode = isAxiosError(err) ? err.response?.data?.errorCode : undefined
-  const correlationId = isAxiosError(err) ? err.response?.data?.correlationId : undefined
-  const message = (errorCode && errorMessages[errorCode]) ?? 'Something went wrong.'
-  toast.error(message, { description: correlationId ? `Reference: ${correlationId}` : undefined })
-}
-```
-
-### Formatters
-
-```ts
-const TZ = 'Asia/Kathmandu'
-export const formatDateTime     = (iso: string) => formatInTimeZone(new Date(iso), TZ, 'dd MMM yyyy, HH:mm')
-export const formatInAudienceTz = (iso: string, tz: string) => formatInTimeZone(new Date(iso), tz, 'EEE, dd MMM • HH:mm')
-export const formatMs           = (ms: number) => { const s=Math.floor(ms/1000); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}` }
-export const formatPercent      = (f: number) => f==null ? '—' : `${(f*100).toFixed(1)}%`
-export const formatDelta        = (d: number|null) => d==null ? '—' : `${d>=0?'+':''}${(d*100).toFixed(1)}%`
-```
-
-All API score/rate/fraction fields are `[0,1]`. Multiply by 100 at render time via `formatPercent`.
-
----
-
-## Type Generation
+## Commands
 
 ```bash
-npm run codegen  # → src/api/schema.ts — commit to git, never regenerate in CI
+npm ci
+npm run dev        # http://localhost:5175/creator/ — proxies /v1, /api, /hubs to VITE_DEV_API (default production)
+npm run typecheck
+npm run lint
+npm test -- --run
+npm run build      # dist/ for the /creator/ base path
 ```
+
+## API
+
+- Same origin: every call is `/v1/...` (nginx proxies it); product search for tagging is
+  `/api/v1/customer/search`. No base URL env var, no CORS, no secrets.
+- `src/api/client.ts` is the only HTTP client: bearer token, one refresh-and-retry on 401,
+  `Idempotency-Key` (fresh UUID) on every POST/PUT/PATCH/DELETE, RFC 7807 → `ApiError`
+  (`code` = backend `errorCode`, message from `title`/`detail`/`errors`).
+- **Wire format:** camelCase; StyleMint enums are **integers** except where a DTO declares strings.
+  Enum maps live next to the endpoints in each feature's `api.ts`, always with `labelOf()` so an
+  unknown value renders "Unknown (n)" rather than crashing. Cursor paging
+  `PagedResult<T> { items, totalCount, nextCursor, hasMore }` → `useCursorList`.
+- Optional features hide themselves when the endpoint 404s with no errorCode (`isMissingEndpoint`).
+- Each feature has `api.ts` (typed endpoints, shapes copied from the backend view models — read the
+  controller + VM before changing one; never guess a field) and pages. Endpoint ↔ screen table:
+  README.md.
+
+## Buyer privacy
+
+Buyers' phone numbers and email addresses are never displayed. `src/lib/redact.ts`:
+the client drops every contact-named string field from every response (`privacy: 'contact-fields'`,
+the default); endpoints that carry text written by other people (comments, tip messages, notifications,
+activity, story replies) pass `privacy: 'mask-text'`, which also masks emails / phone numbers inside
+text. Only the creator's own account (`GET /v1/accounts/{self}`) uses `privacy: 'none'`.
+
+## Auth (`src/auth/`) — same model as Seller Center
+
+- Email or phone (normalised to `+977…`) + password → `POST /v1/auth/login`.
+- "Sign in with a code": `POST /v1/auth/login-otp/request` → `/verify`; then
+  `GET /v1/registration/{id}/status` and, if `hasPassword` is false, the mandatory "Create your
+  password" step with the **authenticated** `PUT /v1/accounts/{id}/password`. Never call
+  `/v1/registration/{id}/set-password`.
+- Google / Apple / Facebook: `GET /v1/auth/oauth/web-config` decides which buttons show (null/404 →
+  none); SDK token → `POST /v1/auth/oauth/{provider}/native` (raw nonce for Google/Apple, whose
+  hex SHA-256 the provider put in the token). No forced password after a social sign-in.
+- Role gate: JWT `roles` must contain `Creator`. Otherwise `/application` shows the creator
+  application (`GET /v1/creator/application`) or "apply in the StyleMint app".
+- Access token in memory; refresh token in sessionStorage (localStorage only with "keep me signed in");
+  refresh is single-flight across tabs (Web Locks); sign-out revokes only this session.
+
+## Layout
+
+```
+src/api/            client, paging, useCursorList
+src/auth/           session store, auth endpoints, social sign-in, JWT, identifier + password policy
+src/components/     Shell (AppShell + bottom tab bar), PageHeader, SectionCard, KpiTile, StateBlocks,
+                    DataList (table ↔ cards), DetailSheet (drawer ↔ bottom sheet), Pager…
+src/lib/            format (money "Rs 1,234", dates, percent), redact, notify, live (SignalR), useTab
+src/features/<area> api.ts + pages + tests
+```
+
+## Rules
+
+- Every data surface: loading skeleton, error block with retry, empty state. "Could not load" is never
+  shown as "none" (`QueryState` / `ErrorBlock` / `EmptyBlock`).
+- Destructive or brand-visible actions confirm first. Toast on success.
+- Money via `formatMoney` ("Rs 1,234"), never hand-formatted. Fractions via `formatPercent`.
+- Studio `/analyze` answering 429 is not the creator's fault: soft "still working" message, never the
+  generic error.
+- Recipe citation answering `state.duplicate` means "already cited": swallow it silently.
+- Boost offers are free to accept — never show payment UI for them.
+- Audio items link out to `externalListenUrl`; no inline playback.
+- Stitched-reel suggestions and other optional AI fields may be null: degrade, never crash.
+- Uploads: the site caps request bodies at 25 MB; check size client-side before sending.
+- No `dangerouslySetInnerHTML`. No auth tokens in localStorage unless "keep me signed in".
+- All pages are lazy routes.
