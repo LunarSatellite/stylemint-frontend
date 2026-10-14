@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Badge, Button, Card, Group, Progress, Stack, Stepper, Text } from '@mantine/core';
-import { IconArchive, IconCircleCheck, IconRocket } from '@tabler/icons-react';
+import { IconAlertTriangle, IconArchive, IconCircleCheck, IconRocket } from '@tabler/icons-react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ApiError, messageOf } from '../../api/client';
@@ -16,8 +16,12 @@ import { AttributesCard } from './steps/DetailsStep';
 import { PhotosStep, type PhotoItem } from './steps/PhotosStep';
 import { PricingStep } from './steps/PricingStep';
 import { ShippingStep } from './steps/ShippingStep';
+import { TryOnBadge, TryOnStep, tryOnGate, useTryOnReadiness } from './steps/TryOnStep';
 
-const STEPS = ['Basics', 'Photos', 'Price & variants', 'Delivery', 'Details & publish'];
+const STEPS = ['Basics', 'Photos', 'Price & variants', 'Delivery', 'Try-on & sizes', 'Details & publish'];
+/** Steps 0–3 are tracked by the backend (`wizardStepReached` 0–4); try-on and publish open once delivery is saved. */
+const TRYON_STEP = 4;
+const LAST_STEP = STEPS.length - 1;
 
 function friendly(e: unknown): string {
   if (e instanceof ApiError) {
@@ -47,6 +51,7 @@ export default function ProductEditorPage() {
   const p = product.data ?? null;
   const isDraft = !p || p.state === ProductState.Draft;
   const reached = p ? p.wizardStepReached : 0;
+  const readiness = useTryOnReadiness(p?.id);
 
   // Open a draft where the seller left off.
   useEffect(() => {
@@ -61,7 +66,7 @@ export default function ProductEditorPage() {
     void qc.invalidateQueries({ queryKey: ['products'] });
     setServerError(null);
     toastSuccess(message);
-    setActive((s) => Math.min(s + 1, 4));
+    setActive((s) => Math.min(s + 1, LAST_STEP));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -166,7 +171,12 @@ export default function ProductEditorPage() {
     );
   }
 
-  const canOpen = (i: number) => !isDraft || i === 0 || (p !== null && i <= reached);
+  const canOpen = (i: number) => !isDraft || i === 0 || (p !== null && (i <= reached || (i >= TRYON_STEP && reached >= 4)));
+  const gate = p ? tryOnGate(p, readiness) : { block: null, warn: null };
+  const goToTryOn = () => {
+    setActive(TRYON_STEP);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const readOnly = p?.state === ProductState.Archived || p?.state === ProductState.Suspended;
   const setStep = (i: number) => {
     if (canOpen(i)) {
@@ -185,21 +195,43 @@ export default function ProductEditorPage() {
         return <PricingStep key={p!.updatedUtc} product={p!} onSave={(f) => savePricing.mutate(f)} saving={savePricing.isPending} serverError={serverError} />;
       case 3:
         return <ShippingStep key={p!.updatedUtc} product={p!} onSave={(f) => saveShipping.mutate(f)} saving={saveShipping.isPending} serverError={serverError} />;
+      case TRYON_STEP:
+        return <TryOnStep product={p!} onContinue={() => setStep(LAST_STEP)} />;
       default:
         return (
           <Stack gap="md">
             <AttributesCard product={p!} />
             <EmiCard product={p!} />
+            {gate.block && (
+              <Alert color="signal" variant="light" icon={<IconAlertTriangle size={16} />} title="Size chart needed" role="alert">
+                <Stack gap="xs" align="flex-start">
+                  <Text size="sm">{gate.block}</Text>
+                  <Button size="xs" variant="light" color="signal" onClick={goToTryOn}>
+                    Go to Try-on &amp; sizes
+                  </Button>
+                </Stack>
+              </Alert>
+            )}
+            {!gate.block && gate.warn && (
+              <Alert color="amber" variant="light" icon={<IconAlertTriangle size={16} />}>
+                <Stack gap="xs" align="flex-start">
+                  <Text size="sm">{gate.warn}</Text>
+                  <Button size="xs" variant="subtle" onClick={goToTryOn}>
+                    Add a try-on image
+                  </Button>
+                </Stack>
+              </Alert>
+            )}
             {isDraft && (
               <Card>
                 <Group justify="space-between" wrap="wrap" gap="sm">
                   <div>
                     <Text fw={650}>Ready to sell?</Text>
                     <Text size="sm" c="dimmed">
-                      {reached >= 4 ? 'Publishing puts the product on StyleMint for customers to buy.' : 'Finish the earlier steps first.'}
+                      {gate.block ? 'Add the size chart first.' : reached >= 4 ? 'Publishing puts the product on StyleMint for customers to buy.' : 'Finish the earlier steps first.'}
                     </Text>
                   </div>
-                  <Button leftSection={<IconRocket size={16} />} onClick={() => publish.mutate()} loading={publish.isPending} disabled={reached < 4}>
+                  <Button leftSection={<IconRocket size={16} />} onClick={() => publish.mutate()} loading={publish.isPending} disabled={reached < 4 || !!gate.block || readiness.isLoading}>
                     Publish product
                   </Button>
                 </Group>
@@ -221,15 +253,16 @@ export default function ProductEditorPage() {
               <Badge color={productStateColor[p.state]} variant="light">
                 {productStateLabel[p.state]}
               </Badge>
+              {readiness.data && <TryOnBadge readiness={readiness.data} />}
               {isDraft && (
                 <Text size="sm" c="dimmed">
-                  Step {Math.min(reached + 1, 5)} of 5
+                  Step {Math.min(reached + 1, 5)} of {STEPS.length}
                 </Text>
               )}
             </Group>
           ) : (
             <Text size="sm" c="dimmed">
-              Five short steps. Your progress is saved as a draft after each one.
+              Six short steps. Your progress is saved as a draft after each one.
             </Text>
           )
         }

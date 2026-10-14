@@ -148,6 +148,21 @@ Plan + backend contract: `D:\Stylemint\wt\seller-creators-plan.md` ("Backend not
 - Confirmations inside the detail sheet use `confirmAction` from `creators/components` (z-index above
   the sheet), not the shared one.
 
+## Products: Try-on & sizes (`src/features/products/tryon.ts`, `steps/TryOnStep.tsx`)
+
+Contract: virtual try-on v1 (Catalog vendor endpoints `v1/vendor/products/{id}/size-chart` GET/PUT/DELETE,
+`/try-on-image` POST multipart `file`/DELETE, `/try-on` readiness). Wizard step 5 of 6 — not tracked by the
+backend's `wizardStepReached`; it opens with "Details & publish" once delivery is saved.
+
+- Size chart: `validateSizeChart` mirrors the server rules (1–20 rows, labels ≤16 unique ci, 0 < value ≤ 300 cm /
+  120 in, required columns per `GarmentType`, fit note ≤300); `toSizeChartInput` sends only that type's columns.
+  Labels prefill from the product's Size option.
+- Try-on image: `checkTryOnImage` + `readImageInfo` (createImageBitmap + canvas alpha ratio; returns null in jsdom
+  → checks skipped, server re-checks). Server 400 messages are shown as-is.
+- Owner rule: a product with a Size option cannot be published from the wizard without a size chart (blocked with
+  a link to the step); a missing try-on image is only a warning. Readiness 404 with no errorCode
+  (`isMissingEndpoint`) → "Try-on setup is coming soon", nothing blocks. No badge in the product list (no batch source).
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),
