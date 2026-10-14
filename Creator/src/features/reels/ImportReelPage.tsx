@@ -49,7 +49,6 @@ function importError(e: unknown): string {
   return messageOf(e);
 }
 
-const isVideo = (item: ProviderContentItem) => /video|reel|short/i.test(item.mediaType || 'VIDEO') || (item.durationSeconds ?? 0) > 0;
 
 /** Turns a listed post into an import body. Video URLs are sent only for Instagram/Facebook (Meta CDN rule). */
 export function bodyFromPost(slug: SocialSlug, item: ProviderContentItem, durationOverride?: number): ImportReelBody {
@@ -138,7 +137,9 @@ function FromAccounts() {
     );
 
   const pages = posts.data?.pages ?? [];
-  const items = pages.flatMap((p) => p.items).filter(isVideo);
+  // No client-side type filter, as in the app: the backend lists video posts only, and Instagram reports a video
+  // posted to the feed as media_product_type "FEED", which a /video|reel/ test wrongly dropped.
+  const items = pages.flatMap((p) => p.items);
   const first = pages[0];
   const picked = Object.values(selected);
   const needsDuration = picked.filter((i) => !i.durationSeconds && !durations[i.externalId]);

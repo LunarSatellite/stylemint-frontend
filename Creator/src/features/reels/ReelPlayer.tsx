@@ -59,13 +59,14 @@ export function embedUrlOf(r: Pick<PlayableReel, 'sourcePlatform' | 'sourceUrl' 
 }
 
 /**
- * Plays an imported reel. Instagram/Facebook first try the stored Meta CDN video (signed links expire, so a
+ * Plays an imported reel. Instagram first tries the stored Meta CDN video (signed links expire, so a
  * failure falls back to the official embed); TikTok and YouTube always use their embed player. If nothing can
  * play, the cover stays with a link to the original post.
  */
 export function ReelPlayer({ reel, fallback }: { reel: PlayableReel; fallback?: ReactNode }) {
   const embed = embedUrlOf(reel);
-  const meta = reel.sourcePlatform === ReelPlatform.Instagram || reel.sourcePlatform === ReelPlatform.Facebook;
+  // As the app (reel_playback_resolver.dart): only Instagram plays the stored video; Facebook, TikTok and YouTube embed.
+  const meta = reel.sourcePlatform === ReelPlatform.Instagram;
   const [mode, setMode] = useState<'video' | 'embed' | 'none'>(meta && reel.videoCdnUrl ? 'video' : embed ? 'embed' : 'none');
   const label = platformLabel[reel.sourcePlatform] ?? 'the platform';
 
