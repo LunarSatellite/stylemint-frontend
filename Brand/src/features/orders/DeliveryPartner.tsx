@@ -23,15 +23,18 @@ import { ApiError, messageOf } from '../../api/client';
 import { ErrorBlock } from '../../components/StateBlocks';
 import { formatDate, fromNow, initialsOf } from '../../lib/format';
 import { confirmAction, toastSuccess } from '../../lib/notify';
+import { SealForm } from './SealForm';
 import { ordersApi, tagLabel, type DeliveryRequest, type InterestedRider, type SubOrderDetail } from './api';
 
 const tierLabel: Record<string, string> = { Neighbor: 'Neighbour rider', Traveler: 'Traveller rider', Pro: 'Pro rider' };
+
+const isNotSealed = (e: unknown) => e instanceof ApiError && e.code === 'delivery_request.parcel_not_sealed';
 
 function deliveryErrorMessage(e: unknown): string {
   if (e instanceof ApiError) {
     switch (e.code) {
       case 'delivery_request.parcel_not_sealed':
-        return 'Seal the parcel first: use “Seal & mark packed” with a photo of the seal.';
+        return 'This parcel has no seal yet. Seal it below, then choose your rider.';
       case 'delivery_request.expired':
         return 'This request expired. Search again to notify riders.';
       case 'delivery_request.rider_not_interested':
@@ -287,6 +290,11 @@ export function DeliveryPartnerDrawer({ order, opened, onClose }: { order: SubOr
   const qc = useQueryClient();
   const [details, setDetails] = useState<InterestedRider | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** The seal step: shown on demand, or automatically when choosing a rider was refused for a missing seal. */
+  const [sealing, setSealing] = useState(false);
+  const [sealed, setSealed] = useState(false);
+  /** The rider the seller tried to choose before sealing; chosen automatically once the seal is on. */
+  const [pendingOffer, setPendingOffer] = useState<string | null>(null);
   const key = ['delivery', 'request', order.id];
 
   const current = useQuery({
@@ -323,12 +331,29 @@ export function DeliveryPartnerDrawer({ order, opened, onClose }: { order: SubOr
       toastSuccess('Rider chosen. They are on their way to pick up.');
       refreshAll();
     },
-    onError: (e) => {
+    onError: (e, offerId) => {
       setDetails(null);
+      if (isNotSealed(e)) {
+        setPendingOffer(offerId);
+        setSealing(true);
+      }
       setError(deliveryErrorMessage(e));
       void current.refetch();
     },
   });
+
+  const onSealed = () => {
+    setSealing(false);
+    setSealed(true);
+    setError(null);
+    toastSuccess('Parcel sealed');
+    refreshAll();
+    if (pendingOffer) {
+      const offer = pendingOffer;
+      setPendingOffer(null);
+      select.mutate(offer);
+    }
+  };
 
   const handover = useMutation({
     mutationFn: (riderName: string) =>
@@ -360,6 +385,37 @@ export function DeliveryPartnerDrawer({ order, opened, onClose }: { order: SubOr
           <Alert color="signal" variant="light" icon={<IconAlertTriangle size={16} />} role="alert">
             {error}
           </Alert>
+        )}
+        {(!req || req.state !== 'Assigned') && order.fulfillmentChannel === 'Delivery' && (
+          <Card withBorder padding="sm" data-testid="seal-section">
+            {sealing ? (
+              <Stack gap="xs">
+                <Text fw={650} size="sm">
+                  Seal the parcel
+                </Text>
+                <SealForm
+                  orderId={order.id}
+                  onSealed={onSealed}
+                  onCancel={() => {
+                    setSealing(false);
+                    setPendingOffer(null);
+                  }}
+                  submitLabel={pendingOffer ? 'Seal and choose rider' : 'Seal parcel'}
+                />
+              </Stack>
+            ) : (
+              <Group justify="space-between" wrap="nowrap" gap="sm">
+                <Text size="sm" c={sealed ? 'var(--sm-good-text)' : 'dimmed'}>
+                  {sealed
+                    ? 'Parcel sealed. You can choose a rider.'
+                    : 'A rider can only be chosen for a sealed parcel. Packed without a seal? Add it here first.'}
+                </Text>
+                <Button size="xs" variant={sealed ? 'subtle' : 'light'} onClick={() => setSealing(true)} style={{ flexShrink: 0 }}>
+                  {sealed ? 'Seal again' : 'Add seal'}
+                </Button>
+              </Group>
+            )}
+          </Card>
         )}
         {current.isPending ? (
           <Group gap="xs">

@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { messageOf } from '../../api/client';
 import { FilePreview } from '../../components/FilePreview';
 import { confirmAction, toastError, toastSuccess } from '../../lib/notify';
+import { checkSeal } from './SealForm';
 import { availableActions, ordersApi, rejectionReasons, SubOrderState, VendorRejectionReason, type SubOrderDetail } from './api';
 
 /** Runs one fulfilment step: toast, then re-read every order view. */
@@ -340,11 +341,8 @@ export function PackModal({ opened, onClose, order }: { opened: boolean; onClose
   const submit = () => {
     setError(null);
     if (!skipSeal) {
-      if (!photo) return setError('Add a photo of the sealed parcel.');
-      if (photo.size > 5 * 1024 * 1024) return setError('The photo must be 5 MB or smaller.');
-      if (!/^image\/(jpeg|png)$/.test(photo.type)) return setError('The photo must be a JPG or PNG.');
-      if (!sealId.trim()) return setError('Enter the number printed on the seal.');
-      if (sealId.trim().length > 64) return setError('The seal number is too long.');
+      const problem = checkSeal(photo, sealId);
+      if (problem) return setError(problem);
     }
     pack.mutate();
   };
@@ -391,7 +389,7 @@ export function PackModal({ opened, onClose, order }: { opened: boolean; onClose
             checked={skipSeal}
             onChange={(e) => setSkipSeal(e.currentTarget.checked)}
             label="Skip sealing — I will send this with my own courier"
-            description="A StyleMint rider can only be chosen for a sealed parcel."
+            description="A StyleMint rider can only be chosen for a sealed parcel. You can still add the seal later from Find a delivery partner."
           />
         )}
         {!delivery && (
