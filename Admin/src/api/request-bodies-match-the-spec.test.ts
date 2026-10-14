@@ -11,6 +11,7 @@ import { moderationApi } from './moderation';
 import { ordersApi, paymentsApi } from './orders';
 import { configApi, flagsApi } from './platform';
 import { deliveryApi } from './delivery';
+import { tryOnApi } from './tryOn';
 import bodies from './request-bodies.json';
 
 /**
@@ -60,6 +61,11 @@ const WRITES: [string, () => Promise<unknown>][] = [
   ['admin revoke sessions', () => adminsApi.revokeAllSessions(ID, 'left the company')],
   ['admin invite', () => adminsApi.invite({ email: 'a@b.test', displayName: 'A', roles: [2] })],
   ['admin password reset request', () => passwordApi.requestReset('a@b.test')],
+  ['try-on settings', () => tryOnApi.saveSettings({ enabled: true, freeForEveryone: false, freeTrialDays: 3, disclaimer: 'd' })],
+  ['try-on plan create', () => tryOnApi.createPlan({ name: 'Monthly', description: null, priceAmount: 299, currency: 'NPR', durationDays: 30, isActive: true, sortOrder: 0 })],
+  ['try-on plan update', () => tryOnApi.updatePlan(ID, { name: 'Monthly', description: null, priceAmount: 299, currency: 'NPR', durationDays: 30, isActive: true, sortOrder: 0 })],
+  ['try-on grant', () => tryOnApi.grant({ accountId: ID, days: 30, note: null })],
+  ['try-on revoke', () => tryOnApi.revoke(ID, 'abuse')],
   ['admin password set', () => passwordApi.set('token', 'a good password 1')],
 ];
 

@@ -1608,5 +1608,37 @@
     "providerIntentId",
     "signaledOutcome",
     "rawPayload"
+  ],
+  "PUT /v1/admin/try-on/settings": [
+    "enabled",
+    "freeForEveryone",
+    "freeTrialDays",
+    "disclaimer"
+  ],
+  "POST /v1/admin/try-on/plans": [
+    "name",
+    "description",
+    "priceAmount",
+    "currency",
+    "durationDays",
+    "isActive",
+    "sortOrder"
+  ],
+  "PUT /v1/admin/try-on/plans/{id}": [
+    "name",
+    "description",
+    "priceAmount",
+    "currency",
+    "durationDays",
+    "isActive",
+    "sortOrder"
+  ],
+  "POST /v1/admin/try-on/grants": [
+    "accountId",
+    "days",
+    "note"
+  ],
+  "POST /v1/admin/try-on/subscriptions/{id}/revoke": [
+    "reason"
   ]
 }

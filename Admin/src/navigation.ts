@@ -1,5 +1,6 @@
 import {
   IconActivity,
+  IconCamera,
   IconAdjustments,
   IconBuildingStore,
   IconCash,
@@ -81,6 +82,7 @@ export const MENU: MenuSection[] = [
       { id: 'returns', path: '/returns', label: 'Returns', icon: IconReceiptRefund, capability: 'viewSupport' },
       { id: 'tickets', path: '/support', label: 'Support tickets', icon: IconHeadset, capability: 'viewSupport' },
       { id: 'payouts', path: '/payouts', label: 'Payouts', icon: IconCash, capability: 'viewPayouts' },
+      { id: 'try-on', path: '/try-on', label: 'Virtual try-on', icon: IconCamera, capability: 'viewTryOn' },
       { id: 'care', path: '/order-care', label: 'Order care', icon: IconHeartHandshake, capability: 'orderCare' },
     ],
   },

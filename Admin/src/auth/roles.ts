@@ -84,6 +84,11 @@ export const CAPABILITIES = {
   viewCatalogOps: ['SuperAdmin', 'ContentMod'],
   manageCatalogOps: ['SuperAdmin', 'ContentMod'],
 
+  // virtual try-on (premium access). The admin try-on controller uses the admin policy; until its
+  // [RequireAdminRole] list is confirmed, reads follow money (payouts) and every write is Super Admin.
+  viewTryOn: ['SuperAdmin', 'PayoutsOps', 'Readonly'],
+  manageTryOn: SA,
+
   // platform
   viewFlags: ALL,
   manageFlags: SA,
