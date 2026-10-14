@@ -4,6 +4,15 @@ The seller-facing web app, served at `https://stylemint.voyageritnepal.com/selle
 `base: '/seller/'`). It talks to the StyleMint API on the **same origin** (`/v1/...`) — no API URL,
 no CORS. Conventions and commands are in `CLAUDE.md`.
 
+## Products: Try-on & sizes
+
+The product editor has a "Try-on & sizes" step (after Delivery): a size chart editor (garment type,
+cm/inch, one row per size, labels prefilled from the Size option) and a try-on image uploader
+(front view, garment only, transparent PNG/WebP, ≥ 600 px shortest side, ≤ 5 MB — checked in the
+browser before upload, and again by the server). Products with a Size option cannot be published
+without a size chart; the try-on image is recommended. Until the backend ships the endpoints the
+step says "Try-on setup is coming soon" and publishing is not blocked.
+
 ## Sign-in
 
 - **Continue with Google / Apple / Facebook** — above the email/phone form, behind an "or" divider.
