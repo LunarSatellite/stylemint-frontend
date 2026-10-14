@@ -83,8 +83,12 @@ function FromAccounts() {
 
   const posts = useInfiniteQuery({
     queryKey: ['social', 'content', slug],
-    queryFn: ({ pageParam }) => reelsApi.providerContent(slug!, pageParam),
+    // The first page is always a live read (refresh=true), as the app does on pull-to-refresh: without it the
+    // backend serves its saved copy while that is "fresh", so a post made minutes ago is missing. When the
+    // provider is throttled or down the backend still answers with the saved copy and says so (providerStatus).
+    queryFn: ({ pageParam }) => reelsApi.providerContent(slug!, pageParam, pageParam === null),
     initialPageParam: null as string | null,
+    staleTime: 60_000,
     getNextPageParam: (last) => last.nextCursor,
     enabled: !!slug,
   });

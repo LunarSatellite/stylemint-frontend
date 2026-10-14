@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ReelThumb } from './ReelThumb';
+import { ReelPlayer } from './ReelPlayer';
 import {
   Alert,
   Anchor,
@@ -480,7 +480,7 @@ export default function ReelDetailPage() {
         <Grid.Col span={{ base: 12, md: 4, lg: 3 }}>
           <Card padding={0} style={{ overflow: 'hidden' }}>
             <Box style={{ aspectRatio: '9 / 16', background: 'var(--sm-inset)' }}>
-              <ReelThumb src={r.thumbnailCdnUrl} alt="Reel cover" lazy={false} fallback={<IconBrandInstagram size={32} opacity={0.4} aria-hidden />} />
+              <ReelPlayer reel={r} fallback={<IconBrandInstagram size={32} opacity={0.4} aria-hidden />} />
             </Box>
             <SimpleGrid cols={3} p="sm" spacing={4}>
               {[
