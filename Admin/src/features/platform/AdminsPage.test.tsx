@@ -157,7 +157,8 @@ describe('invite admin', () => {
     await userEvent.click(within(dialog).getByRole('checkbox', { name: /Read-only/ }));
     await userEvent.click(within(dialog).getByRole('button', { name: 'Send invitation' }));
     expect(await screen.findByLabelText('Invitation link')).toHaveValue('https://stylemint.voyageritnepal.com/admin/set-password?token=abcDEF123');
-    expect(screen.getByRole('alert')).toHaveTextContent('could not be delivered');
+    // A success toast from an earlier test can still be on screen, so pick the dialog's alert by text.
+    expect(screen.getAllByRole('alert').some((a) => a.textContent?.includes('could not be delivered'))).toBe(true);
     expect(screen.getByRole('button', { name: 'Copy link' })).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: 'Done' }));
     await waitFor(() => expect(screen.queryByLabelText('Invitation link')).not.toBeInTheDocument());
