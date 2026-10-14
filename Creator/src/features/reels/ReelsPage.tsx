@@ -1,5 +1,5 @@
-import { Badge, Box, Button, Card, Group, Image, SegmentedControl, SimpleGrid, Stack, Text } from '@mantine/core';
-import { IconDownload, IconEye, IconHeart, IconMovie, IconTag } from '@tabler/icons-react';
+import { Badge, Box, Button, Card, Group, SegmentedControl, SimpleGrid, Stack, Text } from '@mantine/core';
+import { IconDownload, IconEye, IconHeart, IconTag } from '@tabler/icons-react';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCursorList } from '../../api/useCursorList';
@@ -7,6 +7,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { Pager } from '../../components/Pager';
 import { EmptyBlock, ErrorBlock, ListSkeleton } from '../../components/StateBlocks';
 import { formatCompact, formatDate, labelOf } from '../../lib/format';
+import { ReelThumb } from './ReelThumb';
 import { platformLabel, reelsApi, reelStateColor, reelStateLabel, type Reel } from './api';
 
 const FILTERS = [
@@ -30,13 +31,7 @@ export function ReelCard({ reel }: { reel: Reel }) {
   return (
     <Card padding={0} data-interactive="true" component={Link} to={`/reels/${reel.id}`} style={{ textDecoration: 'none', color: 'inherit', overflow: 'hidden' }}>
       <Box style={{ position: 'relative', aspectRatio: '9 / 12', background: 'var(--sm-inset)' }}>
-        {reel.thumbnailCdnUrl ? (
-          <Image src={reel.thumbnailCdnUrl} alt="" h="100%" w="100%" fit="cover" loading="lazy" />
-        ) : (
-          <Stack align="center" justify="center" h="100%">
-            <IconMovie size={30} opacity={0.4} aria-hidden />
-          </Stack>
-        )}
+        <ReelThumb src={reel.thumbnailCdnUrl} />
         <Badge pos="absolute" top={8} left={8} color={reelStateColor[reel.state] ?? 'gray'} variant="filled" size="sm">
           {labelOf(reelStateLabel, reel.state)}
         </Badge>

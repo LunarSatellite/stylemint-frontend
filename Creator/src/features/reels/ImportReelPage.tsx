@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { ReelThumb } from './ReelThumb';
 import {
   Alert,
   Anchor,
@@ -8,7 +9,6 @@ import {
   Card,
   Checkbox,
   Group,
-  Image,
   NumberInput,
   SegmentedControl,
   SimpleGrid,
@@ -205,7 +205,7 @@ function FromAccounts() {
                 onClick={() => toggle(item)}
               >
                 <Box style={{ position: 'relative', aspectRatio: '9 / 12', background: 'var(--sm-inset)' }}>
-                  {item.thumbnailUrl && <Image src={item.thumbnailUrl} alt="" h="100%" w="100%" fit="cover" loading="lazy" />}
+                  <ReelThumb src={item.thumbnailUrl} />
                   <Checkbox
                     checked={on}
                     onChange={() => toggle(item)}
