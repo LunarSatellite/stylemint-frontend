@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useMemo, type ComponentType } from 'react';
+import { Suspense, useEffect, useState, type ReactNode, useMemo, type ComponentType } from 'react';
 import {
   ActionIcon,
   AppShell,
@@ -7,6 +7,7 @@ import {
   Box,
   Burger,
   Center,
+  Collapse,
   Group,
   Loader,
   Menu,
@@ -56,7 +57,7 @@ import {
   type IconProps,
 } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, matchPath, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { signOut } from '../auth/session';
 import { useAccount } from '../auth/useSession';
 import { useCrmSession, useVisibleAreas } from '../features/crm/hooks';
@@ -136,6 +137,53 @@ const INSIGHTS_GROUP: { section?: string; items: NavItem[] } = {
 };
 
 // Payouts stays one tap away in "More" (the sidebar); Insights takes its place in the tab bar.
+const GROUPS_KEY = 'sm.seller.nav.groups';
+
+function readGroups(): Record<string, boolean> {
+  try {
+    return JSON.parse(localStorage.getItem(GROUPS_KEY) ?? '{}') as Record<string, boolean>;
+  } catch {
+    return {};
+  }
+}
+
+function isCurrent(item: NavItem, pathname: string): boolean {
+  return matchPath({ path: item.to, end: item.end ?? false }, pathname) !== null;
+}
+
+/**
+ * A sidebar category as a drop-down, like the Admin console's: every group starts open, a group the user folds
+ * stays folded (this browser only), and a folded group holding the current page shows a dot. Untitled groups
+ * (Home, Settings) render flat.
+ */
+function NavGroup({ title, holdsCurrent, children }: { title?: string; holdsCurrent: boolean; children: ReactNode }) {
+  const [groups, setGroups] = useState<Record<string, boolean>>(readGroups);
+  if (!title) return <div>{children}</div>;
+  const open = groups[title] ?? true;
+  const toggle = () => {
+    const next = { ...readGroups(), [title]: !open };
+    setGroups(next);
+    try {
+      localStorage.setItem(GROUPS_KEY, JSON.stringify(next));
+    } catch {
+      // remembered for this visit only
+    }
+  };
+  const panel = `nav-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+  return (
+    <div className="sm-nav-group" data-open={open || undefined}>
+      <UnstyledButton className="sm-nav-section" aria-expanded={open} aria-controls={panel} data-holds-current={holdsCurrent || undefined} onClick={toggle}>
+        <span className="sm-nav-section-title">{title}</span>
+        {!open && holdsCurrent && <span className="sm-nav-dot" aria-hidden />}
+        <IconChevronDown size={14} className="sm-nav-chevron" aria-hidden />
+      </UnstyledButton>
+      <Collapse in={open} transitionDuration={140} id={panel} role="group" aria-label={title}>
+        {children}
+      </Collapse>
+    </div>
+  );
+}
+
 const TABS: NavItem[] = [
   { to: '/', label: 'Home', icon: IconHome, end: true },
   { to: '/orders', label: 'Orders', icon: IconReceipt, badge: 'newOrders' },
@@ -323,8 +371,7 @@ export function Shell() {
           <ScrollArea style={{ flex: 1 }} type="hover" scrollbarSize={6}>
             <nav>
               {nav.map((group, gi) => (
-                <div key={gi}>
-                  {group.section && <div className="sm-nav-section">{group.section}</div>}
+                <NavGroup key={gi} title={group.section} holdsCurrent={group.items.some((i) => isCurrent(i, location.pathname))}>
                   {group.items.map((item) => {
                     const badge = badgeOf(item);
                     return (
@@ -344,7 +391,7 @@ export function Shell() {
                       </NavLink>
                     );
                   })}
-                </div>
+                </NavGroup>
               ))}
             </nav>
           </ScrollArea>
