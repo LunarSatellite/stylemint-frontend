@@ -21,6 +21,7 @@ const ProductsPage = lazy(() => import('./features/products/ProductsPage'));
 const ProductEditorPage = lazy(() => import('./features/products/ProductEditorPage'));
 const DeliveryPage = lazy(() => import('./features/delivery/DeliveryPage'));
 const PayoutsPage = lazy(() => import('./features/payouts/PayoutsPage'));
+const EmiRequestsPage = lazy(() => import('./features/emi/EmiRequestsPage'));
 const CarePage = lazy(() => import('./features/care/CarePage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const SecurityPage = lazy(() => import('./features/settings/SecurityPage'));
@@ -155,6 +156,7 @@ export function AppRoutes() {
         <Route path="products/:id" element={<ProductEditorPage />} />
         <Route path="delivery" element={<DeliveryPage />} />
         <Route path="payouts" element={<PayoutsPage />} />
+        <Route path="emi-requests" element={<EmiRequestsPage />} />
         <Route path="care" element={<CarePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/security" element={<SecurityPage />} />

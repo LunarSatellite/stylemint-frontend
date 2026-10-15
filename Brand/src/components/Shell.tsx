@@ -20,6 +20,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import {
   IconBuildingStore,
+  IconCalendarDollar,
   IconCalendarEvent,
   IconCalendarRepeat,
   IconChecklist,
@@ -85,6 +86,7 @@ const NAV: { section?: string; items: NavItem[] }[] = [
     section: 'Sell',
     items: [
       { to: '/orders', label: 'Orders', icon: IconReceipt, badge: 'newOrders' },
+      { to: '/emi-requests', label: 'EMI requests', icon: IconCalendarDollar },
       { to: '/products', label: 'Products', icon: IconPackage },
       { to: '/delivery', label: 'Delivery', icon: IconTruckDelivery },
       { to: '/care', label: 'Returns & questions', icon: IconLifebuoy },
