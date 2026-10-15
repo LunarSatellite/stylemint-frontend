@@ -244,6 +244,8 @@ export interface EmiTerms {
   minimumPrice: Money;
   sampleQuote: EmiQuote | null;
   updatedUtc: string | null;
+  /** Buyers may pay the EMI down payment in cash on delivery. Absent on an older server: treat as on. */
+  allowCashOnDeliveryDownPayment?: boolean;
 }
 
 export interface EmiSettings {
@@ -296,7 +298,10 @@ export const productsApi = {
   clearAttribute: (id: string, key: string) => api.del<boolean>(`${base}/${id}/attributes/${encodeURIComponent(key)}`),
 
   emiTerms: (id: string) => api.get<EmiTerms>(`${base}/${id}/emi-terms`),
-  putEmiTerms: (id: string, body: { enabled: boolean; minDownPaymentPercent: number; tenures: number[] }) =>
+  putEmiTerms: (
+    id: string,
+    body: { enabled: boolean; minDownPaymentPercent: number; tenures: number[]; allowCashOnDeliveryDownPayment?: boolean },
+  ) =>
     api.put<EmiTerms>(`${base}/${id}/emi-terms`, { ...body, interestRatePercentMonthly: 0, approvalMode: 'Manual' }),
   emiProducts: () => api.get<EmiTerms[]>('/v1/vendor/emi/products'),
   emiSettings: () => api.get<EmiSettings>('/v1/vendor/emi/settings'),

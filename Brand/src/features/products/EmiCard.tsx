@@ -22,6 +22,7 @@ export function EmiCard({ product }: { product: Product }) {
   const [enabled, setEnabled] = useState(false);
   const [minDown, setMinDown] = useState(30);
   const [tenures, setTenures] = useState<string[]>(['3', '6']);
+  const [cashDown, setCashDown] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export function EmiCard({ product }: { product: Product }) {
       setEnabled(terms.data.enabled);
       setMinDown(terms.data.minDownPaymentPercent || 30);
       setTenures((terms.data.tenures.length ? terms.data.tenures : [3, 6]).map(String));
+      setCashDown(terms.data.allowCashOnDeliveryDownPayment ?? true);
     }
   }, [terms.data]);
 
@@ -39,6 +41,7 @@ export function EmiCard({ product }: { product: Product }) {
         enabled,
         minDownPaymentPercent: minDown,
         tenures: (tenures.length ? tenures : ['3']).map(Number).sort((a, b) => a - b),
+        allowCashOnDeliveryDownPayment: cashDown,
       }),
     onSuccess: (data) => {
       qc.setQueryData(['product', product.id, 'emi'], data);
@@ -115,6 +118,12 @@ export function EmiCard({ product }: { product: Product }) {
                   </Group>
                 </Chip.Group>
               </div>
+              <Switch
+                label="Allow cash on delivery for the down payment"
+                description="The rider collects only the down payment in cash; the plan starts when the item is delivered."
+                checked={cashDown}
+                onChange={(e) => setCashDown(e.currentTarget.checked)}
+              />
               {sample && lowest && (
                 <Alert color="forest" variant="light" title="Example">
                   On {formatMoney(lowest)}: {formatMoney(sample.downPayment)} down, then {longest - 1 > 0 ? `${longest - 1} × ` : ''}
