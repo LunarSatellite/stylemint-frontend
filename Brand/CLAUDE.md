@@ -163,6 +163,21 @@ backend's `wizardStepReached`; it opens with "Details & publish" once delivery i
   a link to the step); a missing try-on image is only a warning. Readiness 404 with no errorCode
   (`isMissingEndpoint`) → "Try-on setup is coming soon", nothing blocks. No badge in the product list (no batch source).
 
+## EMI (`src/features/emi/`)
+
+Contract: `D:\Stylemint\wt\emi-after-contract.md` (v1). Sidebar "EMI requests" + "EMI plans".
+
+- EMI requests (`/emi-requests`, `v1/credit/vendor/applications`): documents, approve / decline.
+- EMI plans (`/emi-plans`, `GET v1/credit/vendor/plans`) and plan detail (`/emi-plans/:agreementId`,
+  `GET v1/credit/vendor/plans/{id}`): filters all / active / overdue / due soon / completed (`?filter=`,
+  local), buyer display name only (responses go through `redactPii`), schedule, collected / remaining /
+  next due. `plans.ts` prefers the v1 fields (`paidToDate`, `nextInstalment`, `downPaymentStatus`…) and
+  computes them from `instalments` when absent; due dates are Kathmandu calendar days (`kathmanduToday`).
+  404 with no errorCode → "being set up"; 404 with an errorCode → "Plan not found".
+- Order page Payment card shows collected / remaining / next due + "View plan" from the same plan read.
+- Seller plan notifications deep-link to `/vendor/payment-plans/{id}`, which redirects to the plan page
+  (`sellerNotificationRoute` maps `plan.vendor.*`). Seller Center has no in-app notification list yet.
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),
