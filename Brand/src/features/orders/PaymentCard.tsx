@@ -1,5 +1,10 @@
-import { Badge, Group, Stack, Text } from '@mantine/core';
+import { Anchor, Badge, Group, Stack, Text } from '@mantine/core';
 import { IconCash } from '@tabler/icons-react';
+import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
+import { isMissingEndpoint } from '../../api/client';
+import { emiApi } from '../emi/api';
+import { formatDueDate, planPath, planView } from '../emi/plans';
 import { SectionCard } from '../../components/SectionCard';
 import { formatMoney } from '../../lib/format';
 import { downPaymentHow, PaymentMethod, planLabel, type OrderPaymentPlan, type SubOrderDetail } from './api';
@@ -14,6 +19,50 @@ function Row({ label, value, strong, testId }: { label: string; value: string; s
         {value}
       </Text>
     </Group>
+  );
+}
+
+/**
+ * Collected so far / remaining / next due for the order's plan, from the seller plan endpoint
+ * (emi-after-contract v1). Until that endpoint is deployed it 404s with no error code: the card
+ * then says tracking is being set up — never "nothing collected".
+ */
+function PlanProgress({ agreementId }: { agreementId: string }) {
+  const query = useQuery({
+    queryKey: ['emi-plans', agreementId],
+    queryFn: () => emiApi.plan(agreementId),
+    staleTime: 60_000,
+  });
+  if (query.isPending) return null;
+  if (query.isError) {
+    return (
+      <Text size="xs" c="dimmed" data-testid="plan-progress-unavailable">
+        {isMissingEndpoint(query.error)
+          ? 'Instalment tracking is being set up.'
+          : 'Could not load what the buyer has paid so far.'}
+      </Text>
+    );
+  }
+  const p = planView(query.data);
+  const m = (amount: number) => formatMoney({ amount, currency: p.currency });
+  const next = p.next;
+  return (
+    <Stack gap={6} data-testid="plan-progress">
+      <Row label="Collected so far" value={m(p.collected)} testId="plan-collected" />
+      <Row label="Remaining" value={m(p.remaining)} testId="plan-remaining" />
+      <Row
+        label="Next due"
+        value={
+          next
+            ? `${next.dueDate ? formatDueDate(next.dueDate) : 'when the plan starts'} · ${m(next.outstanding || next.scheduledAmount)}${p.overdue ? ' · overdue' : ''}`
+            : '—'
+        }
+        testId="plan-next-due"
+      />
+      <Anchor component={Link} to={planPath(agreementId)} size="sm" data-testid="plan-detail-link">
+        View plan and schedule
+      </Anchor>
+    </Stack>
   );
 }
 
@@ -62,6 +111,7 @@ export function PaymentCard({ order: o }: { order: SubOrderDetail }) {
               }
               testId="plan-instalments"
             />
+            {plan.agreementId && <PlanProgress agreementId={plan.agreementId} />}
           </>
         ) : (
           <Row label="Method" value="Cash on delivery" />
