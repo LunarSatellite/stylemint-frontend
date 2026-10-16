@@ -1,6 +1,7 @@
-import { screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { renderWithProviders } from '../../test/utils';
+import { screen, within } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { mockApi, renderWithProviders } from '../../test/utils';
+import { planApp } from '../emi/testkit';
 import { PaymentMethod, SubOrderState, type OrderPaymentPlan, type SubOrderDetail, type SubOrderListItem } from './api';
 import { OrderCard } from './components';
 import { PaymentCard, planSummary } from './PaymentCard';
@@ -66,6 +67,11 @@ const detail = (patch: Partial<SubOrderDetail> = {}): SubOrderDetail => ({
 });
 
 describe('an EMI order on the seller screens', () => {
+  // The plan read 404s (not deployed) unless a test answers it.
+  beforeEach(() => {
+    mockApi({});
+  });
+
   it('shows the down payment, the instalments and only the down payment as cash to collect', () => {
     renderWithProviders(
       <PaymentCard
@@ -130,5 +136,26 @@ describe('an EMI order on the seller screens', () => {
     renderWithProviders(<OrderCard order={row} />);
     expect(screen.getByText('EMI · cash down payment')).toBeInTheDocument();
     expect(planSummary(plan())).toBe('EMI · Rs 30,000 down payment — collect in cash on delivery');
+  });
+
+  it('shows what the buyer has paid, what is left and the next instalment, with a link to the plan', async () => {
+    const agreementId = plan().agreementId;
+    mockApi({
+      [`GET /v1/credit/vendor/plans/${agreementId}`]: { body: planApp({}, { id: agreementId }) },
+    });
+    renderWithProviders(
+      <PaymentCard order={detail({ paymentMethod: PaymentMethod.Esewa, paymentPlan: plan({ downPaymentOnDelivery: false, downPaymentPaid: true }) })} />,
+    );
+    const progress = await screen.findByTestId('plan-progress');
+    expect(within(progress).getByTestId('plan-collected')).toHaveTextContent('Rs 20,000');
+    expect(within(progress).getByTestId('plan-remaining')).toHaveTextContent('Rs 40,000');
+    expect(within(progress).getByTestId('plan-next-due')).toHaveTextContent('Rs 8,000');
+    expect(screen.getByTestId('plan-detail-link')).toHaveAttribute('href', `/emi-plans/${agreementId}`);
+  });
+
+  it('says tracking is being set up while the plan endpoint is not deployed', async () => {
+    renderWithProviders(<PaymentCard order={detail({ paymentMethod: PaymentMethod.Esewa, paymentPlan: plan() })} />);
+    expect(await screen.findByTestId('plan-progress-unavailable')).toHaveTextContent(/being set up/i);
+    expect(screen.queryByTestId('plan-collected')).toBeNull();
   });
 });
