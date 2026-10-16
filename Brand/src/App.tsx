@@ -3,7 +3,7 @@ import { Center, Loader, MantineProvider, localStorageColorSchemeManager } from 
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom';
 import { ApiError } from './api/client';
 import { bootstrap } from './auth/session';
 import { useSession } from './auth/useSession';
@@ -22,6 +22,8 @@ const ProductEditorPage = lazy(() => import('./features/products/ProductEditorPa
 const DeliveryPage = lazy(() => import('./features/delivery/DeliveryPage'));
 const PayoutsPage = lazy(() => import('./features/payouts/PayoutsPage'));
 const EmiRequestsPage = lazy(() => import('./features/emi/EmiRequestsPage'));
+const EmiPlansPage = lazy(() => import('./features/emi/EmiPlansPage'));
+const EmiPlanDetailPage = lazy(() => import('./features/emi/EmiPlanDetailPage'));
 const CarePage = lazy(() => import('./features/care/CarePage'));
 const SettingsPage = lazy(() => import('./features/settings/SettingsPage'));
 const SecurityPage = lazy(() => import('./features/settings/SecurityPage'));
@@ -157,6 +159,10 @@ export function AppRoutes() {
         <Route path="delivery" element={<DeliveryPage />} />
         <Route path="payouts" element={<PayoutsPage />} />
         <Route path="emi-requests" element={<EmiRequestsPage />} />
+        <Route path="emi-plans" element={<EmiPlansPage />} />
+        <Route path="emi-plans/:agreementId" element={<EmiPlanDetailPage />} />
+        {/* Seller plan notifications deep-link to /vendor/payment-plans/{agreementId} (emi-after-contract v1). */}
+        <Route path="vendor/payment-plans/:agreementId" element={<PlanDeepLink />} />
         <Route path="care" element={<CarePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/security" element={<SecurityPage />} />
@@ -243,4 +249,10 @@ export default function App() {
       </BrowserRouter>
     </Providers>
   );
+}
+
+/** A seller EMI-plan notification's deep link (`/vendor/payment-plans/{id}`) opens the plan page. */
+function PlanDeepLink() {
+  const { agreementId = '' } = useParams();
+  return <Navigate to={`/emi-plans/${encodeURIComponent(agreementId)}`} replace />;
 }
