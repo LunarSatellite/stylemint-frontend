@@ -24,9 +24,24 @@ import { ErrorBlock } from '../../components/StateBlocks';
 import { formatDate, fromNow, initialsOf } from '../../lib/format';
 import { confirmAction, toastSuccess } from '../../lib/notify';
 import { SealForm } from './SealForm';
-import { ordersApi, tagLabel, type DeliveryRequest, type InterestedRider, type SubOrderDetail } from './api';
+import {
+  NO_PRO_RIDER_HIGH_VALUE,
+  NO_VERIFIED_RIDER_HIGH_VALUE,
+  ordersApi,
+  tagLabel,
+  type DeliveryRequest,
+  type InterestedRider,
+  type SubOrderDetail,
+} from './api';
 
 const tierLabel: Record<string, string> = { Neighbor: 'Neighbour rider', Traveler: 'Traveller rider', Pro: 'Pro rider' };
+
+/** Shown in the confirm dialog: what agreeing to a verified rider means. */
+const VERIFIED_RIDER_NOTE =
+  'A verified rider has had their identity checked by StyleMint but is not a Pro rider. Your choice is recorded for this parcel only.';
+
+const offersVerifiedRider = (r: DeliveryRequest | null | undefined) =>
+  r?.state === 'NoRiders' && r.noRidersReason === NO_PRO_RIDER_HIGH_VALUE && !!r.canUseVerifiedRider;
 
 const isNotSealed = (e: unknown) => e instanceof ApiError && e.code === 'delivery_request.parcel_not_sealed';
 
@@ -314,13 +329,27 @@ export function DeliveryPartnerDrawer({ order, opened, onClose }: { order: SubOr
   };
 
   const open = useMutation({
-    mutationFn: () => ordersApi.openDeliveryRequest(order.id),
-    onSuccess: (data) => {
+    mutationFn: (vars: { allowVerifiedNonPro?: boolean } | void) =>
+      ordersApi.openDeliveryRequest(order.id, vars ? { allowVerifiedNonPro: vars.allowVerifiedNonPro } : undefined),
+    onSuccess: (data, vars) => {
       setError(null);
       qc.setQueryData(key, data);
+      // A high-value parcel found no Pro rider: ask straight away whether a verified rider may take it.
+      if (!(vars && vars.allowVerifiedNonPro) && offersVerifiedRider(data)) void askVerifiedRider();
     },
     onError: (e) => setError(deliveryErrorMessage(e)),
   });
+
+  /** Routing is never widened without this explicit yes; the backend records who agreed and when. */
+  const askVerifiedRider = async () => {
+    const ok = await confirmAction({
+      title: 'Use a verified rider instead?',
+      body: VERIFIED_RIDER_NOTE,
+      confirmLabel: 'Use a verified rider',
+      cancelLabel: 'Not now',
+    });
+    if (ok) open.mutate({ allowVerifiedNonPro: true });
+  };
 
   const select = useMutation({
     mutationFn: (offerId: string) => ordersApi.selectRider(order.id, offerId),
@@ -426,10 +455,32 @@ export function DeliveryPartnerDrawer({ order, opened, onClose }: { order: SubOr
           <ErrorBlock error={current.error} onRetry={() => void current.refetch()} title="Could not check the delivery request" />
         ) : !req || req.state === 'Expired' || req.state === 'NoRiders' ? (
           <Stack gap="sm">
-            {req?.state === 'NoRiders' && (
-              <Alert color="amber" variant="light">
-                No riders were available nearby. Try again in a few minutes, or use your own courier.
+            {req?.state === 'NoRiders' && req.noRidersReason === NO_PRO_RIDER_HIGH_VALUE ? (
+              <Alert color="amber" variant="light" title="No Pro rider is available for this high-value parcel" data-testid="no-pro-rider">
+                <Stack gap="xs">
+                  <Text size="sm">
+                    High-value parcels go to Pro riders only.
+                    {req.canUseVerifiedRider ? ' You can hand it to a verified rider instead, or try again later.' : ' Try again later.'}
+                  </Text>
+                  {req.canUseVerifiedRider && (
+                    <Group>
+                      <Button size="xs" variant="light" loading={open.isPending} onClick={() => void askVerifiedRider()}>
+                        Use a verified rider
+                      </Button>
+                    </Group>
+                  )}
+                </Stack>
               </Alert>
+            ) : req?.state === 'NoRiders' && req.noRidersReason === NO_VERIFIED_RIDER_HIGH_VALUE ? (
+              <Alert color="amber" variant="light">
+                No verified rider is available nearby either. Try again in a few minutes, or use your own courier.
+              </Alert>
+            ) : (
+              req?.state === 'NoRiders' && (
+                <Alert color="amber" variant="light">
+                  No riders were available nearby. Try again in a few minutes, or use your own courier.
+                </Alert>
+              )
             )}
             {req?.state === 'Expired' && (
               <Alert color="amber" variant="light">
@@ -481,6 +532,11 @@ export function DeliveryPartnerDrawer({ order, opened, onClose }: { order: SubOr
                 {req.notifiedCount} notified within {req.radiusKm} km · <Countdown until={req.expiresUtc} />
               </Text>
             </Group>
+            {req.verifiedRiderConsent && (
+              <Text size="xs" c="dimmed" data-testid="verified-rider-consent">
+                High-value parcel: you agreed to a verified rider {fromNow(req.verifiedRiderConsent.consentedUtc)}.
+              </Text>
+            )}
             {req.interested.length === 0 ? (
               <Text size="sm" c="dimmed">
                 Riders who can pick up will appear here. This updates by itself — opened {fromNow(req.openedUtc)}.

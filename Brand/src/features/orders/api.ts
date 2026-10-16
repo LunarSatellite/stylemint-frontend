@@ -259,7 +259,20 @@ export interface DeliveryRequest {
   radiusKm: number;
   interested: InterestedRider[];
   assigned: { courierId: string; displayName: string; avatarUrl: string | null; phone: string | null } | null;
+  /**
+   * Why the request is `NoRiders`, when there is a specific reason (null otherwise):
+   * `delivery.no_pro_rider_high_value` — a high-value parcel may only go to a Pro rider and none is available;
+   * `delivery.no_verified_rider_high_value` — the seller already agreed to a verified rider and none is in range.
+   */
+  noRidersReason?: string | null;
+  /** The seller may retry with `allowVerifiedNonPro` (only with `delivery.no_pro_rider_high_value`). */
+  canUseVerifiedRider?: boolean;
+  /** The seller's recorded agreement to a verified non-Pro rider for this parcel. */
+  verifiedRiderConsent?: { consentedByAccountId: string; consentedUtc: string } | null;
 }
+
+export const NO_PRO_RIDER_HIGH_VALUE = 'delivery.no_pro_rider_high_value';
+export const NO_VERIFIED_RIDER_HIGH_VALUE = 'delivery.no_verified_rider_high_value';
 
 export interface RiderProfile {
   courierId: string;
@@ -355,7 +368,13 @@ export const ordersApi = {
   bulkPackingSlips: (ids: string[]) =>
     api.post<BulkResult<PackingSlip>>(`${base}/bulk/packing-slips`, { subOrderIds: ids }, { idempotencyKey: false }),
 
-  openDeliveryRequest: (id: string) => api.post<DeliveryRequest>(`${base}/${id}/delivery-requests`, {}),
+  /**
+   * Opens (or re-opens) the request. `allowVerifiedNonPro` records the seller's consent to hand a high-value
+   * parcel to a verified rider of any tier (only after `delivery.no_pro_rider_high_value`). Every call gets a
+   * fresh Idempotency-Key, so the consent retry is never answered from the earlier reply.
+   */
+  openDeliveryRequest: (id: string, opts?: { allowVerifiedNonPro?: boolean }) =>
+    api.post<DeliveryRequest>(`${base}/${id}/delivery-requests`, opts?.allowVerifiedNonPro ? { allowVerifiedNonPro: true } : {}),
   /** null when no request was ever opened (404 is the normal "not yet" answer). */
   currentDeliveryRequest: async (id: string): Promise<DeliveryRequest | null> => {
     try {
