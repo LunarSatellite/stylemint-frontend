@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { __resetSessionForTests } from '../../auth/session';
@@ -38,6 +38,10 @@ const searchingWithConsent = () =>
 
 const OPEN = 'POST /v1/vendor/sub-orders/so-1/delivery-requests';
 const CURRENT = 'GET /v1/vendor/sub-orders/so-1/delivery-requests/current';
+/** The confirm button inside the "Use a verified rider instead?" dialog (the alert has a button with the same label). */
+const confirmButton = async () =>
+  within(await screen.findByRole('dialog', { name: /use a verified rider instead/i })).getByRole('button', { name: /^use a verified rider$/i });
+
 const notFound = { status: 404, body: { title: 'none', status: 404, errorCode: 'resource.not_found' } };
 
 describe('high-value parcel with no Pro rider', () => {
@@ -59,9 +63,7 @@ describe('high-value parcel with no Pro rider', () => {
     expect(calls.filter((c) => c.method === 'POST')).toHaveLength(1);
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({});
 
-    // The alert's button and the dialog's confirm share a label; the dialog renders last.
-    const buttons = screen.getAllByRole('button', { name: /^use a verified rider$/i });
-    await user.click(buttons[buttons.length - 1]);
+    await user.click(await confirmButton());
 
     await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(2));
     const [first, second] = calls.filter((c) => c.method === 'POST');
@@ -94,8 +96,7 @@ describe('high-value parcel with no Pro rider', () => {
     renderWithProviders(<DeliveryPartnerDrawer order={order} opened onClose={() => {}} />);
 
     await user.click(await screen.findByRole('button', { name: /^use a verified rider$/i }));
-    const dialogButtons = await screen.findAllByRole('button', { name: /^use a verified rider$/i });
-    await user.click(dialogButtons[dialogButtons.length - 1]);
+    await user.click(await confirmButton());
 
     await waitFor(() => expect(calls.filter((c) => c.method === 'POST')).toHaveLength(1));
     expect(calls.find((c) => c.method === 'POST')!.body).toEqual({ allowVerifiedNonPro: true });
