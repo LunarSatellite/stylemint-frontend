@@ -28,6 +28,7 @@ import { confirmAction, toastError, toastSuccess } from '../../lib/notify';
 import { useIsPhone } from '../../lib/useIsPhone';
 import { ORDER_TABS, ordersApi, SubOrderState, type SubOrderListItem } from './api';
 import { ChannelBadge, OrderCard, OrderStateBadge } from './components';
+import { PlanBadge, planSummary } from './PaymentCard';
 
 function matches(order: SubOrderListItem, term: string) {
   const t = term.trim().toLowerCase().replace(/^#/, '');
@@ -284,11 +285,17 @@ export default function OrdersPage() {
                       <Text size="sm" fw={600}>
                         {formatMoney({ amount: o.subtotalAmount, currency: o.subtotalCurrency })}
                       </Text>
+                      {o.paymentPlan && (
+                        <Text size="xs" c="dimmed" data-testid={`plan-${o.id}`}>
+                          {planSummary(o.paymentPlan)}
+                        </Text>
+                      )}
                     </Table.Td>
                     <Table.Td>
                       <Group gap={6} wrap="nowrap">
                         <OrderStateBadge state={o.state} />
                         <ChannelBadge channel={o.fulfillmentChannel} />
+                        <PlanBadge plan={o.paymentPlan} />
                       </Group>
                     </Table.Td>
                   </Table.Tr>

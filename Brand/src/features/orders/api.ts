@@ -98,7 +98,52 @@ export const rejectionReasons = [
 
 export type FulfillmentChannel = 'Delivery' | 'StorePickup';
 
+/** Shared `PaymentMethod` ints. */
+export const PaymentMethod = {
+  Card: 1,
+  PayPal: 2,
+  Esewa: 3,
+  CashOnDelivery: 4,
+} as const;
+
+/**
+ * The payment plan (EMI) that pays for an order (`VendorOrderPaymentPlanDto`). The order's total is
+ * the plan's price, but the buyer pays it as a down payment and then `tenureMonths` instalments —
+ * so the seller must never read the price as money collected at once.
+ */
+export interface OrderPaymentPlan {
+  agreementId: string;
+  /** Instalment (EMI), PayLater or Prepay. */
+  kind: string;
+  priceAmount: number;
+  downPaymentAmount: number;
+  financedAmount: number;
+  tenureMonths: number;
+  monthlyInstalmentAmount: number;
+  currency: string;
+  /** Collected in cash when the item is delivered (else paid online). */
+  downPaymentOnDelivery: boolean;
+  /** Received; the plan has started. */
+  downPaymentPaid: boolean;
+}
+
+export function planLabel(plan: OrderPaymentPlan): string {
+  if (plan.kind === 'PayLater') return 'Pay later';
+  if (plan.kind === 'Prepay') return 'Pay now, buy later';
+  return 'EMI';
+}
+
+/** How the down payment is paid: "collect in cash on delivery", "paid online", … */
+export function downPaymentHow(plan: OrderPaymentPlan): string {
+  if (plan.downPaymentOnDelivery) return plan.downPaymentPaid ? 'collected in cash' : 'collect in cash on delivery';
+  return plan.downPaymentPaid ? 'paid online' : 'to be paid online';
+}
+
 export interface SubOrderListItem {
+  /** How the buyer pays (`PaymentMethod`). Absent from an older backend. */
+  paymentMethod?: number;
+  /** The EMI behind the order; null/absent for an ordinary order. */
+  paymentPlan?: OrderPaymentPlan | null;
   id: string;
   orderId: string;
   orderNumber: string;
@@ -218,6 +263,16 @@ export interface SubOrderDetail {
   courierId?: string | null;
   canRateRider?: boolean;
   riderRating?: { stars: number; tags: RiderRatingTag[] } | null;
+  /** How the buyer pays (`PaymentMethod`). Absent from an older backend. */
+  paymentMethod?: number;
+  /** The EMI behind the order; null/absent for an ordinary order. */
+  paymentPlan?: OrderPaymentPlan | null;
+  /**
+   * What the rider collects in cash on delivery: the total for an ordinary cash order, only the
+   * down payment for an EMI with a cash down payment; null when nothing is collected.
+   */
+  cashToCollectAmount?: number | null;
+  cashToCollectCurrency?: string | null;
 }
 
 export interface PackingSlip {
