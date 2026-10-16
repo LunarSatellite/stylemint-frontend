@@ -11,6 +11,7 @@ import { ordersApi, isMoving, SubOrderState, type SubOrderDetail } from './api';
 import { ChannelBadge, OrderStateBadge } from './components';
 import { DeliveryPartnerDrawer } from './DeliveryPartner';
 import { OrderActionBar } from './OrderActions';
+import { PaymentCard } from './PaymentCard';
 import { RiderRatingCard } from './RiderRatingCard';
 
 const cancelReasons: Record<number, string> = {
@@ -197,11 +198,13 @@ export default function OrderDetailPage() {
                   <Text size="sm">{formatMoney(fee)}</Text>
                 </Group>
                 <Group justify="space-between">
-                  <Text fw={700}>Total</Text>
+                  <Text fw={700}>{o.paymentPlan ? 'Total (paid by EMI)' : 'Total'}</Text>
                   <Text fw={700}>{formatMoney({ amount: o.subtotalAmount, currency: o.subtotalCurrency })}</Text>
                 </Group>
               </Stack>
             </SectionCard>
+
+            <PaymentCard order={o} />
 
             {o.delivery && (
               <SectionCard title="Parcel">

@@ -3,6 +3,7 @@ import { IconBuildingStore, IconPackage } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { formatMoney, fromNow } from '../../lib/format';
 import { stateColor, stateLabel, type SubOrderListItem } from './api';
+import { PlanBadge } from './PaymentCard';
 
 export function OrderStateBadge({ state, size = 'sm' }: { state: number; size?: 'xs' | 'sm' | 'md' | 'lg' }) {
   return (
@@ -62,6 +63,7 @@ export function OrderCard({
         </Text>
         <OrderStateBadge state={order.state} />
         <ChannelBadge channel={order.fulfillmentChannel} />
+        <PlanBadge plan={order.paymentPlan} />
       </Stack>
     </Group>
   );
