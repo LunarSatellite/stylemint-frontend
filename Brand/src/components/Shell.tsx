@@ -67,6 +67,8 @@ import type { CrmAreaKey } from '../features/crm/roles';
 import { INSIGHTS_SECTIONS, type InsightsSectionKey } from '../features/insights/sections';
 import { crmSession } from '../features/crm/session';
 import { ordersApi } from '../features/orders/api';
+import { useServiceCategory } from '../features/services/category';
+import { serviceNavFor, serviceTabsFor } from '../features/services/nav';
 import { useLiveUpdates } from '../lib/live';
 import { initialsOf } from '../lib/format';
 import { surfaces } from '../theme';
@@ -196,16 +198,27 @@ const TABS: NavItem[] = [
   { to: '/insights', label: 'Insights', icon: IconChartLine },
 ];
 
-/** The sidebar: fixed groups plus the CRM group, which follows the seller's CRM role. */
-function useNav() {
+/**
+ * The sidebar: fixed groups plus the CRM group, which follows the seller's CRM role. A service vendor (hotel,
+ * travel agency, bank) also gets its own group right after Home; product sellers see no change.
+ */
+function useNav(serviceCategory: number) {
   const crmAreas = useVisibleAreas();
   return useMemo(() => {
     const crmGroup: { section?: string; items: NavItem[] } = {
       section: 'Customers & CRM',
       items: crmAreas.map((a) => ({ to: a.to, label: a.label, icon: CRM_ICONS[a.key] })),
     };
-    return [NAV[0], NAV[1], INSIGHTS_GROUP, crmGroup, ...NAV.slice(2)];
-  }, [crmAreas]);
+    const service = serviceNavFor(serviceCategory);
+    return [NAV[0], ...(service ? [service] : []), NAV[1], INSIGHTS_GROUP, crmGroup, ...NAV.slice(2)];
+  }, [crmAreas, serviceCategory]);
+}
+
+/** The phone tab bar; a service vendor's bookings / leads take the Orders and Products places. */
+function tabsFor(serviceCategory: number): NavItem[] {
+  const service = serviceTabsFor(serviceCategory);
+  if (!service) return TABS;
+  return [TABS[0], ...service, ...TABS.slice(3)];
 }
 
 /** Learn the CRM role shortly after the shell opens, so the CRM menu shows only what the role can use. */
@@ -254,7 +267,9 @@ export function Shell() {
   const account = useAccount();
   const newOrders = useNewOrderCount();
   const live = useLiveUpdates();
-  const nav = useNav();
+  const { category: serviceCategory } = useServiceCategory();
+  const nav = useNav(serviceCategory);
+  const tabs = tabsFor(serviceCategory);
   usePrefetchCrmSession();
 
   useEffect(() => {
@@ -432,7 +447,7 @@ export function Shell() {
       </AppShell>
 
       <nav className="sm-tabbar" aria-label="Quick navigation">
-        {TABS.map((tab) => {
+        {tabs.map((tab) => {
           const badge = badgeOf(tab);
           return (
             <NavLink key={tab.to} to={tab.to} end={tab.end}>

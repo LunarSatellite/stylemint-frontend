@@ -3,7 +3,7 @@ import { Avatar, Badge, Button, Card, Chip, Group, Select, Stack, Table, Text, T
 import { useDebouncedValue } from '@mantine/hooks';
 import { IconMapPin, IconRefresh, IconSearch, IconStarFilled, IconUsersGroup } from '@tabler/icons-react';
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { PageHeader } from '../../components/PageHeader';
 import { Pager } from '../../components/Pager';
 import { EmptyBlock, ErrorBlock, ListSkeleton } from '../../components/StateBlocks';
@@ -164,7 +164,9 @@ function CustomerTable({ items }: { items: Customer[] }) {
 
 function CustomersList() {
   const phone = useIsPhone();
-  const [search, setSearch] = useState('');
+  // A bank lead links here with ?q=<name> to find the buyer's CRM contact.
+  const [params] = useSearchParams();
+  const [search, setSearch] = useState(() => params.get('q') ?? '');
   const [debounced] = useDebouncedValue(search.trim(), 300);
   const [city, setCity] = useState('');
   const [debouncedCity] = useDebouncedValue(city.trim(), 300);

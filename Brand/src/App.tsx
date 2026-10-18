@@ -58,6 +58,17 @@ const CreatorCampaignsPage = lazy(() => import('./features/creators/CampaignsPag
 const RetainersPage = lazy(() => import('./features/creators/RetainersPage'));
 const ApprovalsPage = lazy(() => import('./features/creators/ApprovalsPage'));
 const CreatorPaymentsPage = lazy(() => import('./features/creators/PaymentsPage'));
+// Service vendors (service-bookings-contract v1, service-banks-contract v1): hotels, travel agencies, banks.
+const ServiceListingsPage = lazy(() => import('./features/services/listings/ListingsPage'));
+const ServiceListingPage = lazy(() => import('./features/services/listings/ListingPage'));
+const ServiceBookingsPage = lazy(() => import('./features/services/bookings/BookingsPage'));
+const ServiceBookingDetailPage = lazy(() => import('./features/services/bookings/BookingDetailPage'));
+const BankProductsPage = lazy(() => import('./features/services/bank/BankProductsPage'));
+const BankBranchesPage = lazy(() => import('./features/services/bank/BranchesPage'));
+const BankBranchDetailPage = lazy(() => import('./features/services/bank/BranchDetailPage'));
+const BankLeadsPage = lazy(() => import('./features/services/bank/LeadsPage'));
+const BankLeadDetailPage = lazy(() => import('./features/services/bank/LeadDetailPage'));
+const BankAppointmentsPage = lazy(() => import('./features/services/bank/AppointmentsPage'));
 
 export function createQueryClient() {
   return new QueryClient({
@@ -163,6 +174,22 @@ export function AppRoutes() {
         <Route path="emi-plans/:agreementId" element={<EmiPlanDetailPage />} />
         {/* Seller plan notifications deep-link to /vendor/payment-plans/{agreementId} (emi-after-contract v1). */}
         <Route path="vendor/payment-plans/:agreementId" element={<PlanDeepLink />} />
+        <Route path="services/listings" element={<ServiceListingsPage />} />
+        <Route path="services/listings/new" element={<ServiceListingPage />} />
+        <Route path="services/listings/:id" element={<ServiceListingPage />} />
+        <Route path="services/bookings" element={<ServiceBookingsPage />} />
+        <Route path="services/bookings/:id" element={<ServiceBookingDetailPage />} />
+        {/* Booking notifications deep-link to /vendor/bookings/{id} (service-bookings-contract v1 §7). */}
+        <Route path="vendor/bookings/:id" element={<DeepLink to={(id) => `/services/bookings/${encodeURIComponent(id)}`} />} />
+        <Route path="bank/products" element={<BankProductsPage />} />
+        <Route path="bank/branches" element={<BankBranchesPage />} />
+        <Route path="bank/branches/:id" element={<BankBranchDetailPage />} />
+        <Route path="bank/leads" element={<BankLeadsPage />} />
+        <Route path="bank/leads/:id" element={<BankLeadDetailPage />} />
+        <Route path="bank/appointments" element={<BankAppointmentsPage />} />
+        {/* Bank notifications deep-link to /vendor/bank/{leads,appointments}/{id} (service-banks-contract v1 §7). */}
+        <Route path="vendor/bank/leads/:id" element={<DeepLink to={(id) => `/bank/leads/${encodeURIComponent(id)}`} />} />
+        <Route path="vendor/bank/appointments/:id" element={<DeepLink to={(id) => `/bank/appointments?open=${encodeURIComponent(id)}`} />} />
         <Route path="care" element={<CarePage />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="settings/security" element={<SecurityPage />} />
@@ -255,4 +282,10 @@ export default function App() {
 function PlanDeepLink() {
   const { agreementId = '' } = useParams();
   return <Navigate to={`/emi-plans/${encodeURIComponent(agreementId)}`} replace />;
+}
+
+/** A notification deep link (`/vendor/...`) opens the Seller Center page for it. */
+function DeepLink({ to }: { to: (id: string) => string }) {
+  const { id = '' } = useParams();
+  return <Navigate to={to(id)} replace />;
 }
