@@ -67,6 +67,10 @@ export const CAPABILITIES = {
   viewPayouts: ['SuperAdmin', 'PayoutsOps', 'Readonly'],
   holdPayouts: ['SuperAdmin', 'PayoutsOps'],
   forcePayouts: SA,
+  /** Manual transfer desk: unmasked transfer detail, mark paid, mark failed (Admin PayoutsController). */
+  transferPayouts: ['SuperAdmin', 'PayoutsOps'],
+  /** Rider ledger writes: record cash handed in, release or void a delivery fare (rider-payout contract v1). */
+  riderLedger: ['SuperAdmin', 'PayoutsOps'],
 
   // delivery ops
   /** Packages awaiting a courier, package lookup. */

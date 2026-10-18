@@ -25,6 +25,7 @@ import { DetailDrawer } from '@/components/DetailDrawer';
 import { DocumentGrid, DocumentTile } from '@/components/DocumentViewer';
 import { MetricTile } from '@/components/MetricTile';
 import { ErrorBlock, SectionCard } from '@/components/StateBlocks';
+import { CourierBalanceSection } from '@/features/payouts/RiderLedger';
 import { fmtMoney, fmtNumber, fmtPercent, maskEmail, maskPhone } from '@/lib/format';
 
 function docLabel(d: CourierDocument) {
@@ -390,6 +391,8 @@ function RiderCase({ courier: c, onOpenFull }: { courier: CourierProfile; onOpen
           </Table.ScrollContainer>
         )}
       </SectionCard>
+
+      {can('viewPayouts') && c.accountId && <CourierBalanceSection accountId={c.accountId} />}
     </Stack>
   );
 }
