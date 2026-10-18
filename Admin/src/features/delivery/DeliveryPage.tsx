@@ -5,6 +5,7 @@ import { IconPackage, IconRoute, IconSearch, IconShieldHalf } from '@tabler/icon
 import { useSearchParams } from 'react-router-dom';
 import {
   deliveryApi,
+  HOP_STATE,
   OFFER_STATE,
   PACKAGE_STATE,
   PLAN_STATUS,
@@ -13,8 +14,10 @@ import {
   ROUTING_TIER,
   type HopOffer,
   type PackageAwaiting,
+  type PackageHop,
   type RoutingPlan,
 } from '@/api/delivery';
+import { FareAmount } from '@/components/FareBreakdown';
 import { useAuth } from '@/auth/guards';
 import { useActionDialog } from '@/components/ActionDialog';
 import { FieldGrid, IdText, When, YesNo } from '@/components/Bits';
@@ -159,6 +162,7 @@ function PackageLookup({ subOrderId, onOpen }: { subOrderId: string; onOpen: (pa
               { label: 'Sealed', value: <YesNo value={q.data.hasSeal} /> },
             ]}
           />
+          {q.data.hops && q.data.hops.length > 0 && <PackageHops hops={q.data.hops} />}
           <Group>
             <Button size="xs" variant="light" onClick={() => onOpen(q.data!.id)}>
               Open routing for this parcel
@@ -167,6 +171,46 @@ function PackageLookup({ subOrderId, onOpen }: { subOrderId: string; onOpen: (pa
         </Stack>
       ) : null}
     </SectionCard>
+  );
+}
+
+/** The parcel's legs, each with the rider and what the rider is paid for it (click a fare for its breakdown). */
+function PackageHops({ hops }: { hops: PackageHop[] }) {
+  return (
+    <Table.ScrollContainer minWidth={560}>
+      <Table aria-label="Legs">
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>Leg</Table.Th>
+            <Table.Th>Rider</Table.Th>
+            <Table.Th>Tier</Table.Th>
+            <Table.Th>State</Table.Th>
+            <Table.Th>Rider fare</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>
+          {[...hops]
+            .sort((a, b) => a.hopIndex - b.hopIndex)
+            .map((h) => (
+              <Table.Tr key={h.id}>
+                <Table.Td>{h.hopIndex + 1}</Table.Td>
+                <Table.Td>
+                  <IdText value={h.courierProfileId} />
+                </Table.Td>
+                <Table.Td>{ROUTING_TIER[h.tier] ?? h.tier}</Table.Td>
+                <Table.Td>
+                  <Badge variant="light" color={h.state === 7 ? 'forest' : h.state >= 8 ? 'signal' : 'amber'}>
+                    {HOP_STATE[h.state] ?? h.state}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <FareAmount amount={h.courierPayoutAmount} currency={h.courierPayoutCurrency} breakdown={h.fareBreakdown} />
+                </Table.Td>
+              </Table.Tr>
+            ))}
+        </Table.Tbody>
+      </Table>
+    </Table.ScrollContainer>
   );
 }
 
@@ -249,7 +293,9 @@ function PackageDrawer({ packageId, row, onClose }: { packageId: string | null; 
                         <Table.Td>{ROUTING_TIER[c.tier] ?? c.tier}</Table.Td>
                         <Table.Td>{fmtNumber(c.score * 100, 0)}</Table.Td>
                         <Table.Td>{fmtNumber(c.rating, 1)} ★</Table.Td>
-                        <Table.Td>{fmtMoney(c.proposedPayoutAmount, c.proposedPayoutCurrency)}</Table.Td>
+                        <Table.Td>
+                          <FareAmount amount={c.proposedPayoutAmount} currency={c.proposedPayoutCurrency} breakdown={c.fareBreakdown} />
+                        </Table.Td>
                         <Table.Td>
                           <Button
                             size="compact-xs"
@@ -361,7 +407,7 @@ function StuckOffers() {
         </Badge>
       ),
     },
-    { key: 'payout', header: 'Payout', visibleFrom: 'sm', render: (o) => fmtMoney(o.proposedPayoutAmount, o.proposedPayoutCurrency) },
+    { key: 'payout', header: 'Rider fare', visibleFrom: 'sm', render: (o) => <FareAmount amount={o.proposedPayoutAmount} currency={o.proposedPayoutCurrency} breakdown={o.fareBreakdown} /> },
     { key: 'offered', header: 'Offered', render: (o) => <When value={o.offeredUtc} relative /> },
   ];
   return (

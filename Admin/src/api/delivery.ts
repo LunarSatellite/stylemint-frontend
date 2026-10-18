@@ -4,6 +4,7 @@
  * NB: the delivery module's own DeliveryTier is Pro = 1, Traveler = 2, Neighbor = 3 - the reverse of the courier module.
  */
 import { http } from './client';
+import type { RiderFareBreakdown } from './fare';
 import { toPage, type Page } from './paging';
 
 export const PACKAGE_STATE: Record<number, string> = {
@@ -70,6 +71,40 @@ export interface PackageDetail {
   dispatchedUtc: string | null;
   deliveredUtc: string | null;
   createdUtc: string;
+  /** The parcel's legs. `fareBreakdown` on each (rider-fare contract v1) is null for hops priced before it shipped. */
+  hops?: PackageHop[];
+}
+
+export const HOP_STATE: Record<number, string> = {
+  1: 'Waiting to be offered',
+  2: 'Offered',
+  3: 'Accepted',
+  4: 'Going to pick up',
+  5: 'Picked up',
+  6: 'Going to hand off',
+  7: 'Handed off',
+  8: 'Cancelled',
+  9: 'Failed',
+};
+
+/** `DeliveryHopDto` (Delivery module; tier uses ROUTING_TIER numbering). */
+export interface PackageHop {
+  id: string;
+  packageId: string;
+  hopIndex: number;
+  tier: number;
+  courierProfileId: string;
+  state: number;
+  fromGeohash: string;
+  toGeohash: string;
+  acceptedUtc: string | null;
+  pickedUpUtc: string | null;
+  handedOffUtc: string | null;
+  courierPayoutAmount: number;
+  courierPayoutCurrency: string;
+  fareBreakdown?: RiderFareBreakdown | null;
+  failureCode: number | null;
+  failureNote: string | null;
 }
 
 export interface HopOffer {
@@ -90,6 +125,7 @@ export interface HopOffer {
   respondedUtc: string | null;
   declineNote: string | null;
   distanceToPickupKm: number | null;
+  fareBreakdown?: RiderFareBreakdown | null;
 }
 
 export interface RoutingMetrics {
@@ -124,6 +160,8 @@ export interface CourierPick {
   earningsLast7Days: number;
   proposedPayoutAmount: number;
   proposedPayoutCurrency: string;
+  /** What this rider would be paid, itemised - a quote, not persisted. */
+  fareBreakdown?: RiderFareBreakdown | null;
 }
 
 export interface FulfilmentOption {
