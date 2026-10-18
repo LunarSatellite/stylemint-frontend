@@ -12,6 +12,7 @@ import { ordersApi, paymentsApi } from './orders';
 import { configApi, flagsApi } from './platform';
 import { deliveryApi } from './delivery';
 import { tryOnApi } from './tryOn';
+import { bookingsAdminApi } from './services';
 import bodies from './request-bodies.json';
 
 /**
@@ -72,6 +73,9 @@ const WRITES: [string, () => Promise<unknown>][] = [
   ['try-on grant', () => tryOnApi.grant({ accountId: ID, days: 30, note: null })],
   ['try-on revoke', () => tryOnApi.revoke(ID, 'abuse')],
   ['admin password set', () => passwordApi.set('token', 'a good password 1')],
+  ['booking admin cancel', () => bookingsAdminApi.cancel(ID, 'duplicate booking', true)],
+  ['booking commission category', () => bookingsAdminApi.setCategory(1, 12)],
+  ['booking commission vendor', () => bookingsAdminApi.setVendor(ID, 8, 'launch partner')],
 ];
 
 describe('what a write sends is what the endpoint accepts', () => {

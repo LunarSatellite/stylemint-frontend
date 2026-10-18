@@ -1,5 +1,6 @@
 import {
   IconActivity,
+  IconCalendarCheck,
   IconCamera,
   IconAdjustments,
   IconBuildingStore,
@@ -84,6 +85,7 @@ export const MENU: MenuSection[] = [
       { id: 'payouts', path: '/payouts', label: 'Payouts', icon: IconCash, capability: 'viewPayouts' },
       { id: 'try-on', path: '/try-on', label: 'Virtual try-on', icon: IconCamera, capability: 'viewTryOn' },
       { id: 'care', path: '/order-care', label: 'Order care', icon: IconHeartHandshake, capability: 'orderCare' },
+      { id: 'bookings', path: '/bookings', label: 'Service bookings', icon: IconCalendarCheck, capability: 'viewBookings' },
     ],
   },
   {

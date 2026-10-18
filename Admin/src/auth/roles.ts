@@ -51,6 +51,11 @@ export const CAPABILITIES = {
   refund: ['SuperAdmin', 'PayoutsOps'],
   orderCare: ['SuperAdmin', 'SupportAgent'],
 
+  // service bookings (hotels + travel; Bookings module AdminSubjectPolicy, service-bookings-contract v1)
+  viewBookings: ['SuperAdmin', 'PayoutsOps', 'SupportAgent', 'Readonly'],
+  /** Admin cancel, refund retry, commission settings. */
+  manageBookings: ['SuperAdmin', 'PayoutsOps'],
+
   // products
   viewProducts: ['SuperAdmin', 'ContentMod', 'SupportAgent', 'KycReviewer', 'Readonly'],
   moderateProducts: ['SuperAdmin', 'ContentMod'],

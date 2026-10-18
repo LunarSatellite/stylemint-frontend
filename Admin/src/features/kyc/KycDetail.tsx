@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { Alert, Anchor, Badge, Button, Divider, Skeleton, Stack, Text, Timeline } from '@mantine/core';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notifications } from '@mantine/notifications';
@@ -22,6 +22,7 @@ import {
   type KycReasonCode,
   type KycReviewItem,
 } from '@/api/kyc';
+import { SERVICE_CATEGORY, SERVICE_CATEGORY_BANK } from '@/api/services';
 import { useAuth } from '@/auth/guards';
 import { DetailDrawer } from '@/components/DetailDrawer';
 import { DocumentGrid, DocumentTile, type ViewerDoc } from '@/components/DocumentViewer';
@@ -29,6 +30,55 @@ import { FieldGrid, IdText, When } from '@/components/Bits';
 import { ErrorBlock, SectionCard } from '@/components/StateBlocks';
 import { fmtDate, fmtPercent, humanize, mask } from '@/lib/format';
 import { KycDecisionForm } from './KycDecisionForm';
+
+/**
+ * What a vendor offers and its operating licence (service-banks-contract v1 §1). A product seller (0, or an older
+ * server without the field) shows "Product seller" and no licence rows. A bank without an NRB licence number is
+ * flagged - the server refuses to submit one, so it only happens on data from before the rule.
+ */
+export function serviceVendorFields(detail: KycApplicationDetail): { label: string; value: ReactNode; wide?: boolean }[] {
+  const category = detail.serviceCategory ?? 0;
+  const offers = {
+    label: 'Offers',
+    value: category === 0 ? SERVICE_CATEGORY[0] : (
+      <Badge variant="light" color={category === SERVICE_CATEGORY_BANK ? 'blue' : 'grape'} data-testid="service-category">
+        {SERVICE_CATEGORY[category] ?? detail.serviceCategoryName ?? `Category ${category}`}
+      </Badge>
+    ),
+  };
+  if (category === 0) return [offers];
+  const isBank = category === SERVICE_CATEGORY_BANK;
+  const expired = !!detail.licenceExpiresOn && detail.licenceExpiresOn < new Date().toISOString().slice(0, 10);
+  return [
+    offers,
+    {
+      label: isBank ? 'NRB licence number' : 'Tourism licence number',
+      value: detail.licenceNumber ? (
+        <span className="sm-mono" data-testid="licence-number">
+          {detail.licenceNumber}
+        </span>
+      ) : isBank ? (
+        <Text span c="signal" size="sm">
+          Missing
+        </Text>
+      ) : null,
+    },
+    { label: 'Licence issued by', value: detail.licenceIssuer ?? (isBank ? 'Nepal Rastra Bank' : null) },
+    {
+      label: 'Licence valid until',
+      value: detail.licenceExpiresOn ? (
+        <>
+          {fmtDate(detail.licenceExpiresOn)}{' '}
+          {expired && (
+            <Badge size="xs" color="signal" variant="light">
+              Expired
+            </Badge>
+          )}
+        </>
+      ) : null,
+    },
+  ];
+}
 
 const SLOT_LABEL: Record<DocSlot, string> = { front: 'Front', back: 'Back', bio: 'Photo page', selfie: 'Selfie', other: 'Other' };
 
@@ -168,12 +218,17 @@ function KycCase({ item, detail }: { item: KycReviewItem; detail: KycApplication
             </Anchor>
           ) : null,
         },
+        ...(detail.applicantKind === APPLICANT_KIND.Vendor ? serviceVendorFields(detail) : []),
         ...(detail.applicantKind === APPLICANT_KIND.Vendor
           ? [
               {
                 label: 'Commission range',
                 value:
-                  !detail.commissionMinPercent && !detail.commissionMaxPercent ? (
+                  detail.serviceCategory === SERVICE_CATEGORY_BANK ? (
+                    <Text span c="dimmed" size="sm">
+                      Not applicable - banks pay no commission
+                    </Text>
+                  ) : !detail.commissionMinPercent && !detail.commissionMaxPercent ? (
                     <Text span c="signal" size="sm">
                       Not collected
                     </Text>

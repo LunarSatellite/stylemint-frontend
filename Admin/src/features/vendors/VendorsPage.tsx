@@ -28,7 +28,8 @@ import { PageHeader } from '@/components/PageHeader';
 import { ErrorBlock, NotAvailableBlock, SectionCard } from '@/components/StateBlocks';
 import { useCursorPages } from '@/hooks/useCursorPages';
 import { useListState } from '@/hooks/useListState';
-import { fmtMoney, fmtNumber, fmtPercent, humanize, mask } from '@/lib/format';
+import { SERVICE_CATEGORY, SERVICE_CATEGORY_BANK } from '@/api/services';
+import { fmtDate, fmtMoney, fmtNumber, fmtPercent, humanize, mask } from '@/lib/format';
 
 const nameOf = (v: Pick<VendorRow, 'businessName'>) => v.businessName || 'Unnamed shop';
 
@@ -430,7 +431,12 @@ function ApplicationsDirectory() {
   const columns: Column<VendorApplication>[] = [
     { key: 'name', header: 'Shop', render: (a) => <TwoLine primary={a.brandName} secondary={a.legalBusinessName} /> },
     { key: 'state', header: 'Application', render: (a) => <StatusBadge value={APPLICATION_STATE[a.state]} /> },
-    { key: 'type', header: 'Business', visibleFrom: 'lg', render: (a) => BUSINESS_TYPE[a.businessType] ?? '—' },
+    {
+      key: 'type',
+      header: 'Business',
+      visibleFrom: 'lg',
+      render: (a) => <TwoLine primary={BUSINESS_TYPE[a.businessType] ?? '—'} secondary={a.serviceCategory ? SERVICE_CATEGORY[a.serviceCategory] : undefined} />,
+    },
     { key: 'city', header: 'Location', visibleFrom: 'md', render: (a) => [a.city, a.countryCode].filter(Boolean).join(', ') || '—' },
     { key: 'decided', header: 'Decided', visibleFrom: 'sm', render: (a) => <When value={a.decisionAtUtc ?? a.submittedAtUtc} /> },
   ];
@@ -518,6 +524,17 @@ function ApplicationDrawer({ application: a, opened, onClose }: { application: V
             <FieldGrid
               fields={[
                 { label: 'Business type', value: BUSINESS_TYPE[a.businessType] },
+                { label: 'Offers', value: SERVICE_CATEGORY[a.serviceCategory ?? 0] },
+                ...(a.serviceCategory
+                  ? [
+                      {
+                        label: a.serviceCategory === SERVICE_CATEGORY_BANK ? 'NRB licence number' : 'Licence number',
+                        value: a.licenceNumber ? <span className="sm-mono">{a.licenceNumber}</span> : null,
+                      },
+                      { label: 'Licence issued by', value: a.licenceIssuer },
+                      { label: 'Licence valid until', value: a.licenceExpiresOn ? fmtDate(a.licenceExpiresOn) : null },
+                    ]
+                  : []),
                 { label: 'Registration number', value: a.businessRegistrationNumber ? <span className="sm-mono">{mask(a.businessRegistrationNumber)}</span> : null },
                 { label: 'Tax ID', value: a.taxId ? <span className="sm-mono">{mask(a.taxId)}</span> : null },
                 { label: 'Address', value: [a.addressLine1, a.addressLine2, a.city, a.stateProvince, a.postalCode, a.countryCode].filter(Boolean).join(', '), wide: true },

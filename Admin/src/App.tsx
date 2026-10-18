@@ -34,6 +34,7 @@ const TicketsPage = page(() => import('@/features/support/TicketsPage'), 'Ticket
 const PayoutsPage = page(() => import('@/features/payouts/PayoutsPage'), 'PayoutsPage');
 const TryOnPage = page(() => import('@/features/tryon/TryOnPage'), 'TryOnPage');
 const OrderCarePage = page(() => import('@/features/orders/OrderCarePage'), 'OrderCarePage');
+const BookingsPage = page(() => import('@/features/bookings/BookingsPage'), 'BookingsPage');
 const DeliveryPage = page(() => import('@/features/delivery/DeliveryPage'), 'DeliveryPage');
 const ModerationPage = page(() => import('@/features/moderation/ModerationPage'), 'ModerationPage');
 const ContentPage = page(() => import('@/features/content/ContentPage'), 'ContentPage');
@@ -98,6 +99,7 @@ export const routes: RouteObject[] = [
       { path: 'payouts', element: guarded('viewPayouts', <PayoutsPage />) },
       { path: 'try-on', element: guarded('viewTryOn', <TryOnPage />) },
       { path: 'order-care', element: guarded('orderCare', <OrderCarePage />) },
+      { path: 'bookings', element: guarded('viewBookings', <BookingsPage />) },
       { path: 'delivery', element: guarded('viewDelivery', <DeliveryPage />) },
       { path: 'moderation', element: guarded('viewModeration', <ModerationPage />) },
       { path: 'content', element: guarded('viewContent', <ContentPage />) },

@@ -116,6 +116,16 @@ export interface KycApplicationDetail {
   stateProvince: string | null;
   postalCode: string | null;
   previousAttempts: KycPreviousAttempt[] | null;
+  /**
+   * Vendor items only (service-banks-contract v1 §1; null/absent for creators, customers, couriers and on older
+   * servers): 0 product seller, 1 Hotel, 2 TravelAgency, 3 Bank. Bank = NRB licence number.
+   */
+  serviceCategory?: number | null;
+  serviceCategoryName?: string | null;
+  licenceNumber?: string | null;
+  licenceIssuer?: string | null;
+  /** "2028-07-15" */
+  licenceExpiresOn?: string | null;
   /** Courier items only (feat/admin-api-gaps). */
   vehicle?: string | null;
   homeArea?: string | null;

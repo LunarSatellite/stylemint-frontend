@@ -79,6 +79,11 @@ export interface VendorApplication {
     accountType: number;
     lastFourAccountDigits: string;
   } | null;
+  /** service-banks-contract v1 §1 (absent on older servers = product seller). 0 None · 1 Hotel · 2 TravelAgency · 3 Bank. */
+  serviceCategory?: number;
+  licenceNumber?: string | null;
+  licenceIssuer?: string | null;
+  licenceExpiresOn?: string | null;
 }
 
 /** Vendor directory (wt/admin-api-contract.md §1). New endpoints: enum names as strings, money as { amount, currency }. */
