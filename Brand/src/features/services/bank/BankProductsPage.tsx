@@ -294,7 +294,7 @@ export function validateProduct(w: BankProductWrite): Record<string, string> {
 }
 
 function numOrNull(v: string | number): number | null {
-  return v === '' || v === null ? null : Number(v);
+  return v === '' ? null : Number(v);
 }
 
 function ProductEditor({ product, onClose }: { product: BankProduct | null; onClose: () => void }) {

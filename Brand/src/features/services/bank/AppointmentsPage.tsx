@@ -63,10 +63,10 @@ function AppointmentsBody() {
   else
     body = (
       <Stack gap="lg">
-        {[...byDay.entries()].map(([date, list]) => (
+        {[...byDay.entries()].map(([date, onDay]) => (
           <Stack key={date} gap="xs">
             <Title order={4}>{formatDay(date)}</Title>
-            {list.map((a) => (
+            {onDay.map((a) => (
               <Card key={a.id} withBorder data-testid={`appointment-${a.id}`} style={a.id === focus ? { borderColor: 'var(--sm-accent)' } : undefined}>
                 <Group justify="space-between" align="flex-start" wrap="wrap" gap="sm">
                   <div style={{ minWidth: 0 }}>

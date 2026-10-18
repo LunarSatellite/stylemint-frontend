@@ -28,4 +28,8 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
 - Never `dangerouslySetInnerHTML` (lint enforces). Audit payloads render as text.
 - Identity numbers are masked (`mask`, `maskPhone`, `maskEmail`); document files load only on request.
 - Colours come from the theme / `--sm-*` variables in `index.css`, not hex in components.
+- Service vendors (`api/services.ts`, `D:\Stylemint\wt\service-*-contract.md` v1): KYC review shows the vendor's
+  `serviceCategory` + licence (bank = NRB licence number); `/bookings` = service bookings overview (search, cancel,
+  refund retry) and `?tab=commission` (category + per-vendor percent, 0–50). Capabilities `viewBookings` /
+  `manageBookings`.
 - Build, lint and test only on the VPS in Docker (see README) - never on the Windows workstation.

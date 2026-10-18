@@ -178,6 +178,30 @@ Contract: `D:\Stylemint\wt\emi-after-contract.md` (v1). Sidebar "EMI requests" +
 - Seller plan notifications deep-link to `/vendor/payment-plans/{id}`, which redirects to the plan page
   (`sellerNotificationRoute` maps `plan.vendor.*`). Seller Center has no in-app notification list yet.
 
+## Service vendors (`src/features/services/`)
+
+Plan: `D:\Stylemint\wt\service-vendors-plan.md`. Contracts: `service-bookings-contract.md` (hotels + travel, v1) and
+`service-banks-contract.md` (category, banks, v1). Everything 404s with no errorCode until deployed → `ServiceSettingUp`.
+
+- **Category** (`category.ts`): `serviceCategory` on the vendor profile (0 product seller, 1 Hotel, 2 TravelAgency,
+  3 Bank; absent/404 = 0). `useServiceCategory()` shares the Store-settings profile query. Product sellers see no change.
+  `nav.ts` adds a sidebar group after Home and swaps the Orders/Products phone tabs for service vendors.
+  Every service page is wrapped in `RequireServiceCategory` (wrong category → explanation, nothing fetched).
+- **Hotel / travel** (`listings/`, `bookings/`): `/services/listings` (property or packages by category),
+  `/services/listings/:id?tab=details|rooms|rates|departures` — details + payment modes / deposit % / cancellation rule
+  (`ListingForm`), room types, month rate + availability calendar (`RateCalendar`: pick nights → price override, base
+  rate, stop-sell), departures. `/services/bookings` (Upcoming = Confirmed from today, In progress, Completed, Cancelled,
+  No-show, Awaiting payment, All; `q` server search) and `/services/bookings/:id` (check-in, complete, no-show,
+  "Mark balance received", cancel with reason = full refund, earnings: amount / commission / net, estimate until
+  settled). Photos upload to `v1/vendor/services/media`. Deep link `/vendor/bookings/:id`.
+- **Booking PII**: guest / traveller names and special requests only. `sanitizeBooking` = `redactPii` + drop
+  `buyerAccountId` on every booking response.
+- **Banks** (`bank/`): `/bank/leads` (+`/:id`), `/bank/appointments`, `/bank/products`, `/bank/branches` (+`/:id` slots,
+  holidays, 14-day availability). A lead's `contact` is the ONE exception to "no buyer phone/email": shown only on
+  the lead page, with the consent text the buyer accepted; null after a withdrawal. Never pass lead responses
+  through `redactPii`, never show contact details in lists. Status workflow: forward only, Closed needs a reason.
+  "Open in CRM" → `/crm/customers?q=<name>`. Deep links `/vendor/bank/leads/:id`, `/vendor/bank/appointments/:id`.
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),
