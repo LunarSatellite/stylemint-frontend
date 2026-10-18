@@ -6,7 +6,7 @@ import { adminsApi, meApi } from './admins';
 import { contentApi, popularSearchesApi } from './catalog';
 import { couriersApi } from './couriers';
 import { kycApi } from './kyc';
-import { payoutsApi } from './money';
+import { courierPayoutsApi, payoutsApi } from './money';
 import { moderationApi } from './moderation';
 import { ordersApi, paymentsApi } from './orders';
 import { configApi, flagsApi } from './platform';
@@ -48,6 +48,11 @@ const WRITES: [string, () => Promise<unknown>][] = [
   ['payout release', () => payoutsApi.release(ID, 'checked')],
   ['payout force paid', () => payoutsApi.forcePaid(ID, 'paid by bank')],
   ['payout force failed', () => payoutsApi.forceFailed(ID, 'bounced')],
+  ['payout mark paid', () => payoutsApi.markPaid(ID, 'NIMB-1', 'sent from ops')],
+  ['payout mark failed', () => payoutsApi.markFailed(ID, 'account closed')],
+  ['courier cash remittance', () => courierPayoutsApi.recordCashRemittance(ID, { amount: 2500, reference: 'slip 4411', note: null })],
+  ['courier fare release', () => courierPayoutsApi.releaseEarning(ID, 'checked')],
+  ['courier fare void', () => courierPayoutsApi.voidEarning(ID, 'not delivered')],
   ['order archive', () => ordersApi.archive({ orderIds: [ID], reason: 'test order', dryRun: true })],
   ['flag upsert', () => flagsApi.upsert('k', true, 'd')],
   ['flag override', () => flagsApi.setOverride('k', { roleKind: 'Vendor', accountId: null, enabled: true })],

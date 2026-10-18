@@ -1,5 +1,5 @@
 import { Badge, Group, Popover, Stack, Table, Text, UnstyledButton } from '@mantine/core';
-import { asFare, asFareLines, fareDistance, tierAdjustment, tierLabel, type RiderFareBreakdown } from '@/api/fare';
+import { asFare, asFareLines, fareDistance, linesSummary, tierAdjustment, tierLabel, type FareLines, type RiderFareBreakdown } from '@/api/fare';
 import { fmtMoney } from '@/lib/format';
 
 function signed(amount: number, currency: string) {
@@ -59,23 +59,31 @@ export function FareBreakdownTable({ fare }: { fare: RiderFareBreakdown }) {
   );
 }
 
-/** The ledger's `{ lines }` form of a fare. */
-export function FareLinesTable({ lines, currency }: { lines: { code: string; label: string; amount: number }[]; currency: string }) {
+/** The ledger's `{ lines }` form of a fare, with how the distance was priced when it says. */
+export function FareLinesTable({ fare, currency }: { fare: FareLines; currency: string }) {
+  const summary = linesSummary(fare);
   return (
-    <Table withRowBorders={false} verticalSpacing={2} horizontalSpacing={0} fz="sm" data-testid="fare-lines">
-      <Table.Tbody>
-        {lines.map((l, i) => (
-          <Table.Tr key={`${l.code}-${i}`}>
-            <Table.Td c="dimmed" pr="md">
-              {l.label || l.code}
-            </Table.Td>
-            <Table.Td ta="right" style={{ whiteSpace: 'nowrap' }}>
-              {fmtMoney(l.amount, currency)}
-            </Table.Td>
-          </Table.Tr>
-        ))}
-      </Table.Tbody>
-    </Table>
+    <Stack gap={4} data-testid="fare-lines">
+      {summary && (
+        <Text size="xs" c="dimmed">
+          {summary}
+        </Text>
+      )}
+      <Table withRowBorders={false} verticalSpacing={2} horizontalSpacing={0} fz="sm">
+        <Table.Tbody>
+          {fare.lines.map((l, i) => (
+            <Table.Tr key={`${l.code}-${i}`}>
+              <Table.Td c="dimmed" pr="md">
+                {l.label || l.code}
+              </Table.Td>
+              <Table.Td ta="right" style={{ whiteSpace: 'nowrap' }}>
+                {fmtMoney(l.amount, currency)}
+              </Table.Td>
+            </Table.Tr>
+          ))}
+        </Table.Tbody>
+      </Table>
+    </Stack>
   );
 }
 
@@ -87,7 +95,8 @@ export function FareAmount({ amount, currency, breakdown }: { amount: number | n
   const fare = asFare(breakdown);
   const lines = fare ? null : asFareLines(breakdown);
   const text = fmtMoney(amount ?? fare?.total, currency || fare?.currency);
-  if (!fare && !(lines && lines.lines.length > 1)) return <Text span size="sm">{text}</Text>;
+  if (!fare && !(lines && (lines.lines.length > 1 || lines.method))) return <Text span size="sm">{text}</Text>;
+  const estimated = fare ? fare.method !== 'road' : lines?.method === 'estimated';
   return (
     <Popover position="bottom-end" withArrow shadow="md" width={320}>
       <Popover.Target>
@@ -100,7 +109,7 @@ export function FareAmount({ amount, currency, breakdown }: { amount: number | n
             <Text span size="sm">
               {text}
             </Text>
-            {fare && fare.method !== 'road' && (
+            {estimated && (
               <Badge size="xs" variant="light" color="amber">
                 est.
               </Badge>
@@ -109,7 +118,7 @@ export function FareAmount({ amount, currency, breakdown }: { amount: number | n
         </UnstyledButton>
       </Popover.Target>
       <Popover.Dropdown onClick={(e) => e.stopPropagation()}>
-        {fare ? <FareBreakdownTable fare={fare} /> : <FareLinesTable lines={lines!.lines} currency={currency} />}
+        {fare ? <FareBreakdownTable fare={fare} /> : <FareLinesTable fare={lines!} currency={currency} />}
       </Popover.Dropdown>
     </Popover>
   );

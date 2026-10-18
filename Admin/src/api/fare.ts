@@ -39,11 +39,16 @@ export interface RiderFareBreakdown {
 }
 
 /**
- * The payout ledger's own shape on an earning row (rider-payout contract v1): free-coded lines that sum to the amount.
- * Before the road fare ships there is a single `{ code: "fare" }` line.
+ * The payout ledger's own shape on an earning row (rider-payout contract v2): free-coded lines that sum to the amount.
+ * A fare from before the road-distance fare is a single `{ code: "fare" }` line; a road fare is `trip`, one line per
+ * extra (`heavy_parcel`, `cash_collection`, `night`) and `rounding`, with method / distanceKm / tier beside them.
  */
 export interface FareLines {
   ref?: string | null;
+  /** v2: "road" | "estimated" | null (null = a fare from before the road-distance fare). */
+  method?: string | null;
+  distanceKm?: number | null;
+  tier?: string | null;
   lines: { code: string; label: string; amount: number }[];
 }
 
@@ -88,10 +93,26 @@ export function asFareLines(value: unknown): FareLines | null {
   if (!value || typeof value !== 'object') return null;
   const lines = (value as { lines?: unknown }).lines;
   if (!Array.isArray(lines)) return null;
+  const v = value as FareLines;
   return {
-    ref: (value as FareLines).ref ?? null,
+    ref: v.ref ?? null,
+    method: typeof v.method === 'string' ? v.method : null,
+    distanceKm: typeof v.distanceKm === 'number' ? v.distanceKm : null,
+    tier: typeof v.tier === 'string' ? v.tier : null,
     lines: lines.filter((l): l is FareLines['lines'][number] => !!l && typeof l === 'object' && typeof (l as { amount?: unknown }).amount === 'number'),
   };
+}
+
+/** "7.4 km by road · Traveller" for the ledger's line form; empty when it predates the road fare. */
+export function linesSummary(f: FareLines): string {
+  const parts: string[] = [];
+  if (f.method) {
+    const road = f.method === 'road';
+    parts.push(f.distanceKm != null ? `${f.distanceKm.toFixed(1)} km${road ? ' by road' : ', estimated'}` : road ? 'Road distance' : 'Distance estimated');
+  }
+  const tier = tierLabel(f.tier);
+  if (tier) parts.push(tier);
+  return parts.join(' · ');
 }
 
 /** "7.4 km by road" / "7.4 km, estimated". */
