@@ -26,6 +26,9 @@ export interface VendorProfile {
   returnPolicySummary: string | null;
   supportUrl: string | null;
   updatedUtc: string;
+  /** service-banks-contract v1: 0 product seller, 1 Hotel, 2 TravelAgency, 3 Bank. Absent on older servers (= 0). */
+  serviceCategory?: number;
+  serviceLicenceNumber?: string | null;
 }
 
 export type ProfilePatch = Partial<{
