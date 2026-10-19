@@ -7,7 +7,8 @@ import { EmptyBlock } from '../../../components/StateBlocks';
 import { formatMoney } from '../../../lib/format';
 import { ServiceCategory, useServiceCategory } from '../category';
 import { RequireServiceCategory, ServiceQuery } from '../components';
-import { LISTINGS_KEY, listingsApi, ListingKind, listingStatusLabel, type Listing } from './api';
+import { ReelVisibilityBadge, useReelItems, type ReelVisibility } from '../reelItems';
+import { LISTINGS_KEY, listingsApi, ListingKind, ListingStatus, listingStatusLabel, type Listing } from './api';
 
 export const kindForCategory = (category: number) => (category === ServiceCategory.TravelAgency ? ListingKind.Package : ListingKind.Stay);
 export const listingPath = (id: string) => `/services/listings/${encodeURIComponent(id)}`;
@@ -21,7 +22,7 @@ export function ListingStatusBadge({ status }: { status: number }) {
   );
 }
 
-function ListingCard({ l }: { l: Listing }) {
+function ListingCard({ l, reel }: { l: Listing; reel: ReelVisibility }) {
   const stay = l.kind === ListingKind.Stay;
   const activeRooms = (l.roomTypes ?? []).filter((r) => r.status === 1).length;
   const from = stay ? l.fromPricePerNight : l.fromPrice;
@@ -49,6 +50,11 @@ function ListingCard({ l }: { l: Listing }) {
             {l.bookingsUpcoming ?? 0} upcoming bookings
             {from ? ` · from ${formatMoney({ amount: from, currency: l.currency || 'NPR' })}${stay ? ' / night' : ''}` : ''}
           </Text>
+          {reel !== 'unknown' && (
+            <Group gap={4} mt={2}>
+              <ReelVisibilityBadge visibility={reel} />
+            </Group>
+          )}
         </Stack>
       </Group>
     </Card>
@@ -70,6 +76,7 @@ function ListingsBody() {
   const stay = kind === ListingKind.Stay;
   const query = useQuery({ queryKey: [...LISTINGS_KEY, 'list', kind], queryFn: () => listingsApi.list(kind) });
   const visible = (query.data ?? []).filter((l) => l.status !== 4);
+  const reel = useReelItems();
   const archived = (query.data ?? []).length - visible.length;
   return (
     <>
@@ -104,7 +111,7 @@ function ListingsBody() {
           <Stack gap="sm">
             <SimpleGrid cols={{ base: 1, md: 2 }} spacing="sm">
               {visible.map((l) => (
-                <ListingCard key={l.listingId} l={l} />
+                <ListingCard key={l.listingId} l={l} reel={reel.visibility(l.listingId, l.status === ListingStatus.Published)} />
               ))}
             </SimpleGrid>
             {archived > 0 && (

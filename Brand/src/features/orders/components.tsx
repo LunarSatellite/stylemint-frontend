@@ -1,5 +1,5 @@
 import { Avatar, Badge, Card, Checkbox, Group, Stack, Text } from '@mantine/core';
-import { IconBuildingStore, IconPackage } from '@tabler/icons-react';
+import { IconBuildingStore, IconCalendarEvent, IconPackage } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { formatMoney, fromNow } from '../../lib/format';
 import { stateColor, stateLabel, type SubOrderListItem } from './api';
@@ -14,6 +14,12 @@ export function OrderStateBadge({ state, size = 'sm' }: { state: number; size?: 
 }
 
 export function ChannelBadge({ channel }: { channel: string }) {
+  if (channel === 'Service')
+    return (
+      <Badge color="indigo" variant="outline" size="sm" leftSection={<IconCalendarEvent size={12} />} data-testid="service-badge">
+        Booking
+      </Badge>
+    );
   if (channel !== 'StorePickup') return null;
   return (
     <Badge color="grape" variant="outline" size="sm" leftSection={<IconBuildingStore size={12} />}>
@@ -42,7 +48,7 @@ export function OrderCard({
           <Checkbox checked={!!selected} onChange={onToggle} aria-label={`Select order ${order.orderNumber}`} onClick={(e) => e.stopPropagation()} />
         ) : (
           <Avatar radius="md" color="forest" variant="light">
-            <IconPackage size={20} />
+            {order.fulfillmentChannel === 'Service' ? <IconCalendarEvent size={20} /> : <IconPackage size={20} />}
           </Avatar>
         )}
         <Stack gap={2} style={{ minWidth: 0 }}>
@@ -50,7 +56,7 @@ export function OrderCard({
             #{order.orderNumber}
           </Text>
           <Text size="sm" truncate>
-            {order.receiverName}
+            {order.receiverName || (order.fulfillmentChannel === 'Service' ? 'Booking' : '—')}
           </Text>
           <Text size="xs" c="dimmed">
             {order.itemCount} {order.itemCount === 1 ? 'item' : 'items'} · {fromNow(order.placedUtc)}

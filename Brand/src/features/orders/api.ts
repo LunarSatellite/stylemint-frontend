@@ -96,7 +96,44 @@ export const rejectionReasons = [
   { value: '6', label: 'Other reason' },
 ];
 
-export type FulfillmentChannel = 'Delivery' | 'StorePickup';
+/** `Service` = hotel stay / travel package lines (service-cart-contract.md v1): no shipping, no fulfilment actions. */
+export type FulfillmentChannel = 'Delivery' | 'StorePickup' | 'Service';
+
+/** `lineKind` on order lines; absent on an older backend = Product. */
+export const OrderLineKind = { Product: 1, Service: 2 } as const;
+
+/** The booking behind a service order line (service-cart-contract.md v1 §4.1). Names only — no buyer contact. */
+export interface OrderBooking {
+  bookingId: string;
+  bookingNumber: string;
+  /** Bookings `BookingState` (1 PendingPayment … 7 Expired). */
+  state: number;
+  /** 1 Stay · 2 Package. */
+  kind: number;
+  listingId: string;
+  listingTitle: string;
+  itemName: string | null;
+  roomTypeId: string | null;
+  departureId: string | null;
+  startDate: string;
+  endDate: string | null;
+  nights: number | null;
+  rooms: number | null;
+  adults: number;
+  children: number;
+  guestName: string | null;
+  travellers: { fullName: string; type: number; age: number | null }[];
+  specialRequests: string | null;
+  currency: string;
+  totalPrice: number;
+  paidNowAmount: number;
+  payAtVenueAmount: number;
+  paymentMode: number | null;
+  depositPercent: number | null;
+  freeUntilDate: string | null;
+  cancellationPolicySummary: string | null;
+  canCancel?: boolean;
+}
 
 /** Shared `PaymentMethod` ints. */
 export const PaymentMethod = {
@@ -190,6 +227,10 @@ export interface SubOrderLine {
   thumbnailUrlSnapshot: string | null;
   lineSubtotalAmount: number;
   lineSubtotalCurrency: string;
+  /** 1 Product · 2 Service; absent on an older backend (= Product). */
+  lineKind?: number;
+  /** Service lines only: the booking (for a service line `lineSubtotalAmount` is the part paid now). */
+  booking?: OrderBooking | null;
 }
 
 export type RiderRatingTag =
@@ -472,6 +513,8 @@ export type OrderAction =
 
 export function availableActions(state: number, channel: FulfillmentChannel): OrderAction[] {
   const S = SubOrderState;
+  // Bookings are run from the booking page; the backend refuses fulfilment actions on a Service sub-order (409).
+  if (channel === 'Service') return [];
   if (state === S.Paid || state === S.AwaitingFulfillment) return ['accept', 'reject'];
   if (state === S.Accepted) return ['pack'];
   if (channel === 'StorePickup') {

@@ -85,7 +85,10 @@ export default function OrdersPage() {
   const toggleAll = () => setSelected(allSelected ? new Set() : new Set(items.map((o) => o.id)));
 
   const selectedOrders = items.filter((o) => selected.has(o.id));
-  const acceptable = selectedOrders.filter((o) => o.state === SubOrderState.Paid || o.state === SubOrderState.AwaitingFulfillment);
+  // Bookings (Service sub-orders) have no accept / packing slip: the backend refuses fulfilment actions on them.
+  const acceptable = selectedOrders.filter(
+    (o) => o.fulfillmentChannel !== 'Service' && (o.state === SubOrderState.Paid || o.state === SubOrderState.AwaitingFulfillment),
+  );
 
   const bulkAccept = useMutation({
     mutationFn: (ids: string[]) => ordersApi.bulkAccept(ids),
@@ -118,7 +121,7 @@ export default function OrdersPage() {
   };
 
   const printSlips = () => {
-    const ids = selectedOrders.map((o) => o.id);
+    const ids = selectedOrders.filter((o) => o.fulfillmentChannel !== 'Service').map((o) => o.id);
     if (ids.length) navigate(`/orders/packing-slips?ids=${ids.join(',')}`);
   };
 
@@ -273,7 +276,7 @@ export default function OrdersPage() {
                       </Anchor>
                     </Table.Td>
                     <Table.Td>
-                      <Text size="sm">{o.receiverName}</Text>
+                      <Text size="sm">{o.receiverName || (o.fulfillmentChannel === 'Service' ? 'Booking' : '—')}</Text>
                     </Table.Td>
                     <Table.Td>
                       <Text size="sm" c="dimmed">

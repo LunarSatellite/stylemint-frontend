@@ -32,6 +32,7 @@ import { toastError, toastSuccess } from '../../lib/notify';
 import { useIsPhone } from '../../lib/useIsPhone';
 import { ApplicationState, BriefState, creatorsApi, type Brief, type CampaignApplication } from './api';
 import { confirmAction, CreatorLine, CREATORS_KEY, DetailSheet, ReasonModal } from './components';
+import { FeaturedItemsField } from '../services/ReelItemPicker';
 import { applicationStateLook, briefStateLook, campaignGoalLabel, commissionRange, lookOf, toFraction, workspaceStateLook } from './labels';
 
 const goalOptions = Object.entries(campaignGoalLabel).map(([value, label]) => ({ value, label }));
@@ -86,11 +87,12 @@ function EditBrief({ b }: { b: Brief }) {
   const [max, setMax] = useState(Math.round((b.commissionRange?.maxPercent ?? 0.15) * 1000) / 10);
   const [doSay, setDoSay] = useState((b.body?.doSayPoints ?? []).join('\n'));
   const [dontSay, setDontSay] = useState((b.body?.dontSayPoints ?? []).join('\n'));
+  const [featured, setFeatured] = useState<string[]>(b.body?.productVariantIds ?? []);
   const save = useMutation({
     mutationFn: () =>
       creatorsApi.updateBrief(b.id, {
         commissionRange: { minPercent: toFraction(min), maxPercent: toFraction(max) },
-        body: { ...b.body, doSayPoints: lines(doSay), dontSayPoints: lines(dontSay) },
+        body: { ...b.body, doSayPoints: lines(doSay), dontSayPoints: lines(dontSay), productVariantIds: featured },
       }),
     onSuccess: () => {
       toastSuccess('Brief saved');
@@ -106,6 +108,7 @@ function EditBrief({ b }: { b: Brief }) {
       </SimpleGrid>
       <Textarea label="Creators should say (one per line)" autosize minRows={2} value={doSay} onChange={(e) => setDoSay(e.currentTarget.value)} />
       <Textarea label="Creators must not say (one per line)" autosize minRows={2} value={dontSay} onChange={(e) => setDontSay(e.currentTarget.value)} />
+      <FeaturedItemsField value={featured} onChange={setFeatured} />
       <Button variant="light" loading={save.isPending} onClick={() => save.mutate()} style={{ alignSelf: 'flex-start' }} disabled={max < min}>
         Save draft
       </Button>

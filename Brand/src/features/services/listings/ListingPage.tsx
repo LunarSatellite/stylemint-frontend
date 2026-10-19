@@ -14,6 +14,7 @@ import { cleanListing, emptyListing, ListingForm, listingToWrite } from './Listi
 import { kindForCategory, listingPath, ListingStatusBadge } from './ListingsPage';
 import { RateCalendar } from './RateCalendar';
 import { RoomTypesPanel } from './RoomTypesPanel';
+import { REEL_ITEMS_KEY, ReelVisibilityBadge, useReelItems } from '../reelItems';
 
 export default function ListingPage() {
   return (
@@ -64,6 +65,7 @@ function ExistingListing({ id }: { id: string }) {
   const key = [...LISTINGS_KEY, 'detail', id];
   const q = useQuery({ queryKey: key, queryFn: () => listingsApi.get(id) });
   const [saveError, setSaveError] = useState<string | null>(null);
+  const reel = useReelItems();
   const l = q.data;
 
   const save = useMutation({
@@ -81,7 +83,8 @@ function ExistingListing({ id }: { id: string }) {
     onSuccess: (updated, action) => {
       qc.setQueryData(key, updated);
       void qc.invalidateQueries({ queryKey: [...LISTINGS_KEY, 'list'] });
-      toastSuccess(action === 'publish' ? 'Published — guests can find and book it.' : action === 'pause' ? 'Paused — hidden from search. Existing bookings are unaffected.' : 'Archived.');
+      void qc.invalidateQueries({ queryKey: REEL_ITEMS_KEY });
+      toastSuccess(action === 'publish' ? 'Published — you and creators can now tag it in reels.' : action === 'pause' ? 'Paused — hidden from reels. Existing bookings are unaffected.' : 'Archived.');
     },
     onError: (e) => toastError(e instanceof ApiError && e.code && PUBLISH_ERRORS[e.code] ? new Error(PUBLISH_ERRORS[e.code]) : e),
   });
@@ -105,8 +108,8 @@ function ExistingListing({ id }: { id: string }) {
   const archived = l.status === ListingStatus.Archived;
   const ask = async (action: 'publish' | 'pause' | 'archive') => {
     const text = {
-      publish: { title: `Publish ${l.title}?`, body: 'Guests can find it in the StyleMint app and book it.', confirmLabel: 'Publish' },
-      pause: { title: `Pause ${l.title}?`, body: 'It disappears from search. Bookings already made stay as they are.', confirmLabel: 'Pause' },
+      publish: { title: `Publish ${l.title}?`, body: 'It becomes an item you and creators can tag in reels; buyers book it from the item page.', confirmLabel: 'Publish' },
+      pause: { title: `Pause ${l.title}?`, body: 'Its reel tags stop opening the item until you publish again. Bookings already made stay as they are.', confirmLabel: 'Pause' },
       archive: { title: `Archive ${l.title}?`, body: 'Archived listings cannot be edited or published again.', confirmLabel: 'Archive', danger: true },
     }[action];
     if (await confirmAction(text)) transition.mutate(action);
@@ -117,7 +120,12 @@ function ExistingListing({ id }: { id: string }) {
       <PageHeader
         title={l.title}
         back={{ to: '/services/listings', label: stay ? 'Properties' : 'Packages' }}
-        meta={<ListingStatusBadge status={l.status} />}
+        meta={
+          <Group gap="xs">
+            <ListingStatusBadge status={l.status} />
+            <ReelVisibilityBadge visibility={reel.visibility(l.listingId, l.status === ListingStatus.Published)} />
+          </Group>
+        }
         actions={
           !archived && (
             <Group gap="xs">

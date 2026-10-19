@@ -30,6 +30,7 @@ import { confirmAction, toastError, toastSuccess } from '../../../lib/notify';
 import { useIsPhone } from '../../../lib/useIsPhone';
 import { ServiceCategory } from '../category';
 import { PhotoUrlsField, RequireServiceCategory, ServiceQuery } from '../components';
+import { REEL_ITEMS_KEY, ReelVisibilityBadge, useReelItems } from '../reelItems';
 import {
   BANK_KEY,
   bankApi,
@@ -74,8 +75,9 @@ function useProductActions() {
   const done = (msg: string) => {
     toastSuccess(msg);
     void qc.invalidateQueries({ queryKey: BANK_KEY });
+    void qc.invalidateQueries({ queryKey: REEL_ITEMS_KEY });
   };
-  const publish = useMutation({ mutationFn: (id: string) => bankApi.publishProduct(id), onSuccess: () => done('Published — buyers can see it now.'), onError: (e) => toastError(e) });
+  const publish = useMutation({ mutationFn: (id: string) => bankApi.publishProduct(id), onSuccess: () => done('Published — you and creators can now tag it in reels.'), onError: (e) => toastError(e) });
   const unpublish = useMutation({ mutationFn: (id: string) => bankApi.unpublishProduct(id), onSuccess: () => done('Moved back to draft.'), onError: (e) => toastError(e) });
   const archive = useMutation({ mutationFn: (id: string) => bankApi.archiveProduct(id), onSuccess: () => done('Archived.'), onError: (e) => toastError(e) });
   return {
@@ -131,12 +133,14 @@ function ProductsBody() {
   const [editing, setEditing] = useState<BankProduct | 'new' | null>(null);
   const query = useQuery({ queryKey: PRODUCTS_KEY, queryFn: () => bankApi.products() });
   const shown = (query.data ?? []).filter((p) => filter === 'all' || p.status === FILTER_STATUS[filter]);
+  const reel = useReelItems();
+  const reelOf = (p: BankProduct) => (p.status === BankProductStatus.Archived ? 'unknown' : reel.visibility(p.id, p.status === BankProductStatus.Published));
 
   return (
     <>
       <PageHeader
         title="Bank products"
-        description="Accounts, deposits, loans and cards buyers can read about in the StyleMint app. Buyers enquire about a published product; enquiries arrive in your leads inbox."
+        description="Accounts, deposits, loans and cards. A published product is an item you and creators can tag in reels; buyers open it to enquire or book an appointment, and enquiries arrive in your leads inbox."
         actions={
           <Button leftSection={<IconPlus size={16} />} onClick={() => setEditing('new')}>
             New product
@@ -184,6 +188,7 @@ function ProductsBody() {
                         <Text size="sm" c="dimmed">
                           {bankProductTypeLabel[p.type] ?? 'Other'} · {rateText(p)}
                         </Text>
+                        <ReelVisibilityBadge visibility={reelOf(p)} />
                       </div>
                       <Group gap={4} wrap="nowrap">
                         <StatusBadge status={p.status} />
@@ -222,7 +227,10 @@ function ProductsBody() {
                           <Table.Td>{rateText(p)}</Table.Td>
                           <Table.Td>{amountText(p) ?? '—'}</Table.Td>
                           <Table.Td>
-                            <StatusBadge status={p.status} />
+                            <Stack gap={4} align="flex-start">
+                              <StatusBadge status={p.status} />
+                              <ReelVisibilityBadge visibility={reelOf(p)} />
+                            </Stack>
                           </Table.Td>
                           <Table.Td>
                             <ProductMenu p={p} onEdit={() => setEditing(p)} />

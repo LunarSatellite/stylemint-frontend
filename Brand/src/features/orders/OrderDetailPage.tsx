@@ -13,6 +13,7 @@ import { DeliveryPartnerDrawer } from './DeliveryPartner';
 import { OrderActionBar } from './OrderActions';
 import { PaymentCard } from './PaymentCard';
 import { RiderRatingCard } from './RiderRatingCard';
+import { BookingLines, guestNames, isServiceLine, isServiceOrder } from './serviceLines';
 
 const cancelReasons: Record<number, string> = {
   1: 'Ordered by mistake',
@@ -24,6 +25,10 @@ const cancelReasons: Record<number, string> = {
 };
 
 function nextStepHint(o: SubOrderDetail): string | null {
+  if (isServiceOrder(o))
+    return o.state === SubOrderState.Cancelled || o.state === SubOrderState.Delivered
+      ? null
+      : 'A booking — nothing to pack or ship. Check guests in, mark the stay or trip complete and record any balance paid at the venue on the booking page.';
   const S = SubOrderState;
   switch (o.state) {
     case S.Paid:
@@ -48,20 +53,25 @@ function nextStepHint(o: SubOrderDetail): string | null {
 }
 
 function TimelineCard({ o }: { o: SubOrderDetail }) {
-  const steps: { label: string; at: string | null }[] = [
-    { label: 'Placed', at: o.placedUtc },
-    { label: 'Accepted', at: o.acceptedUtc },
-    { label: 'Packed', at: o.packedUtc },
-    ...(o.fulfillmentChannel === 'StorePickup'
-      ? [{ label: 'Collected', at: o.collectedUtc }]
-      : [
-          { label: 'Handed over', at: o.handedOverUtc },
-          { label: 'Shipped', at: o.shippedUtc },
-          { label: 'In transit', at: o.inTransitUtc },
-          { label: 'Out for delivery', at: o.outForDeliveryUtc },
-          { label: 'Delivered', at: o.deliveredUtc },
-        ]),
-  ];
+  const steps: { label: string; at: string | null }[] = isServiceOrder(o)
+    ? [
+        { label: 'Placed', at: o.placedUtc },
+        { label: 'Completed', at: o.deliveredUtc },
+      ]
+    : [
+        { label: 'Placed', at: o.placedUtc },
+        { label: 'Accepted', at: o.acceptedUtc },
+        { label: 'Packed', at: o.packedUtc },
+        ...(o.fulfillmentChannel === 'StorePickup'
+          ? [{ label: 'Collected', at: o.collectedUtc }]
+          : [
+              { label: 'Handed over', at: o.handedOverUtc },
+              { label: 'Shipped', at: o.shippedUtc },
+              { label: 'In transit', at: o.inTransitUtc },
+              { label: 'Out for delivery', at: o.outForDeliveryUtc },
+              { label: 'Delivered', at: o.deliveredUtc },
+            ]),
+      ];
   if (o.cancelledUtc) steps.push({ label: 'Cancelled', at: o.cancelledUtc });
   const lastDone = steps.reduce((acc, s, i) => (s.at ? i : acc), 0);
   return (
@@ -118,6 +128,10 @@ export default function OrderDetailPage() {
   const a = o.shipTo;
   const hint = nextStepHint(o);
   const fee = { amount: o.shippingFeeAmount, currency: o.shippingFeeCurrency };
+  // A service (booking) sub-order: no shipping, no fulfilment actions, no rider, no address or phone.
+  const service = isServiceOrder(o);
+  const productLines = o.lines.filter((l) => !isServiceLine(l));
+  const guests = [...new Set(o.lines.flatMap((l) => (l.booking ? guestNames(l.booking) : [])))];
 
   return (
     <>
@@ -143,7 +157,7 @@ export default function OrderDetailPage() {
               <Text size="sm">{hint}</Text>
             </Group>
           )}
-          <OrderActionBar order={o} onFindRider={() => setPartnerOpen(true)} />
+          {!service && <OrderActionBar order={o} onFindRider={() => setPartnerOpen(true)} />}
         </Stack>
       </Card>
 
@@ -157,56 +171,75 @@ export default function OrderDetailPage() {
       <Grid gutter="md">
         <Grid.Col span={{ base: 12, md: 7 }}>
           <Stack gap="md">
-            <SectionCard title="Items" description={`${o.itemCount} ${o.itemCount === 1 ? 'item' : 'items'}`}>
-              <Stack gap="sm">
-                {o.lines.map((l) => (
-                  <Group key={l.id} wrap="nowrap" align="flex-start" justify="space-between">
-                    <Group wrap="nowrap" align="flex-start" gap="sm" style={{ minWidth: 0 }}>
-                      <Avatar src={l.thumbnailUrlSnapshot ?? undefined} radius="md" size={56} color="forest">
-                        <IconPhoto size={20} />
-                      </Avatar>
-                      <div style={{ minWidth: 0 }}>
-                        <Text size="sm" fw={600}>
-                          {l.productTitleSnapshot}
-                        </Text>
-                        {(l.optionLabel || l.variantLabelSnapshot) && (
-                          <Text size="xs" c="dimmed">
-                            {l.optionLabel ?? l.variantLabelSnapshot}
+            {o.lines.some(isServiceLine) && (
+              <SectionCard title="Bookings" description="Guest names only. Manage check-in, completion and the venue balance on the booking page.">
+                <BookingLines lines={o.lines} />
+              </SectionCard>
+            )}
+            {service ? (
+              <SectionCard title="Payment">
+                <Group justify="space-between">
+                  <Text fw={700}>Paid now (online)</Text>
+                  <Text fw={700} data-testid="service-paid-now">
+                    {formatMoney({ amount: o.subtotalAmount, currency: o.subtotalCurrency })}
+                  </Text>
+                </Group>
+                <Text size="xs" c="dimmed" mt={4}>
+                  Any rest is paid to you at the venue — record it with “Mark balance received” on the booking.
+                </Text>
+              </SectionCard>
+            ) : (
+              <SectionCard title="Items" description={`${o.itemCount} ${o.itemCount === 1 ? 'item' : 'items'}`}>
+                <Stack gap="sm">
+                  {productLines.map((l) => (
+                    <Group key={l.id} wrap="nowrap" align="flex-start" justify="space-between">
+                      <Group wrap="nowrap" align="flex-start" gap="sm" style={{ minWidth: 0 }}>
+                        <Avatar src={l.thumbnailUrlSnapshot ?? undefined} radius="md" size={56} color="forest">
+                          <IconPhoto size={20} />
+                        </Avatar>
+                        <div style={{ minWidth: 0 }}>
+                          <Text size="sm" fw={600}>
+                            {l.productTitleSnapshot}
                           </Text>
-                        )}
-                        <Text size="xs" c="dimmed">
-                          {l.quantity} × {formatMoney({ amount: l.unitPriceAmount, currency: l.unitPriceCurrency })}
-                        </Text>
-                      </div>
+                          {(l.optionLabel || l.variantLabelSnapshot) && (
+                            <Text size="xs" c="dimmed">
+                              {l.optionLabel ?? l.variantLabelSnapshot}
+                            </Text>
+                          )}
+                          <Text size="xs" c="dimmed">
+                            {l.quantity} × {formatMoney({ amount: l.unitPriceAmount, currency: l.unitPriceCurrency })}
+                          </Text>
+                        </div>
+                      </Group>
+                      <Text size="sm" fw={600} style={{ flexShrink: 0 }}>
+                        {formatMoney({ amount: l.lineSubtotalAmount, currency: l.lineSubtotalCurrency })}
+                      </Text>
                     </Group>
-                    <Text size="sm" fw={600} style={{ flexShrink: 0 }}>
-                      {formatMoney({ amount: l.lineSubtotalAmount, currency: l.lineSubtotalCurrency })}
+                  ))}
+                  <Divider />
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">
+                      Items
                     </Text>
+                    <Text size="sm">{formatMoney({ amount: o.lineSubtotalAmount, currency: o.lineSubtotalCurrency })}</Text>
                   </Group>
-                ))}
-                <Divider />
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Items
-                  </Text>
-                  <Text size="sm">{formatMoney({ amount: o.lineSubtotalAmount, currency: o.lineSubtotalCurrency })}</Text>
-                </Group>
-                <Group justify="space-between">
-                  <Text size="sm" c="dimmed">
-                    Shipping
-                  </Text>
-                  <Text size="sm">{formatMoney(fee)}</Text>
-                </Group>
-                <Group justify="space-between">
-                  <Text fw={700}>{o.paymentPlan ? 'Total (paid by EMI)' : 'Total'}</Text>
-                  <Text fw={700}>{formatMoney({ amount: o.subtotalAmount, currency: o.subtotalCurrency })}</Text>
-                </Group>
-              </Stack>
-            </SectionCard>
+                  <Group justify="space-between">
+                    <Text size="sm" c="dimmed">
+                      Shipping
+                    </Text>
+                    <Text size="sm">{formatMoney(fee)}</Text>
+                  </Group>
+                  <Group justify="space-between">
+                    <Text fw={700}>{o.paymentPlan ? 'Total (paid by EMI)' : 'Total'}</Text>
+                    <Text fw={700}>{formatMoney({ amount: o.subtotalAmount, currency: o.subtotalCurrency })}</Text>
+                  </Group>
+                </Stack>
+              </SectionCard>
+            )}
 
-            <PaymentCard order={o} />
+            {!service && <PaymentCard order={o} />}
 
-            {o.delivery && (
+            {!service && o.delivery && (
               <SectionCard title="Parcel">
                 <Stack gap={6}>
                   <Group justify="space-between">
@@ -246,56 +279,77 @@ export default function OrderDetailPage() {
                 </Stack>
               </SectionCard>
             )}
-            {!o.delivery && (o.carrier || o.trackingNumber) && (
+            {!service && !o.delivery && (o.carrier || o.trackingNumber) && (
               <SectionCard title="Tracking">
                 <Text size="sm">
                   {o.carrier} <b>{o.trackingNumber}</b>
                 </Text>
               </SectionCard>
             )}
-            <RiderRatingCard order={o} />
+            {!service && <RiderRatingCard order={o} />}
           </Stack>
         </Grid.Col>
 
         <Grid.Col span={{ base: 12, md: 5 }}>
           <Stack gap="md">
-            <SectionCard title={o.fulfillmentChannel === 'StorePickup' ? 'Customer' : 'Deliver to'}>
-              <Stack gap={4}>
-                <Text fw={650}>{a.receiverName}</Text>
-                {a.receiverPhone && (
-                  <Anchor href={`tel:${a.receiverPhone}`} size="sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <IconPhone size={14} /> {a.receiverPhone}
-                  </Anchor>
-                )}
-                {o.fulfillmentChannel === 'Delivery' && (
-                  <>
-                    <Text size="sm">{[a.addressLine1, a.landmark].filter(Boolean).join(', ')}</Text>
-                    <Text size="sm">{[a.city, a.state, a.zipCode].filter(Boolean).join(', ')}</Text>
-                    {a.locationNote && (
-                      <Text size="sm" c="dimmed">
-                        “{a.locationNote}”
+            {service ? (
+              <SectionCard title="Guests">
+                <Stack gap={4} data-testid="service-guests">
+                  {guests.length > 0 ? (
+                    guests.map((n) => (
+                      <Text key={n} size="sm" fw={600}>
+                        {n}
                       </Text>
-                    )}
-                    {(a.mapsLink || (a.latitude !== null && a.longitude !== null)) && (
-                      <Anchor
-                        href={a.mapsLink ?? `https://maps.google.com/?q=${a.latitude},${a.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        size="sm"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                      >
-                        <IconMapPin size={14} /> Open in Maps <IconExternalLink size={12} />
-                      </Anchor>
-                    )}
-                  </>
-                )}
-                {o.fulfillmentChannel === 'StorePickup' && (
-                  <Text size="sm" c="dimmed">
-                    The customer collects this order at your store.
+                    ))
+                  ) : (
+                    <Text size="sm" c="dimmed">
+                      Guest names appear here once the buyer adds them at checkout.
+                    </Text>
+                  )}
+                  <Text size="xs" c="dimmed" mt={4}>
+                    StyleMint does not share the buyer’s phone number or email for bookings.
                   </Text>
-                )}
-              </Stack>
-            </SectionCard>
+                </Stack>
+              </SectionCard>
+            ) : (
+              <SectionCard title={o.fulfillmentChannel === 'StorePickup' ? 'Customer' : 'Deliver to'}>
+                <Stack gap={4}>
+                  <Text fw={650}>{a.receiverName}</Text>
+                  {a.receiverPhone && (
+                    <Anchor href={`tel:${a.receiverPhone}`} size="sm" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                      <IconPhone size={14} /> {a.receiverPhone}
+                    </Anchor>
+                  )}
+                  {o.fulfillmentChannel === 'Delivery' && (
+                    <>
+                      <Text size="sm">{[a.addressLine1, a.landmark].filter(Boolean).join(', ')}</Text>
+                      <Text size="sm">{[a.city, a.state, a.zipCode].filter(Boolean).join(', ')}</Text>
+                      {a.locationNote && (
+                        <Text size="sm" c="dimmed">
+                          “{a.locationNote}”
+                        </Text>
+                      )}
+                      {(a.mapsLink || (a.latitude !== null && a.longitude !== null)) && (
+                        <Anchor
+                          href={a.mapsLink ?? `https://maps.google.com/?q=${a.latitude},${a.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          size="sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        >
+                          <IconMapPin size={14} /> Open in Maps <IconExternalLink size={12} />
+                        </Anchor>
+                      )}
+                    </>
+                  )}
+                  {o.fulfillmentChannel === 'StorePickup' && (
+                    <Text size="sm" c="dimmed">
+                      The customer collects this order at your store.
+                    </Text>
+                  )}
+                </Stack>
+              </SectionCard>
+            )}
             <TimelineCard o={o} />
           </Stack>
         </Grid.Col>
