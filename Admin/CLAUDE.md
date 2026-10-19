@@ -32,4 +32,7 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
   `serviceCategory` + licence (bank = NRB licence number); `/bookings` = service bookings overview (search, cancel,
   refund retry) and `?tab=commission` (category + per-vendor percent, 0–50). Capabilities `viewBookings` /
   `manageBookings`.
+- Service items in orders (`service-cart-contract.md` v1): sub-orders with `fulfillmentChannel: "Service"` (`channelLabel`)
+  show booking lines (`isServiceLine`; missing `lineKind` = product) in the order drawer — dates, guest names, booking
+  number, paid now vs pay at venue, "Open booking" → `/bookings?open=<id>` for `viewBookings`; no shipping rows.
 - Build, lint and test only on the VPS in Docker (see README) - never on the Windows workstation.

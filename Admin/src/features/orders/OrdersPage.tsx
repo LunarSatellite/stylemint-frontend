@@ -4,7 +4,7 @@ import { DatePickerInput } from '@mantine/dates';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { IconArchive, IconSearch } from '@tabler/icons-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ordersApi, SUB_ORDER_STATE, SUB_ORDER_TONE, type AdminSubOrderRow } from '@/api/orders';
+import { channelLabel, ordersApi, SUB_ORDER_STATE, SUB_ORDER_TONE, type AdminSubOrderRow } from '@/api/orders';
 import { useAuth } from '@/auth/guards';
 import { IdText, TwoLine, When } from '@/components/Bits';
 import { DataTable, type Column } from '@/components/DataTable';
@@ -114,7 +114,7 @@ export function OrdersPage() {
     },
     { key: 'items', header: 'Items', align: 'right', visibleFrom: 'lg', render: (r) => r.itemCount },
     { key: 'total', header: 'Total', align: 'right', render: (r) => <Text size="sm" style={{ whiteSpace: 'nowrap' }}>{fmtMoney(r.subtotalAmount, r.subtotalCurrency)}</Text> },
-    { key: 'channel', header: 'Fulfilment', visibleFrom: 'lg', render: (r) => (r.fulfillmentChannel === 'StorePickup' ? 'Store pickup' : 'Delivery') },
+    { key: 'channel', header: 'Fulfilment', visibleFrom: 'lg', render: (r) => channelLabel(r.fulfillmentChannel) },
     { key: 'placed', header: 'Placed', visibleFrom: 'sm', render: (r) => <When value={r.placedUtc} relative /> },
   ];
 

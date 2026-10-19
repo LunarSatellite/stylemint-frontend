@@ -100,7 +100,44 @@ export interface SubOrderLine {
   originChannel: string | null;
   lineSubtotalAmount: number;
   lineSubtotalCurrency: string;
+  /** 1 Product · 2 Service (service-cart-contract.md v1); absent on an older backend = Product. */
+  lineKind?: number;
+  /** Service lines: the booking. For a service line `lineSubtotalAmount` is the part paid now. */
+  booking?: OrderLineBooking | null;
 }
+
+/** The booking behind a service order line (hotel stay / travel package). */
+export interface OrderLineBooking {
+  bookingId: string;
+  bookingNumber: string;
+  state: number;
+  /** 1 Stay · 2 Package. */
+  kind: number;
+  listingId: string;
+  listingTitle: string;
+  itemName: string | null;
+  startDate: string;
+  endDate: string | null;
+  nights: number | null;
+  rooms: number | null;
+  adults: number;
+  children: number;
+  guestName: string | null;
+  travellers: { fullName: string; type: number; age: number | null }[];
+  specialRequests: string | null;
+  currency: string;
+  totalPrice: number;
+  paidNowAmount: number;
+  payAtVenueAmount: number;
+  paymentMode: number | null;
+  depositPercent: number | null;
+}
+
+/** `fulfillmentChannel` is a string: Delivery · StorePickup · Service (hotel / travel booking lines, no delivery). */
+export const channelLabel = (channel: string | null | undefined) =>
+  channel === 'StorePickup' ? 'Store pickup' : channel === 'Service' ? 'Booking (no delivery)' : 'Delivery';
+
+export const isServiceLine =(l: Pick<SubOrderLine, 'lineKind' | 'booking'>) => l.lineKind === 2 || (l.lineKind == null && !!l.booking);
 
 export interface SubOrder {
   id: string;
@@ -157,6 +194,10 @@ export interface OrderDetail {
   archivedById: string | null;
   subOrders: SubOrder[];
   delivery: OrderDelivery | null;
+  /** Service lines (service-cart-contract.md v1 §4.1): paid to the hotel / agency, never through StyleMint. */
+  payAtVenueTotalAmount?: number | null;
+  payAtVenueTotalCurrency?: string | null;
+  hasServiceLines?: boolean;
 }
 
 export interface OrderListFilter {

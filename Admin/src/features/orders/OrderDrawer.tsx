@@ -1,9 +1,12 @@
 import { Alert, Anchor, Avatar, Badge, Button, Card, Divider, Group, Skeleton, Stack, Table, Text } from '@mantine/core';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { IconArchive, IconArchiveOff, IconMapPin, IconReceiptRefund, IconTruck } from '@tabler/icons-react';
+import { IconArchive, IconArchiveOff, IconCalendarEvent, IconMapPin, IconReceiptRefund, IconTruck } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import { ApiError } from '@/api/errors';
 import {
   CANCEL_REASON,
+  channelLabel,
+  isServiceLine,
   ORDER_STATE,
   ORDER_TONE,
   ordersApi,
@@ -13,14 +16,17 @@ import {
   SUB_ORDER_STATE,
   SUB_ORDER_TONE,
   type OrderDetail,
+  type OrderLineBooking,
   type SubOrder,
+  type SubOrderLine,
 } from '@/api/orders';
 import { useAuth } from '@/auth/guards';
 import { useActionDialog } from '@/components/ActionDialog';
 import { FieldGrid, IdText, StatusBadge, When } from '@/components/Bits';
 import { DetailDrawer } from '@/components/DetailDrawer';
 import { EmptyBlock, ErrorBlock, SectionCard } from '@/components/StateBlocks';
-import { fmtMoney, maskPhone } from '@/lib/format';
+import { BOOKING_STATE, BOOKING_STATE_TONE, PAYMENT_MODE } from '@/api/services';
+import { fmtDate, fmtMoney, maskPhone } from '@/lib/format';
 
 export function OrderDrawer({ orderNumber, onClose }: { orderNumber: string | null | undefined; onClose: () => void }) {
   const opened = !!orderNumber;
@@ -203,7 +209,10 @@ function OrderCase({ order: o }: { order: OrderDetail }) {
           {o.discountTotalAmount > 0 && <Row label="Discount" value={`− ${fmtMoney(o.discountTotalAmount, o.discountTotalCurrency)}`} />}
           <Row label={o.taxIncluded ? 'VAT (included)' : 'Tax'} value={fmtMoney(o.taxTotalAmount, o.taxTotalCurrency)} />
           <Divider />
-          <Row label="Total" value={fmtMoney(o.grandTotalAmount, o.grandTotalCurrency)} strong />
+          <Row label={o.hasServiceLines ? 'Total charged' : 'Total'} value={fmtMoney(o.grandTotalAmount, o.grandTotalCurrency)} strong />
+          {(o.payAtVenueTotalAmount ?? 0) > 0 && (
+            <Row label="Pay at venue (not through StyleMint)" value={fmtMoney(o.payAtVenueTotalAmount, o.payAtVenueTotalCurrency ?? o.grandTotalCurrency)} />
+          )}
         </Stack>
       </SectionCard>
 
@@ -227,7 +236,79 @@ function Row({ label, value, strong }: { label: string; value: string; strong?: 
   );
 }
 
+/** Guest / traveller names, deduplicated (the booking never carries the buyer's contact details). */
+export function bookingGuestNames(b: Pick<OrderLineBooking, 'guestName' | 'travellers'>): string[] {
+  const names = [b.guestName, ...(b.travellers ?? []).map((t) => t.fullName)].map((n) => (n ?? '').trim()).filter(Boolean);
+  return [...new Set(names)];
+}
+
+function BookingLineCard({ line }: { line: SubOrderLine }) {
+  const { can } = useAuth();
+  const b = line.booking;
+  if (!b)
+    return (
+      <Card withBorder padding="sm" radius="md" data-testid={`booking-line-${line.id}`}>
+        <Text size="sm" fw={600}>
+          {line.productTitleSnapshot}
+        </Text>
+        <Text size="xs" c="dimmed">
+          {line.optionLabel ?? 'Booking details not available yet.'}
+        </Text>
+      </Card>
+    );
+  const stay = b.kind === 1;
+  const party = [stay && b.rooms ? `${b.rooms} room${b.rooms === 1 ? '' : 's'}` : null, `${b.adults} adult${b.adults === 1 ? '' : 's'}`, b.children ? `${b.children} child${b.children === 1 ? '' : 'ren'}` : null]
+    .filter(Boolean)
+    .join(' · ');
+  const names = bookingGuestNames(b);
+  return (
+    <Card withBorder padding="sm" radius="md" bg="var(--sm-inset)" data-testid={`booking-line-${line.id}`}>
+      <Stack gap="xs">
+        <Group gap="sm" wrap="wrap" justify="space-between">
+          <Group gap="sm" wrap="nowrap">
+            <IconCalendarEvent size={18} aria-hidden />
+            <div>
+              <Text size="sm" fw={600}>
+                {b.listingTitle || line.productTitleSnapshot}
+              </Text>
+              {b.itemName && (
+                <Text size="xs" c="dimmed">
+                  {b.itemName}
+                </Text>
+              )}
+            </div>
+          </Group>
+          <Badge variant="light" color={BOOKING_STATE_TONE[b.state] ?? 'gray'}>
+            {BOOKING_STATE[b.state] ?? `State ${b.state}`}
+          </Badge>
+        </Group>
+        <FieldGrid
+          cols={3}
+          fields={[
+            { label: 'Booking', value: <span className="sm-mono">{b.bookingNumber}</span> },
+            { label: stay ? 'Dates' : 'Departs', value: stay ? `${fmtDate(b.startDate)} → ${fmtDate(b.endDate)}${b.nights != null ? ` (${b.nights} night${b.nights === 1 ? '' : 's'})` : ''}` : fmtDate(b.startDate) },
+            { label: stay ? 'Guests' : 'Travellers', value: party },
+            { label: 'Names', wide: true, value: names.length ? names.join(', ') : null },
+            { label: 'Payment', value: b.paymentMode != null ? PAYMENT_MODE[b.paymentMode] ?? null : null },
+            { label: 'Booking total', value: fmtMoney(b.totalPrice, b.currency) },
+            { label: 'Paid now', value: <span data-testid="admin-paid-now">{fmtMoney(b.paidNowAmount, b.currency)}</span> },
+            { label: 'Pay at venue', value: <span data-testid="admin-pay-at-venue">{fmtMoney(b.payAtVenueAmount, b.currency)}</span> },
+          ]}
+        />
+        {can('viewBookings') && (
+          <Anchor component={Link} to={`/bookings?open=${encodeURIComponent(b.bookingId)}`} size="sm">
+            Open booking
+          </Anchor>
+        )}
+      </Stack>
+    </Card>
+  );
+}
+
 function SubOrderCard({ sub: s }: { sub: SubOrder }) {
+  const serviceLines = s.lines.filter(isServiceLine);
+  const productLines = s.lines.filter((l) => !isServiceLine(l));
+  const isService = s.fulfillmentChannel === 'Service' || (s.lines.length > 0 && productLines.length === 0);
   const milestones: [string, string | null][] = [
     ['Accepted', s.acceptedUtc],
     ['Packed', s.packedUtc],
@@ -242,7 +323,7 @@ function SubOrderCard({ sub: s }: { sub: SubOrder }) {
     <SectionCard
       title={
         <Group gap="sm">
-          <span>Vendor part</span>
+          <span>{isService ? 'Vendor part · bookings' : 'Vendor part'}</span>
           <Badge variant="light" color={SUB_ORDER_TONE[s.state]}>
             {SUB_ORDER_STATE[s.state]}
           </Badge>
@@ -251,54 +332,67 @@ function SubOrderCard({ sub: s }: { sub: SubOrder }) {
       description={<IdText value={s.vendorAccountId} />}
     >
       <Stack gap="md">
-        <Table.ScrollContainer minWidth={520}>
-          <Table aria-label="Order lines" verticalSpacing="xs">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Product</Table.Th>
-                <Table.Th style={{ textAlign: 'right' }}>Qty</Table.Th>
-                <Table.Th style={{ textAlign: 'right' }}>Price</Table.Th>
-                <Table.Th style={{ textAlign: 'right' }}>Line total</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-              {s.lines.map((l) => (
-                <Table.Tr key={l.id}>
-                  <Table.Td>
-                    <Group gap="sm" wrap="nowrap">
-                      <Avatar src={l.thumbnailUrlSnapshot} radius="sm" size={36} alt="">
-                        {l.productTitleSnapshot.slice(0, 1)}
-                      </Avatar>
-                      <div>
-                        <Text size="sm" fw={600} lineClamp={1}>
-                          {l.productTitleSnapshot}
-                        </Text>
-                        {(l.optionLabel || l.variantLabelSnapshot) && (
-                          <Text size="xs" c="dimmed">
-                            {l.optionLabel || l.variantLabelSnapshot}
-                          </Text>
-                        )}
-                      </div>
-                    </Group>
-                  </Table.Td>
-                  <Table.Td style={{ textAlign: 'right' }}>{l.quantity}</Table.Td>
-                  <Table.Td style={{ textAlign: 'right' }}>{fmtMoney(l.unitPriceAmount, l.unitPriceCurrency)}</Table.Td>
-                  <Table.Td style={{ textAlign: 'right' }}>{fmtMoney(l.lineSubtotalAmount, l.lineSubtotalCurrency)}</Table.Td>
+        {serviceLines.map((l) => (
+          <BookingLineCard key={l.id} line={l} />
+        ))}
+        {productLines.length > 0 && (
+          <Table.ScrollContainer minWidth={520}>
+            <Table aria-label="Order lines" verticalSpacing="xs">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Product</Table.Th>
+                  <Table.Th style={{ textAlign: 'right' }}>Qty</Table.Th>
+                  <Table.Th style={{ textAlign: 'right' }}>Price</Table.Th>
+                  <Table.Th style={{ textAlign: 'right' }}>Line total</Table.Th>
                 </Table.Tr>
-              ))}
-            </Table.Tbody>
-          </Table>
-        </Table.ScrollContainer>
+              </Table.Thead>
+              <Table.Tbody>
+                {productLines.map((l) => (
+                  <Table.Tr key={l.id}>
+                    <Table.Td>
+                      <Group gap="sm" wrap="nowrap">
+                        <Avatar src={l.thumbnailUrlSnapshot} radius="sm" size={36} alt="">
+                          {l.productTitleSnapshot.slice(0, 1)}
+                        </Avatar>
+                        <div>
+                          <Text size="sm" fw={600} lineClamp={1}>
+                            {l.productTitleSnapshot}
+                          </Text>
+                          {(l.optionLabel || l.variantLabelSnapshot) && (
+                            <Text size="xs" c="dimmed">
+                              {l.optionLabel || l.variantLabelSnapshot}
+                            </Text>
+                          )}
+                        </div>
+                      </Group>
+                    </Table.Td>
+                    <Table.Td style={{ textAlign: 'right' }}>{l.quantity}</Table.Td>
+                    <Table.Td style={{ textAlign: 'right' }}>{fmtMoney(l.unitPriceAmount, l.unitPriceCurrency)}</Table.Td>
+                    <Table.Td style={{ textAlign: 'right' }}>{fmtMoney(l.lineSubtotalAmount, l.lineSubtotalCurrency)}</Table.Td>
+                  </Table.Tr>
+                ))}
+              </Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        )}
         <FieldGrid
           cols={3}
-          fields={[
-            { label: 'Fulfilment', value: s.fulfillmentChannel === 'StorePickup' ? 'Store pickup' : 'Delivery' },
-            { label: 'Shipping fee', value: fmtMoney(s.shippingFeeAmount, s.shippingFeeCurrency) },
-            { label: 'Vendor total', value: fmtMoney(s.subtotalAmount, s.subtotalCurrency) },
-            { label: 'Carrier', value: s.carrier },
-            { label: 'Tracking', value: s.trackingNumber ? <span className="sm-mono">{s.trackingNumber}</span> : null },
-            { label: 'Progress', value: reached.length ? reached.map(([n]) => n).join(' → ') : 'Not started' },
-          ]}
+          fields={
+            isService
+              ? [
+                  { label: 'Fulfilment', value: channelLabel(s.fulfillmentChannel) },
+                  { label: 'Paid now (vendor part)', value: fmtMoney(s.subtotalAmount, s.subtotalCurrency) },
+                  { label: 'Progress', value: s.deliveredUtc ? 'All bookings finished' : s.cancelledUtc ? 'Cancelled' : 'Bookings open' },
+                ]
+              : [
+                  { label: 'Fulfilment', value: channelLabel(s.fulfillmentChannel) },
+                  { label: 'Shipping fee', value: fmtMoney(s.shippingFeeAmount, s.shippingFeeCurrency) },
+                  { label: 'Vendor total', value: fmtMoney(s.subtotalAmount, s.subtotalCurrency) },
+                  { label: 'Carrier', value: s.carrier },
+                  { label: 'Tracking', value: s.trackingNumber ? <span className="sm-mono">{s.trackingNumber}</span> : null },
+                  { label: 'Progress', value: reached.length ? reached.map(([n]) => n).join(' → ') : 'Not started' },
+                ]
+          }
         />
         {s.cancelledUtc && (
           <Text size="sm" c="signal">

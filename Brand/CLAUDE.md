@@ -201,6 +201,12 @@ Plan: `D:\Stylemint\wt\service-vendors-plan.md`. Contracts: `service-bookings-co
   the lead page, with the consent text the buyer accepted; null after a withdrawal. Never pass lead responses
   through `redactPii`, never show contact details in lists. Status workflow: forward only, Closed needs a reason.
   "Open in CRM" → `/crm/customers?q=<name>`. Deep links `/vendor/bank/leads/:id`, `/vendor/bank/appointments/:id`.
+- **Service items in reels / cart** (v2, `service-items-contract.md` + `service-cart-contract.md` v1): every published
+  listing / bank product is a Catalog item whose product id = listing id. `reelItems.tsx`: `GET v1/tag-picker/items`
+  (`scope=mine`) → "Visible in reels as an item" badge on listings and bank products (no badge while it 404s);
+  `ReelItemPicker.tsx` `FeaturedItemsField` = brief "products and services to feature" (default variant ids).
+  Orders: `fulfillmentChannel: "Service"` sub-orders render `orders/serviceLines.tsx` booking lines (dates, guest names,
+  booking number, paid now vs pay at venue, link to `/services/bookings/:id`) and no actions, address, phone or rider.
 
 ## Rules
 
