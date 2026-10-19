@@ -8,7 +8,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { ErrorBlock, ListSkeleton } from '../../components/StateBlocks';
 import { confirmAction, toastError, toastSuccess } from '../../lib/notify';
 import { useIsPhone } from '../../lib/useIsPhone';
-import { ProductState, productsApi, productStateColor, productStateLabel, type Product } from './api';
+import { isServiceItem, ProductState, productPath, productsApi, productStateColor, productStateLabel, type Product } from './api';
 import { EmiCard } from './EmiCard';
 import { toPricingRequest, toShippingRequest, type BasicsForm, type PricingForm, type ShippingForm } from './schemas';
 import { BasicsStep } from './steps/BasicsStep';
@@ -29,6 +29,7 @@ function friendly(e: unknown): string {
     if (e.status === 403 && e.message.toLowerCase().includes('gated'))
       return 'This category needs StyleMint’s approval before you can sell in it. Choose another category or contact support.';
     if (e.code === 'state.concurrency_conflict') return 'This product changed in the meantime. Reload the page and try again.';
+    if (e.code === 'product.service_managed') return 'This is a hotel, travel or bank listing. Edit it under Services instead.';
   }
   return messageOf(e);
 }
@@ -52,6 +53,11 @@ export default function ProductEditorPage() {
   const isDraft = !p || p.state === ProductState.Draft;
   const reached = p ? p.wizardStepReached : 0;
   const readiness = useTryOnReadiness(p?.id);
+
+  // A hotel / travel / bank service item is edited as a listing under Services, never in this wizard.
+  useEffect(() => {
+    if (p && isServiceItem(p)) navigate(productPath(p), { replace: true });
+  }, [p, navigate]);
 
   // Open a draft where the seller left off.
   useEffect(() => {

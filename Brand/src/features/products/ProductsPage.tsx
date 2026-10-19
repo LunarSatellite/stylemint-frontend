@@ -25,7 +25,7 @@ import { EmptyBlock, ErrorBlock, ListSkeleton } from '../../components/StateBloc
 import { formatMoney, fromNow } from '../../lib/format';
 import { toastError, toastSuccess } from '../../lib/notify';
 import { useIsPhone } from '../../lib/useIsPhone';
-import { ProductState, productsApi, productStateColor, productStateLabel, type Product } from './api';
+import { isServiceItem, ProductState, productPath, productsApi, productStateColor, productStateLabel, type Product } from './api';
 import { StockModal } from './StockModal';
 
 const FILTERS = [
@@ -41,6 +41,15 @@ const LOW_STOCK = 5;
 function stockOf(p: Product) {
   const v = p.variants.find((x) => x.isDefault) ?? p.variants[0];
   return v;
+}
+
+/** A hotel / travel / bank listing mirrored as an item for reels: no stock, edited under Services. */
+function ServiceItemTag() {
+  return (
+    <Badge color="indigo" variant="light" data-testid="service-item-tag">
+      Service · in reels
+    </Badge>
+  );
 }
 
 function StockBadge({ p }: { p: Product }) {
@@ -101,30 +110,44 @@ export default function ProductsPage() {
     setParams(next, { replace: true });
   };
 
-  const rowMenu = (p: Product) => (
-    <Menu position="bottom-end" withinPortal>
-      <Menu.Target>
-        <ActionIcon variant="subtle" color="gray" aria-label={`More actions for ${p.name}`} onClick={(e) => e.stopPropagation()}>
-          <IconDots size={16} />
-        </ActionIcon>
-      </Menu.Target>
-      <Menu.Dropdown onClick={(e) => e.stopPropagation()}>
-        <Menu.Item leftSection={<IconEdit size={14} />} component={Link} to={`/products/${p.id}`}>
-          {p.state === ProductState.Draft ? 'Continue editing' : 'Edit'}
-        </Menu.Item>
-        {p.state !== ProductState.Archived && (
-          <Menu.Item leftSection={<IconPackages size={14} />} onClick={() => setStockFor(p.id)}>
-            Update stock
+  const rowMenu = (p: Product) =>
+    isServiceItem(p) ? (
+      <Menu position="bottom-end" withinPortal>
+        <Menu.Target>
+          <ActionIcon variant="subtle" color="gray" aria-label={`More actions for ${p.name}`} onClick={(e) => e.stopPropagation()}>
+            <IconDots size={16} />
+          </ActionIcon>
+        </Menu.Target>
+        <Menu.Dropdown onClick={(e) => e.stopPropagation()}>
+          <Menu.Item leftSection={<IconEdit size={14} />} component={Link} to={productPath(p)}>
+            Edit listing
           </Menu.Item>
-        )}
-        {p.state === ProductState.Draft && p.wizardStepReached >= 4 && (
-          <Menu.Item leftSection={<IconRocket size={14} />} onClick={() => publish.mutate(p.id)}>
-            Publish
+        </Menu.Dropdown>
+      </Menu>
+    ) : (
+      <Menu position="bottom-end" withinPortal>
+        <Menu.Target>
+          <ActionIcon variant="subtle" color="gray" aria-label={`More actions for ${p.name}`} onClick={(e) => e.stopPropagation()}>
+            <IconDots size={16} />
+          </ActionIcon>
+        </Menu.Target>
+        <Menu.Dropdown onClick={(e) => e.stopPropagation()}>
+          <Menu.Item leftSection={<IconEdit size={14} />} component={Link} to={`/products/${p.id}`}>
+            {p.state === ProductState.Draft ? 'Continue editing' : 'Edit'}
           </Menu.Item>
-        )}
-      </Menu.Dropdown>
-    </Menu>
-  );
+          {p.state !== ProductState.Archived && (
+            <Menu.Item leftSection={<IconPackages size={14} />} onClick={() => setStockFor(p.id)}>
+              Update stock
+            </Menu.Item>
+          )}
+          {p.state === ProductState.Draft && p.wizardStepReached >= 4 && (
+            <Menu.Item leftSection={<IconRocket size={14} />} onClick={() => publish.mutate(p.id)}>
+              Publish
+            </Menu.Item>
+          )}
+        </Menu.Dropdown>
+      </Menu>
+    );
 
   const thumb = (p: Product) => (
     <Avatar src={p.images[0]?.cdnUrl} radius="md" size={44} color="forest" alt="">
@@ -211,7 +234,7 @@ export default function ProductsPage() {
           {items.map((p) => {
             const v = stockOf(p);
             return (
-              <Card key={p.id} padding="sm" data-interactive="true" onClick={() => navigate(`/products/${p.id}`)} style={{ cursor: 'pointer' }}>
+              <Card key={p.id} padding="sm" data-interactive="true" onClick={() => navigate(productPath(p))} style={{ cursor: 'pointer' }}>
                 <Group wrap="nowrap" align="flex-start" gap="sm">
                   {thumb(p)}
                   <Stack gap={4} style={{ flex: 1, minWidth: 0 }}>
@@ -224,7 +247,7 @@ export default function ProductsPage() {
                         {productStateLabel[p.state]}
                       </Badge>
                     </Group>
-                    <StockBadge p={p} />
+                    {isServiceItem(p) ? <ServiceItemTag /> : <StockBadge p={p} />}
                   </Stack>
                   {rowMenu(p)}
                 </Group>
@@ -250,12 +273,12 @@ export default function ProductsPage() {
                 {items.map((p) => {
                   const v = stockOf(p);
                   return (
-                    <Table.Tr key={p.id} className="sm-row-link" onClick={() => navigate(`/products/${p.id}`)}>
+                    <Table.Tr key={p.id} className="sm-row-link" onClick={() => navigate(productPath(p))}>
                       <Table.Td>
                         <Group gap="sm" wrap="nowrap">
                           {thumb(p)}
                           <div style={{ minWidth: 0 }}>
-                            <Anchor component={Link} to={`/products/${p.id}`} fw={600} size="sm" c="inherit" lineClamp={1} onClick={(e) => e.stopPropagation()}>
+                            <Anchor component={Link} to={productPath(p)} fw={600} size="sm" c="inherit" lineClamp={1} onClick={(e) => e.stopPropagation()}>
                               {p.name}
                             </Anchor>
                             <Text size="xs" c="dimmed">
@@ -268,7 +291,7 @@ export default function ProductsPage() {
                         <Text size="sm">{v ? formatMoney({ amount: v.priceAmount, currency: v.priceCurrency }) : '—'}</Text>
                       </Table.Td>
                       <Table.Td>
-                        <StockBadge p={p} />
+                        {isServiceItem(p) ? <ServiceItemTag /> : <StockBadge p={p} />}
                       </Table.Td>
                       <Table.Td>
                         <Badge color={productStateColor[p.state]} variant="light">

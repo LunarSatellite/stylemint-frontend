@@ -110,6 +110,23 @@ export interface Product {
   shippingOptions: ShippingOption[];
   isInStock: boolean;
   defaultVariantId: string | null;
+  /**
+   * Service items (service-items-contract.md v1): a published hotel / travel listing or bank product mirrored as a
+   * Catalog item (id = listing id). Not editable here (409 `product.service_managed`) — edit the listing instead.
+   * Absent on an older backend.
+   */
+  serviceType?: number | null;
+  isService?: boolean;
+  serviceListingId?: string | null;
+}
+
+export const isServiceItem = (p: Pick<Product, 'isService' | 'serviceType'>) => !!p.isService || (p.serviceType ?? 0) > 0;
+
+/** Where a row opens: the product wizard, or the listing / bank products page for a service item. */
+export function productPath(p: Pick<Product, 'id' | 'isService' | 'serviceType' | 'serviceListingId'>): string {
+  if (!isServiceItem(p)) return `/products/${p.id}`;
+  if (p.serviceType === 3) return '/bank/products';
+  return `/services/listings/${encodeURIComponent(p.serviceListingId ?? p.id)}`;
 }
 
 export interface Category {
