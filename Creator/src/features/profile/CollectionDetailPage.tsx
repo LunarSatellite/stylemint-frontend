@@ -143,7 +143,7 @@ function Items({ c }: { c: Collection }) {
         </Group>
       )}
       <DetailSheet opened={adding} onClose={() => setAdding(false)} title="Add a product">
-        <ProductPicker onPick={(p) => add.mutate(p.productId)} />
+        <ProductPicker includeServices={false} onPick={(p) => add.mutate(p.productId)} />
         <Text size="xs" c="dimmed" mt="sm">
           Any product for sale on StyleMint can go in a collection — a partnership is only needed to earn commission on it.
         </Text>

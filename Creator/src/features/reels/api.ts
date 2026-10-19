@@ -1,6 +1,6 @@
-import { api, ApiError } from '../../api/client';
+import { api, ApiError, isMissingEndpoint } from '../../api/client';
 import type { BulkResult, PagedResult } from '../../api/paging';
-import type { Money } from '../../lib/format';
+import { formatMoney, type Money } from '../../lib/format';
 
 /**
  * Reels (Reels module CreatorReelsController + CreatorStudio post-publish report + Social content listing +
@@ -72,6 +72,63 @@ export interface TaggedProduct {
   productPrimaryImageUrl: string | null;
   vendorAccountId: string | null;
   vendorDisplayName: string | null;
+  // service-items-contract.md v1 §5.1 — absent until deployed.
+  isService?: boolean | null;
+  /** 1 Stay · 2 Package · 3 Bank. */
+  serviceType?: number | null;
+  serviceListingId?: string | null;
+  /** The CURRENT price buyers see on the tag ("from Rs 4,500/night"); the snapshot is the price at tag time. */
+  displayPrice?: DisplayPrice | null;
+  addableToCart?: boolean | null;
+}
+
+/** Service items (hotel stays, travel packages, bank products) sold like items through reels. */
+export const ServiceItemType = { Stay: 1, Package: 2, Bank: 3 } as const;
+export const serviceItemTypeLabel: Record<number, string> = { 1: 'Hotel stay', 2: 'Travel package', 3: 'Bank product' };
+
+export interface DisplayPrice {
+  amount: number | null;
+  currency: string;
+  /** "night" · "person" · null. */
+  unit: string | null;
+  isFrom: boolean;
+  /** Server-formatted; null for bank items. */
+  label: string | null;
+}
+
+/** `GET v1/tag-picker/items` row (service-items-contract.md v1 §5.3). */
+export interface TaggableItem {
+  productId: string;
+  name: string;
+  primaryImageUrl: string | null;
+  vendorAccountId: string;
+  vendorDisplayName: string | null;
+  isService: boolean;
+  serviceType: number | null;
+  serviceListingId: string | null;
+  displayPrice: DisplayPrice | null;
+  addableToCart: boolean;
+  defaultVariantId: string | null;
+  createdUtc: string;
+}
+
+/**
+ * The price label buyers see on a tag: the server label, else a local one ("from Rs 4,500/night",
+ * "Rs 45,000 per person", "Dates coming soon", "Enquiry only"); a product falls back to its plain price.
+ */
+export function displayPriceLabel(
+  dp: DisplayPrice | null | undefined,
+  serviceType: number | null | undefined,
+  fallback: Money | null,
+): string {
+  if (dp?.label) return dp.label;
+  if (serviceType === ServiceItemType.Bank) return 'Enquiry only';
+  if (dp && dp.amount != null) {
+    const unit = dp.unit === 'night' ? '/night' : dp.unit === 'person' ? ' per person' : '';
+    return `${dp.isFrom ? 'from ' : ''}${formatMoney({ amount: dp.amount, currency: dp.currency || 'NPR' })}${unit}`;
+  }
+  if (serviceType === ServiceItemType.Package) return 'Dates coming soon';
+  return fallback ? formatMoney(fallback) : '—';
 }
 
 export interface Reel {
@@ -164,7 +221,32 @@ export interface ProductTile {
   isOutOfStock: boolean;
   isSponsored: boolean;
   sponsoredLabel: string | null;
+  // Set when the row came from the tag picker (service items included).
+  isService?: boolean;
+  serviceType?: number | null;
+  displayPrice?: DisplayPrice | null;
 }
+
+/** A tag-picker row as a ProductTile (the shape the picker UI already renders). */
+export function tileFromTaggable(it: TaggableItem): ProductTile {
+  return {
+    productId: it.productId,
+    name: it.name,
+    heroImageUrl: it.primaryImageUrl ?? '',
+    price: it.displayPrice?.amount ?? 0,
+    currency: it.displayPrice?.currency || 'NPR',
+    brandName: it.vendorDisplayName ?? '',
+    isOutOfStock: false,
+    isSponsored: false,
+    sponsoredLabel: null,
+    isService: it.isService,
+    serviceType: it.serviceType,
+    displayPrice: it.displayPrice,
+  };
+}
+
+export const tilePriceLabel = (p: ProductTile) =>
+  p.isService || p.displayPrice ? displayPriceLabel(p.displayPrice, p.serviceType, { amount: p.price, currency: p.currency }) : formatMoney({ amount: p.price, currency: p.currency });
 
 export type TagCommissionStatus = 'Applies' | 'NoPartnership' | 'ProductUnavailable';
 
@@ -269,7 +351,23 @@ export const reelsApi = {
   /** Posts on a connected account. Comments/captions here are the creator's own. */
   providerContent: (slug: ProviderSlug, cursor: string | null, refresh = false) =>
     api.get<ProviderContentPage>(`/v1/social/accounts/${slug}/content`, { limit: 25, cursor: cursor ?? undefined, refresh: refresh || undefined }),
-  searchProducts: async (q: string) => {
+  /**
+   * Taggable items for the picker: `GET v1/tag-picker/items` (products AND service items — hotel stays, travel
+   * packages, bank products; service-items-contract.md v1 §5.3). Until that is deployed (bare 404) the older
+   * customer search is used, which returns products only. `includeServices: false` keeps products only.
+   */
+  searchProducts: async (q: string, opts: { includeServices?: boolean } = {}): Promise<ProductTile[]> => {
+    try {
+      const page = await api.get<PagedResult<TaggableItem>>('/v1/tag-picker/items', {
+        q: q.slice(0, 100),
+        scope: 'all',
+        kind: opts.includeServices === false ? 'product' : undefined,
+        pageSize: 20,
+      });
+      return (page.items ?? []).map(tileFromTaggable);
+    } catch (e) {
+      if (!isMissingEndpoint(e)) throw e;
+    }
     const res = await api.get<{ products: ProductTile[] }>('/api/v1/customer/search', { q, type: 'products', limit: 20 });
     return res.products ?? [];
   },

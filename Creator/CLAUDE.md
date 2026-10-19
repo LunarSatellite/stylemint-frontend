@@ -38,7 +38,9 @@ npm run build      # dist/ for the /creator/ base path
 
 ## API
 
-- Same origin: every call is `/v1/...` (nginx proxies it); product search for tagging is
+- Same origin: every call is `/v1/...` (nginx proxies it); the tag picker is `GET /v1/tag-picker/items`
+  (products + service items: hotel stays, travel packages, bank products, with `displayPrice.label`;
+  service-items-contract.md v1) and, while that 404s, the older product search
   `/api/v1/customer/search`. No base URL env var, no CORS, no secrets.
 - `src/api/client.ts` is the only HTTP client: bearer token, one refresh-and-retry on 401,
   `Idempotency-Key` (fresh UUID) on every POST/PUT/PATCH/DELETE, RFC 7807 → `ApiError`

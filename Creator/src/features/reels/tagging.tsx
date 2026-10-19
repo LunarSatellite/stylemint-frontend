@@ -27,7 +27,18 @@ import { DetailSheet } from '../../components/DetailSheet';
 import { EmptyBlock, ErrorBlock, ListSkeleton } from '../../components/StateBlocks';
 import { formatDuration, formatMoney, formatPercent, formatPercentValue } from '../../lib/format';
 import { confirmAction, toastError, toastSuccess } from '../../lib/notify';
-import { isNoPartnershipError, reelsApi, type ProductTile, type Reel, type TagCommissionItem, type TaggedProduct, type TagPlacement } from './api';
+import {
+  displayPriceLabel,
+  isNoPartnershipError,
+  reelsApi,
+  serviceItemTypeLabel,
+  tilePriceLabel,
+  type ProductTile,
+  type Reel,
+  type TagCommissionItem,
+  type TaggedProduct,
+  type TagPlacement,
+} from './api';
 
 const MIN_QUERY = 2;
 
@@ -214,11 +225,32 @@ function CommissionLine({ item }: { item: TagCommissionItem | undefined }) {
 }
 
 /** Search the catalogue; each result says whether the creator can tag it and what it would earn. */
-export function ProductPicker({ onPick }: { onPick: (product: ProductTile, commission: TagCommissionItem) => void }) {
+/** "Hotel stay" / "Travel package" / "Bank product" for a service item; nothing for a product. */
+export function ServiceBadge({ isService, serviceType }: { isService?: boolean | null; serviceType?: number | null }) {
+  if (!isService) return null;
+  return (
+    <Badge size="xs" color="indigo" variant="light" data-testid="service-badge">
+      {serviceItemTypeLabel[serviceType ?? 0] ?? 'Service'}
+    </Badge>
+  );
+}
+
+export function ProductPicker({
+  onPick,
+  includeServices = true,
+}: {
+  onPick: (product: ProductTile, commission: TagCommissionItem) => void;
+  /** Hotel stays, travel packages and bank products can be tagged in reels; collections stay products-only. */
+  includeServices?: boolean;
+}) {
   const [q, setQ] = useState('');
   const [debounced] = useDebouncedValue(q.trim(), 350);
   const enabled = debounced.length >= MIN_QUERY;
-  const results = useQuery({ queryKey: ['reels', 'product-search', debounced], queryFn: () => reelsApi.searchProducts(debounced), enabled });
+  const results = useQuery({
+    queryKey: ['reels', 'product-search', debounced, includeServices],
+    queryFn: () => reelsApi.searchProducts(debounced, { includeServices }),
+    enabled,
+  });
   const ids = useMemo(() => (results.data ?? []).map((p) => p.productId), [results.data]);
   const commission = useQuery({ queryKey: ['reels', 'tag-commission', ids], queryFn: () => reelsApi.tagCommission(ids), enabled: ids.length > 0 });
   const byId = new Map((commission.data ?? []).map((c) => [c.productId, c]));
@@ -227,8 +259,8 @@ export function ProductPicker({ onPick }: { onPick: (product: ProductTile, commi
   return (
     <Stack gap="sm">
       <TextInput
-        label="Find a product"
-        placeholder="Search by product or brand"
+        label={includeServices ? 'Find a product or service' : 'Find a product'}
+        placeholder={includeServices ? 'Search products, hotels, trips or bank products' : 'Search by product or brand'}
         leftSection={<IconSearch size={16} />}
         value={q}
         onChange={(e) => setQ(e.currentTarget.value)}
@@ -236,7 +268,8 @@ export function ProductPicker({ onPick }: { onPick: (product: ProductTile, commi
       />
       {!enabled ? (
         <Text size="sm" c="dimmed">
-          Type at least {MIN_QUERY} letters. You can tag products from brands you have an active partnership with.
+          Type at least {MIN_QUERY} letters. You can tag products{includeServices ? ', hotel stays, trips and bank products' : ''} from brands you have an active
+          partnership with.
         </Text>
       ) : results.isPending ? (
         <ListSkeleton rows={4} height={56} />
@@ -255,7 +288,7 @@ export function ProductPicker({ onPick }: { onPick: (product: ProductTile, commi
             const c = byId.get(p.productId);
             const canTag = c ? c.status === 'Applies' : !!commission.error;
             return (
-              <Card key={p.productId} padding="xs" withBorder>
+              <Card key={p.productId} padding="xs" withBorder data-testid={`pick-${p.productId}`}>
                 <Group justify="space-between" wrap="nowrap" gap="sm">
                   <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
                     <Avatar src={p.heroImageUrl || undefined} radius="sm" size={44} />
@@ -264,9 +297,10 @@ export function ProductPicker({ onPick }: { onPick: (product: ProductTile, commi
                         {p.name}
                       </Text>
                       <Text size="xs" c="dimmed" lineClamp={1}>
-                        {p.brandName || 'Brand'} · {formatMoney({ amount: p.price, currency: p.currency })}
+                        {p.brandName || 'Brand'} · <span data-testid="price-label">{tilePriceLabel(p)}</span>
                         {p.isOutOfStock ? ' · out of stock' : ''}
                       </Text>
+                      <ServiceBadge isService={p.isService} serviceType={p.serviceType} />
                       <CommissionLine item={commission.error ? undefined : c} />
                     </div>
                   </Group>
@@ -387,12 +421,25 @@ export function TagsPanel({ reel }: { reel: Reel }) {
                       {t.productName ?? 'Product'}
                     </Text>
                     <Text size="xs" c="dimmed" lineClamp={1}>
-                      {t.vendorDisplayName ?? 'Brand'} · {formatMoney({ amount: t.productPriceSnapshotAmount, currency: t.productPriceSnapshotCurrency })}
+                      {t.vendorDisplayName ?? 'Brand'} ·{' '}
+                      <span data-testid="tag-price">
+                        {t.isService || t.displayPrice
+                          ? displayPriceLabel(t.displayPrice, t.serviceType, { amount: t.productPriceSnapshotAmount, currency: t.productPriceSnapshotCurrency })
+                          : formatMoney({ amount: t.productPriceSnapshotAmount, currency: t.productPriceSnapshotCurrency })}
+                      </span>
                     </Text>
                     <Group gap={6} mt={2}>
-                      <Badge size="xs" color="forest" variant="light">
-                        {formatPercentValue(t.commissionRateSnapshotPercent)} · {formatMoney({ amount: t.commissionPerSaleSnapshotAmount, currency: t.commissionPerSaleSnapshotCurrency })} per sale
-                      </Badge>
+                      <ServiceBadge isService={t.isService} serviceType={t.serviceType} />
+                      {t.isService && t.serviceType === 3 ? (
+                        <Badge size="xs" color="gray" variant="light">
+                          Enquiries only · no sale commission
+                        </Badge>
+                      ) : (
+                        <Badge size="xs" color="forest" variant="light">
+                          {formatPercentValue(t.commissionRateSnapshotPercent)} · {formatMoney({ amount: t.commissionPerSaleSnapshotAmount, currency: t.commissionPerSaleSnapshotCurrency })}{' '}
+                          {t.isService ? 'per booking' : 'per sale'}
+                        </Badge>
+                      )}
                       <Badge size="xs" color="gray" variant="light">
                         {t.appearAtSeconds == null && t.disappearAtSeconds == null
                           ? 'Whole reel'
