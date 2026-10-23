@@ -2,6 +2,7 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { notifications } from '@mantine/notifications';
 import { ApiError } from '../../api/client';
 import { mockApi, renderWithProviders } from '../../test/utils';
 import { page, signInVendor } from '../services/testkit';
@@ -336,13 +337,16 @@ describe('journey detail — owner', () => {
   });
 
   it('shows the mapped message when a write is refused', async () => {
+    const show = vi.spyOn(notifications, 'show');
     mockApi({
       'GET /v1/vendor/journeys/j-1': { body: journey() },
       'PUT /v1/vendor/journeys/j-1/order': { status: 409, body: { title: 'Conflict', status: 409, errorCode: 'state.concurrency_conflict' } },
     });
     renderJourneys('/journeys/j-1');
     await userEvent.click(await screen.findByRole('button', { name: 'Move Hotel Barahi up' }));
-    expect(await screen.findByText(/Someone changed this journey at the same moment/)).toBeInTheDocument();
+    // Toasts are not rendered in the test harness; check what the page asked the toast to say.
+    await waitFor(() => expect(show).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringMatching(/Someone changed this journey at the same moment/) })));
+    show.mockRestore();
   });
 });
 
