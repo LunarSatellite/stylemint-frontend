@@ -35,4 +35,7 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
 - Service items in orders (`service-cart-contract.md` v1): sub-orders with `fulfillmentChannel: "Service"` (`channelLabel`)
   show booking lines (`isServiceLine`; missing `lineKind` = product) in the order drawer — dates, guest names, booking
   number, paid now vs pay at venue, "Open booking" → `/bookings?open=<id>` for `viewBookings`; no shipping rows.
+- Journeys (`api/journeys.ts`, `features/journeys/`, `journey-reels-contract.md` v1 §5): `/journeys` list (search title /
+  city / business / id, status, vendor id; page-numbered), drawer with members and every step (closed ones too), "End
+  journey…" with a required reason (3–500). Behind `viewModeration` / `decideModeration` (server also lets SupportAgent read).
 - Build, lint and test only on the VPS in Docker (see README) - never on the Windows workstation.

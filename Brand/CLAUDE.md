@@ -208,6 +208,20 @@ Plan: `D:\Stylemint\wt\service-vendors-plan.md`. Contracts: `service-bookings-co
   Orders: `fulfillmentChannel: "Service"` sub-orders render `orders/serviceLines.tsx` booking lines (dates, guest names,
   booking number, paid now vs pay at venue, link to `/services/bookings/:id`) and no actions, address, phone or rider.
 
+## Journeys (`src/features/journeys/`)
+
+Collaborative journey reels — contract `D:\Stylemint\wt\journey-reels-contract.md` (v1, §4), plan
+`service-vendors-plan.md` "v3". Sidebar "Journeys" in Sell, for every vendor (product or service).
+
+- `/journeys` (`?role=1|2|3` = mine / joined / invites, server filter) and `/journeys/:id`; notifications deep-link
+  `/vendor/journeys/:id`. Create = title + city (optional, ≤ 80) + one of my published reels (`my-reels`; `canUse:false`
+  shown disabled) as step 1.
+- Detail: preview strip (swipe order, thumbnails, business names; hidden steps faded with `hiddenReason`), steps list.
+  Owner: edit, invite (`vendors?q=` ≥ 2 chars, note ≤ 280), reorder (drag or arrows → `PUT order` with every open step id),
+  remove step / cancel invite, end. Member: replace my reel, leave. Invitee: pick reel + accept, or decline.
+  `journeyPermissions()` decides the buttons; destructive actions use `confirmAction`.
+- Bare 404 → `JourneysSettingUp`; 404 `journey.not_found` → "Journey not found". `journeyErrorMessage` maps error codes.
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),
