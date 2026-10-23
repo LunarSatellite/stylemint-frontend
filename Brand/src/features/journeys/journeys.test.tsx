@@ -115,7 +115,7 @@ function renderJourneys(route: string) {
   );
 }
 
-const writes = (calls: { method: string }[]) => calls.filter((c) => c.method !== 'GET');
+const writes = <T extends { method: string }>(calls: T[]) => calls.filter((c) => c.method !== 'GET');
 
 describe('journey helpers', () => {
   it('moves a step up or down and keeps the ends in place', () => {
