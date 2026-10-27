@@ -31,6 +31,7 @@ const CustomersPage = page(() => import('@/features/customers/CustomersPage'), '
 const OrdersPage = page(() => import('@/features/orders/OrdersPage'), 'OrdersPage');
 const ReturnsPage = page(() => import('@/features/support/ReturnsPage'), 'ReturnsPage');
 const TicketsPage = page(() => import('@/features/support/TicketsPage'), 'TicketsPage');
+const PaymentsPage = page(() => import('@/features/payments/PaymentsPage'), 'PaymentsPage');
 const PayoutsPage = page(() => import('@/features/payouts/PayoutsPage'), 'PayoutsPage');
 const TryOnPage = page(() => import('@/features/tryon/TryOnPage'), 'TryOnPage');
 const OrderCarePage = page(() => import('@/features/orders/OrderCarePage'), 'OrderCarePage');
@@ -97,6 +98,7 @@ export const routes: RouteObject[] = [
       { path: 'orders/:orderNumber', element: guarded('viewOrders', <OrdersPage />) },
       { path: 'returns', element: guarded('viewSupport', <ReturnsPage />) },
       { path: 'support', element: guarded('viewSupport', <TicketsPage />) },
+      { path: 'payments', element: guarded('viewPayouts', <PaymentsPage />) },
       { path: 'payouts', element: guarded('viewPayouts', <PayoutsPage />) },
       { path: 'try-on', element: guarded('viewTryOn', <TryOnPage />) },
       { path: 'order-care', element: guarded('orderCare', <OrderCarePage />) },
