@@ -1,8 +1,10 @@
-import { Alert, Avatar, Badge, Button, Group, List, Select, Skeleton, Stack, Text } from '@mantine/core';
+import { Alert, Avatar, Badge, Button, Group, List, SegmentedControl, Select, Skeleton, Stack, Text } from '@mantine/core';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { IconAlertTriangle, IconCircleCheck, IconReceipt } from '@tabler/icons-react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
+import { FARE_PAYER, label, REASON_CATEGORY } from '@/api/returnPickups';
 import { RETURN_RESOLUTION, RETURN_STATE, RETURN_TONE, returnsApi, type ReturnItem } from '@/api/support';
+import { PickupStageBadge, ReturnPickupFacts, ReturnPickupsList } from './ReturnPickups';
 import { FieldGrid, IdText, TwoLine, When } from '@/components/Bits';
 import { DataTable, type Column } from '@/components/DataTable';
 import { DetailDrawer } from '@/components/DetailDrawer';
@@ -15,6 +17,34 @@ import { useListState } from '@/hooks/useListState';
  * queue and checks the evidence (scan-to-receive, chain of custody, product passport) when a vendor and buyer disagree.
  */
 export function ReturnsPage() {
+  const [params, setParams] = useSearchParams();
+  const view = params.get('view') === 'pickups' ? 'pickups' : 'requests';
+  return (
+    <>
+      <PageHeader
+        title="Returns"
+        description={
+          view === 'pickups'
+            ? 'Rider pickups for returns: stage, rider, fare and who pays. Read-only.'
+            : 'Return requests across all vendors, newest first. Vendors decide; open one to check the evidence.'
+        }
+      />
+      <SegmentedControl
+        mb="md"
+        value={view}
+        onChange={(v) => setParams(v === 'pickups' ? { view: 'pickups' } : {}, { replace: true })}
+        data={[
+          { value: 'requests', label: 'Requests' },
+          { value: 'pickups', label: 'Rider pickups' },
+        ]}
+        aria-label="Returns view"
+      />
+      {view === 'pickups' ? <ReturnPickupsList /> : <ReturnRequestsList />}
+    </>
+  );
+}
+
+function ReturnRequestsList() {
   const list = useListState(['state'] as const, { state: '1' });
   const state = list.filters.state || '1';
   const query = useQuery({
@@ -47,12 +77,12 @@ export function ReturnsPage() {
         </Badge>
       ),
     },
+    { key: 'pickup', header: 'Pickup', visibleFrom: 'md', render: (r) => <PickupStageBadge stage={r.pickupStage} /> },
     { key: 'submitted', header: 'Submitted', visibleFrom: 'sm', render: (r) => <When value={r.submittedUtc} relative /> },
   ];
 
   return (
     <>
-      <PageHeader title="Returns" description="Return requests across all vendors, newest first. Vendors decide; open one to check the evidence." />
       <DataTable
         label="Returns"
         columns={columns}
@@ -118,6 +148,8 @@ function ReturnDrawer({ item: r, opened, onClose }: { item: ReturnItem | null; o
             <FieldGrid
               fields={[
                 { label: 'Reason given', value: r.reason, wide: true },
+                { label: 'Reason type', value: r.reasonCategory ? label(REASON_CATEGORY, r.reasonCategory) : null },
+                { label: 'Pickup fee paid by', value: r.pickupFarePayer ? label(FARE_PAYER, r.pickupFarePayer) : null },
                 { label: 'Wants', value: RETURN_RESOLUTION[r.resolution] },
                 { label: 'Quantity', value: String(r.quantity) },
                 { label: 'Submitted', value: <When value={r.submittedUtc} /> },
@@ -128,6 +160,11 @@ function ReturnDrawer({ item: r, opened, onClose }: { item: ReturnItem | null; o
               ]}
             />
           </SectionCard>
+          {(r.state === 2 || r.state === 4 || r.state === 5 || r.pickupStage) && (
+            <SectionCard title="Rider pickup" description="Read-only. Codes are never shown.">
+              <ReturnPickupFacts returnRequestId={r.id} />
+            </SectionCard>
+          )}
           <SectionCard title="Evidence" description="What the systems recorded about this item. Viewing it is audited.">
             {evidence.isLoading ? (
               <Skeleton height={120} radius="md" />

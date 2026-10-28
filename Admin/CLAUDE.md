@@ -38,6 +38,10 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
 - Journeys (`api/journeys.ts`, `features/journeys/`, `journey-reels-contract.md` v1 §5): `/journeys` list (search title /
   city / business / id, status, vendor id; page-numbered), drawer with members and every step (closed ones too), "End
   journey…" with a required reason (3–500). Behind `viewModeration` / `decideModeration` (server also lets SupportAgent read).
+- Return pickups (`api/returnPickups.ts`, `features/support/ReturnPickups.tsx`, `return-pickup-contract.md` v1.0 §4 Admin):
+  read-only. `/returns?view=pickups` = cursor list of `v1/admin/delivery/return-pickups` (stage filter) with a drawer; the
+  return drawer shows "Rider pickup" (stage, rider, fare, payer, attempts, photos, hops, proofs - never codes) for approved /
+  completed / cancelled returns, plus reason type and fee payer. Behind `viewSupport`. Bare 404 → not deployed.
 - Build, lint and test only on the VPS in Docker (see README) - never on the Windows workstation.
 - Platform commission (`api/commission.ts`, `features/commission/`, `platform-commission-contract.md` v1.0 §1, §3, §4):
   `/commission` under Orders & money — category tree with per-row rate (0–50, 2 decimals, `PUT {ratePercent}`, null

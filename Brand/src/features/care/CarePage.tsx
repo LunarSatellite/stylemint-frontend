@@ -42,6 +42,8 @@ import {
   type ReturnItem,
   type WarrantyClaim,
 } from './api';
+import { ReturnPickupPanel, useReturnPickups } from './ReturnPickupPanel';
+import { isPickupNotReceived, PICKUP_NOT_RECEIVED_TEXT } from './returnPickup';
 
 // ---------------------------------------------------------------- returns
 
@@ -103,9 +105,14 @@ function ReturnsTab() {
       toastSuccess(done);
       void qc.invalidateQueries({ queryKey: ['care', 'returns'] });
     },
-    onError: (e) => toastError(e),
+    onError: (e) => {
+      // 409 return.pickup_not_received: a rider-mode return the seller has not confirmed receiving yet.
+      if (isPickupNotReceived(e)) void qc.invalidateQueries({ queryKey: ['care', 'returns'] });
+      toastError(isPickupNotReceived(e) ? new Error(PICKUP_NOT_RECEIVED_TEXT) : e);
+    },
   });
   const items = list.query.data?.items ?? [];
+  const pickups = useReturnPickups(items);
   return (
     <>
       <SegmentedControl
@@ -161,6 +168,7 @@ function ReturnsTab() {
                       Your reason: {r.rejectionNote}
                     </Text>
                   )}
+                  <ReturnPickupPanel item={r} />
                   {r.state === ReturnState.Submitted && (
                     <Group gap="xs" mt={4}>
                       <Button
@@ -181,7 +189,7 @@ function ReturnsTab() {
                       </Button>
                     </Group>
                   )}
-                  {r.state === ReturnState.Approved && (
+                  {r.state === ReturnState.Approved && !pickups.receiptPending(r) && (
                     <Group mt={4}>
                       <Button
                         size="xs"

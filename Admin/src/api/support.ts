@@ -2,8 +2,8 @@
 import { buildUrl, http } from './client';
 import { toPage, type Page } from './paging';
 
-export const RETURN_STATE: Record<number, string> = { 1: 'Submitted', 2: 'Approved', 3: 'Rejected', 4: 'Completed' };
-export const RETURN_TONE: Record<number, string> = { 1: 'amber', 2: 'blue', 3: 'signal', 4: 'forest' };
+export const RETURN_STATE: Record<number, string> = { 1: 'Submitted', 2: 'Approved', 3: 'Rejected', 4: 'Completed', 5: 'Cancelled' };
+export const RETURN_TONE: Record<number, string> = { 1: 'amber', 2: 'blue', 3: 'signal', 4: 'forest', 5: 'gray' };
 export const RETURN_RESOLUTION: Record<number, string> = { 1: 'Refund', 2: 'Replacement' };
 
 export interface ReturnItem {
@@ -23,6 +23,10 @@ export interface ReturnItem {
   submittedUtc: string;
   resolvedUtc: string | null;
   rejectionNote: string | null;
+  /** Return pickup by rider (return-pickup contract §4): strings, absent on older servers. */
+  reasonCategory?: string | null;
+  pickupFarePayer?: string | null;
+  pickupStage?: string | null;
 }
 
 export interface ReturnEvidence {
