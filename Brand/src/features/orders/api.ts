@@ -1,5 +1,6 @@
 import { api, ApiError } from '../../api/client';
 import type { BulkResult, PagedResult } from '../../api/paging';
+import type { Money } from '../../lib/format';
 
 /**
  * Vendor fulfilment (StyleMint.Modules.Orders VendorFulfillmentController) and delivery requests
@@ -383,10 +384,15 @@ export interface InterestedRider {
   distanceKm: number;
   vehicle: string | null;
   interestedUtc: string;
+  /** The offer's fixed fare (return pickups, return-pickup contract §4). Absent on older servers. */
+  fare?: Money | null;
 }
 
 export interface DeliveryRequest {
   packageId: string;
+  /** "Delivery" | "Return" (return-pickup contract §4). Absent on older servers = Delivery. */
+  kind?: string;
+  returnRequestId?: string | null;
   state: DeliveryRequestState;
   notifiedCount: number;
   openedUtc: string;

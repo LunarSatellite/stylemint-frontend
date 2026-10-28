@@ -1,11 +1,13 @@
 import { api } from '../../api/client';
 import type { PagedResult } from '../../api/paging';
+import type { Money } from '../../lib/format';
 
 // ---------------------------------------------------------------- returns (Orders VendorReturnsController)
 
 export const ReturnState = { Submitted: 1, Approved: 2, Rejected: 3, Completed: 4 } as const;
-export const returnStateLabel: Record<number, string> = { 1: 'New request', 2: 'Approved — awaiting item', 3: 'Rejected', 4: 'Completed' };
-export const returnStateColor: Record<number, string> = { 1: 'amber', 2: 'blue', 3: 'gray', 4: 'forest' };
+// 5 Cancelled: the buyer cancelled, or the rider pickup failed for good (return-pickup contract §4).
+export const returnStateLabel: Record<number, string> = { 1: 'New request', 2: 'Approved — awaiting item', 3: 'Rejected', 4: 'Completed', 5: 'Cancelled' };
+export const returnStateColor: Record<number, string> = { 1: 'amber', 2: 'blue', 3: 'gray', 4: 'forest', 5: 'gray' };
 
 export interface ReturnItem {
   id: string;
@@ -21,6 +23,11 @@ export interface ReturnItem {
   submittedUtc: string;
   resolvedUtc: string | null;
   rejectionNote: string | null;
+  /** Return pickup by rider (return-pickup contract §4). All absent on older servers; strings, unknown values allowed. */
+  reasonCategory?: string | null;
+  pickupFarePayer?: string | null;
+  pickupStage?: string | null;
+  refundBreakdown?: { itemTotal: Money; pickupFareDeducted: Money; refundAmount: Money } | null;
   /** 1 Refund, 2 Replacement */
   resolution: number;
   evidence: { hasDiscrepancy: boolean; findings: { code: string; kind: string; statement: string }[] } | null;

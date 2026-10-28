@@ -21,7 +21,7 @@ import { IconAlertTriangle, IconCircleCheckFilled, IconMapPin, IconMotorbike, Ic
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ApiError, messageOf } from '../../api/client';
 import { ErrorBlock } from '../../components/StateBlocks';
-import { formatDate, fromNow, initialsOf } from '../../lib/format';
+import { formatDate, formatMoney, fromNow, initialsOf } from '../../lib/format';
 import { confirmAction, toastSuccess } from '../../lib/notify';
 import { SealForm } from './SealForm';
 import {
@@ -86,49 +86,72 @@ function RatingLine({ rating, count }: { rating: number | null; count?: number }
   );
 }
 
-function RiderRow({ rider, onDetails, onChoose, choosing }: { rider: InterestedRider; onDetails: () => void; onChoose: () => void; choosing: boolean }) {
+/** One interested rider. `onDetails` is optional: return pickups have no rider-profile route, so the card is not a button there. */
+export function RiderRow({
+  rider,
+  onDetails,
+  onChoose,
+  choosing,
+}: {
+  rider: InterestedRider;
+  onDetails?: () => void;
+  onChoose: () => void;
+  choosing: boolean;
+}) {
+  const body = (
+    <Group wrap="nowrap" align="flex-start" gap="sm">
+      <Avatar src={rider.avatarUrl ?? undefined} radius="xl" color="forest">
+        {initialsOf(rider.displayName)}
+      </Avatar>
+      <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
+        <Group gap={6} wrap="nowrap">
+          <Text fw={650} size="sm" truncate>
+            {rider.displayName}
+          </Text>
+          {rider.verified && <IconCircleCheckFilled size={16} color="var(--mantine-color-forest-6)" aria-label="Verified rider" />}
+        </Group>
+        <Group gap="sm" wrap="wrap">
+          <RatingLine rating={rider.rating} count={rider.ratingCount} />
+          <Text size="xs" c="dimmed">
+            {rider.completedDeliveries} deliveries
+          </Text>
+        </Group>
+        <Group gap="sm" wrap="wrap">
+          <Text size="xs" c="dimmed" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+            <IconMapPin size={12} /> {rider.distanceKm.toFixed(1)} km away
+          </Text>
+          {rider.vehicle && (
+            <Text size="xs" c="dimmed" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+              <IconMotorbike size={12} /> {rider.vehicle}
+            </Text>
+          )}
+          <Text size="xs" c="dimmed">
+            {tierLabel[rider.tier] ?? rider.tier}
+          </Text>
+          {rider.fare && (
+            <Text size="xs" fw={600}>
+              Fare {formatMoney(rider.fare)}
+            </Text>
+          )}
+        </Group>
+      </Stack>
+    </Group>
+  );
   return (
     <Card padding="sm" withBorder>
-      <UnstyledButton onClick={onDetails} style={{ width: '100%' }} aria-label={`See details for ${rider.displayName}`}>
-        <Group wrap="nowrap" align="flex-start" gap="sm">
-          <Avatar src={rider.avatarUrl ?? undefined} radius="xl" color="forest">
-            {initialsOf(rider.displayName)}
-          </Avatar>
-          <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-            <Group gap={6} wrap="nowrap">
-              <Text fw={650} size="sm" truncate>
-                {rider.displayName}
-              </Text>
-              {rider.verified && (
-                <IconCircleCheckFilled size={16} color="var(--mantine-color-forest-6)" aria-label="Verified rider" />
-              )}
-            </Group>
-            <Group gap="sm" wrap="wrap">
-              <RatingLine rating={rider.rating} count={rider.ratingCount} />
-              <Text size="xs" c="dimmed">
-                {rider.completedDeliveries} deliveries
-              </Text>
-            </Group>
-            <Group gap="sm" wrap="wrap">
-              <Text size="xs" c="dimmed" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                <IconMapPin size={12} /> {rider.distanceKm.toFixed(1)} km away
-              </Text>
-              {rider.vehicle && (
-                <Text size="xs" c="dimmed" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>
-                  <IconMotorbike size={12} /> {rider.vehicle}
-                </Text>
-              )}
-              <Text size="xs" c="dimmed">
-                {tierLabel[rider.tier] ?? rider.tier}
-              </Text>
-            </Group>
-          </Stack>
-        </Group>
-      </UnstyledButton>
+      {onDetails ? (
+        <UnstyledButton onClick={onDetails} style={{ width: '100%' }} aria-label={`See details for ${rider.displayName}`}>
+          {body}
+        </UnstyledButton>
+      ) : (
+        body
+      )}
       <Group justify="flex-end" gap="xs" mt="xs">
-        <Button size="xs" variant="subtle" onClick={onDetails}>
-          Details
-        </Button>
+        {onDetails && (
+          <Button size="xs" variant="subtle" onClick={onDetails}>
+            Details
+          </Button>
+        )}
         <Button size="xs" onClick={onChoose} loading={choosing}>
           Choose
         </Button>
@@ -280,7 +303,7 @@ function RiderDetailsModal({
   );
 }
 
-function Countdown({ until }: { until: string }) {
+export function Countdown({ until }: { until: string }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1000);

@@ -222,6 +222,17 @@ Collaborative journey reels — contract `D:\Stylemint\wt\journey-reels-contract
   `journeyPermissions()` decides the buttons; destructive actions use `confirmAction`.
 - Bare 404 → `JourneysSettingUp`; 404 `journey.not_found` → "Journey not found". `journeyErrorMessage` maps error codes.
 
+## Return pickup by rider (`src/features/care/`)
+
+Contract `D:\Stylemint\wt\return-pickup-contract.md` (v1.0 §3, §4, §9). `returnPickup.ts` (types, API, labels) +
+`ReturnPickupPanel.tsx` on each return card: reason type, who pays the pickup fee, and for an approved return
+`GET v1/vendor/returns/{id}/pickup` → Legacy / no pickup = "Find a rider"; rider search = the forward `RiderRow` cards on
+`v1/vendor/returns/{id}/pickup-requests` (open / current / current/select, "Try again" on NoRiders / Expired / AttemptFailed);
+rider assigned; confirm by code (`POST v1/customer/deliveries/confirm {packageNumber, code}`); stage timeline; photos.
+"Item received" is hidden in the card and shown disabled with a hint while a `mode: "Rider"` return is not
+`ReceivedBySeller` (`useReturnPickups`); a 409 `return.pickup_not_received` is explained and re-reads the pickup.
+Bare 404 on the pickup read while the list item has no `pickupStage` key = backend not deployed → nothing shown.
+
 ## Rules
 
 - Every list: loading skeleton, error block with retry ("could not load" is never shown as empty),
