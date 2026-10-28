@@ -18,6 +18,8 @@ export interface RequestOptions {
   /** Sign-in calls go without a bearer and never trigger the refresh-and-retry. */
   anonymous?: boolean;
   headers?: Record<string, string>;
+  /** Writes only: reuse this key instead of a fresh one (the same logical action retried). */
+  idempotencyKey?: string;
 }
 
 /** Hooks the auth module installs, so this file does not import it (and the cycle stays broken). */
@@ -125,7 +127,8 @@ function refreshOnce(): Promise<boolean> {
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = options.method ?? 'GET';
   // The same key on the replay after a refresh: it is the same write, and the server must treat it as one.
-  const idempotencyKey = WRITES.has(method) ? newIdempotencyKey() : undefined;
+  // A caller may pass its own key so a retry of the same action (a second click after a timeout) is one write.
+  const idempotencyKey = WRITES.has(method) ? (options.idempotencyKey ?? newIdempotencyKey()) : undefined;
   let response = await send(path, options, idempotencyKey);
 
   if (response.status === 401 && !options.anonymous) {

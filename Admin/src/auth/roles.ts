@@ -76,6 +76,9 @@ export const CAPABILITIES = {
   transferPayouts: ['SuperAdmin', 'PayoutsOps'],
   /** Rider ledger writes: record cash handed in, release or void a delivery fare (rider-payout contract v1). */
   riderLedger: ['SuperAdmin', 'PayoutsOps'],
+  /** Refunds desk (Admin RefundsController, refunds-desk contract v1.0 §2): reads and "mark refunded" are both PayoutsOps + SuperAdmin. */
+  viewRefunds: ['SuperAdmin', 'PayoutsOps'],
+  settleRefunds: ['SuperAdmin', 'PayoutsOps'],
 
   // delivery ops
   /** Packages awaiting a courier, package lookup. */

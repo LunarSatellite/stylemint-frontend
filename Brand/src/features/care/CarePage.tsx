@@ -6,6 +6,7 @@ import {
   Badge,
   Button,
   Card,
+  Checkbox,
   Group,
   Image,
   Modal,
@@ -88,10 +89,67 @@ function RejectReturnModal({ item, onClose }: { item: ReturnItem | null; onClose
   );
 }
 
+/** "Item received": completes the return and asks whether the item can be sold again (refunds-desk contract §4–5). */
+export function ReceiveReturnModal({ item, onClose }: { item: ReturnItem | null; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [restock, setRestock] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [openedFor, setOpenedFor] = useState<string | null>(null);
+  // Every opening starts ticked, with no old error.
+  if ((item?.id ?? null) !== openedFor) {
+    setOpenedFor(item?.id ?? null);
+    setRestock(true);
+    setError(null);
+  }
+  const complete = useMutation({
+    mutationFn: () => careApi.completeReturn(item!.id, restock),
+    onSuccess: (res) => {
+      const restocked = res?.restocked ?? restock;
+      toastSuccess(restocked ? 'Return completed. The item is back in stock.' : 'Return completed. The item was not put back in stock.');
+      void qc.invalidateQueries({ queryKey: ['care', 'returns'] });
+      onClose();
+    },
+    onError: (e) => setError(messageOf(e)),
+  });
+  const what = item?.resolution === 2 ? 'replacement' : 'refund';
+  return (
+    <Modal opened={!!item} onClose={onClose} title="Item received?">
+      {item && (
+        <Stack gap="md">
+          <Text size="sm">
+            Confirm you received {item.productTitleSnapshot}
+            {item.variantLabelSnapshot ? ` · ${item.variantLabelSnapshot}` : ''} × {item.quantity}. The customer’s {what} is then processed.
+          </Text>
+          {error && (
+            <Alert color="signal" variant="light">
+              {error}
+            </Alert>
+          )}
+          <Checkbox
+            label="Put the item back in stock"
+            description="Untick this if the item is damaged or can’t be sold again."
+            checked={restock}
+            onChange={(e) => setRestock(e.currentTarget.checked)}
+          />
+          <Group justify="flex-end">
+            <Button variant="default" onClick={onClose} disabled={complete.isPending}>
+              Cancel
+            </Button>
+            <Button loading={complete.isPending} onClick={() => complete.mutate()}>
+              Yes, received
+            </Button>
+          </Group>
+        </Stack>
+      )}
+    </Modal>
+  );
+}
+
 function ReturnsTab() {
   const qc = useQueryClient();
   const [state, setState] = useState<string>('1');
   const [rejecting, setRejecting] = useState<ReturnItem | null>(null);
+  const [receiving, setReceiving] = useState<ReturnItem | null>(null);
   const list = useCursorList({
     key: ['care', 'returns'],
     resetKey: state,
@@ -183,20 +241,15 @@ function ReturnsTab() {
                   )}
                   {r.state === ReturnState.Approved && (
                     <Group mt={4}>
-                      <Button
-                        size="xs"
-                        loading={step.isPending}
-                        onClick={() =>
-                          void confirmAction({
-                            title: 'Item received?',
-                            body: `Confirm you received the returned item. The customer’s ${r.resolution === 2 ? 'replacement' : 'refund'} is then processed.`,
-                            confirmLabel: 'Yes, received',
-                          }).then((ok) => ok && step.mutate({ run: () => careApi.completeReturn(r.id), done: 'Return completed' }))
-                        }
-                      >
+                      <Button size="xs" onClick={() => setReceiving(r)}>
                         Item received
                       </Button>
                     </Group>
+                  )}
+                  {r.state === ReturnState.Completed && typeof r.restocked === 'boolean' && (
+                    <Text size="xs" c="dimmed" data-testid="return-restocked">
+                      {r.restocked ? 'Put back in stock' : 'Not put back in stock'}
+                    </Text>
                   )}
                 </Stack>
               </Group>
@@ -206,6 +259,7 @@ function ReturnsTab() {
       )}
       <Pager page={list.page} pageSize={list.pageSize} total={list.total} shown={items.length} hasPrev={list.hasPrev} hasNext={list.hasNext} onPrev={list.prev} onNext={list.next} />
       <RejectReturnModal item={rejecting} onClose={() => setRejecting(null)} />
+      <ReceiveReturnModal item={receiving} onClose={() => setReceiving(null)} />
     </>
   );
 }

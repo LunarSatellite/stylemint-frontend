@@ -236,3 +236,10 @@ Contract `D:\Stylemint\wt\platform-commission-contract.md` (v1.0 §3). Order det
 "StyleMint commission (x%)" and "You receive" (`commissionBreakdown` in `orders/api.ts`: server `vendorNetAmount`, else
 amount − commission); earnings rows show the commission deducted (`platformCommissionText`). Every field is optional —
 absent (older API) hides the lines.
+
+## Returns restock
+
+Contract `D:\Stylemint\wt\refunds-desk-contract.md` (v1.0 §4–5). "Item received" on an approved return opens
+`ReceiveReturnModal` with "Put the item back in stock" (ticked by default) and sends
+`POST v1/vendor/returns/{id}/complete { restock }`. Completed returns show "Put back in stock" / "Not put back in
+stock" only when the server sends `restocked`.

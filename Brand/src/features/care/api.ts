@@ -24,6 +24,8 @@ export interface ReturnItem {
   /** 1 Refund, 2 Replacement */
   resolution: number;
   evidence: { hasDiscrepancy: boolean; findings: { code: string; kind: string; statement: string }[] } | null;
+  /** Whether the item went back in stock when the return was completed. Missing on older servers. */
+  restocked?: boolean | null;
 }
 
 // ---------------------------------------------------------------- warranties (VendorWarrantiesController, Vendor role)
@@ -97,7 +99,8 @@ export const careApi = {
     api.get<PagedResult<ReturnItem>>('/v1/vendor/returns', { state: state ?? undefined, cursor: cursor ?? undefined, pageSize: 25 }),
   acceptReturn: (id: string) => api.post<unknown>(`/v1/vendor/returns/${id}/accept`),
   rejectReturn: (id: string, reason: string) => api.post<unknown>(`/v1/vendor/returns/${id}/reject`, { reason }),
-  completeReturn: (id: string) => api.post<unknown>(`/v1/vendor/returns/${id}/complete`),
+  /** `{ restock }` (refunds-desk contract §4): true puts the returned quantity back in stock; false records it as not resellable. */
+  completeReturn: (id: string, restock: boolean) => api.post<{ restocked?: boolean } | undefined>(`/v1/vendor/returns/${id}/complete`, { restock }),
 
   claims: (state: number | null) => api.get<WarrantyClaim[]>('/v1/vendor/warranties/claims', { state: state ?? undefined }),
   decideClaim: (id: string, approve: boolean, resolutionKind: number | null, note: string | null) =>

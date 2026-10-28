@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installSession, resetSessionForTests } from '@/auth/session';
 import { registerStepUpPrompt, StepUpCancelled, withStepUp } from '@/auth/stepUp';
 import { mockFetch, signInAs } from '@/test/utils';
-import { buildUrl, http } from './client';
+import { buildUrl, http, request } from './client';
 import { ApiError, parseErrorBody } from './errors';
 import { toPage } from './paging';
 
@@ -30,6 +30,15 @@ describe('requests', () => {
     expect(calls[1]!.headers['idempotency-key']).toBeTruthy();
     expect(calls[1]!.headers['idempotency-key']).not.toBe(calls[2]!.headers['idempotency-key']);
     expect(calls[1]!.headers['content-type']).toBe('application/json');
+  });
+
+  it('uses a key the caller passes, so a retried action is one write', async () => {
+    signInAs();
+    const { calls } = mockFetch(() => ({ body: {} }));
+    await request('/v1/admin/refunds/x/mark-refunded', { method: 'POST', body: { reference: 'r' }, idempotencyKey: 'key-1' });
+    await request('/v1/admin/refunds/x/mark-refunded', { method: 'POST', body: { reference: 'r' }, idempotencyKey: 'key-1' });
+    expect(calls[0]!.headers['idempotency-key']).toBe('key-1');
+    expect(calls[1]!.headers['idempotency-key']).toBe('key-1');
   });
 
   it('turns an unreachable server into an offline error, not a crash', async () => {

@@ -43,3 +43,10 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
   `/commission` under Orders & money — category tree with per-row rate (0–50, 2 decimals, `PUT {ratePercent}`, null
   clears; optimistic + rollback + toast), effective rate / "inherited from", history drawer, summary tiles for a date
   range. Read `viewPayouts`; edit `holdPayouts` (SuperAdmin + PayoutsOps, as the endpoint). Bare 404 → not deployed.
+- Refunds desk (`api/refunds.ts`, `features/refunds/`, `refunds-desk-contract.md` v1.0 §2, §5): `/refunds` under Orders &
+  money — cards from `/summary` (to settle, settled this month, to settle by method), tabs To settle (default) /
+  Completed / All (`?view=`), method + date + search filters, cursor list. "Mark refunded" modal says what to pay
+  (eSewa: portal + original transaction; COD: amount to the buyer's name + full phone) and takes reference (1–100) +
+  optional note (≤500); the Idempotency-Key is kept for a retried identical submission (`request({ idempotencyKey })`).
+  409 `REFUND_ALREADY_SETTLED` → toast + refresh; 422 `REFUND_NOT_MANUAL` → inline. Drawer shows the attempt history.
+  `viewRefunds` / `settleRefunds` (SuperAdmin + PayoutsOps). Bare 404 → not deployed.

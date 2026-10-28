@@ -14,6 +14,7 @@ import { deliveryApi } from './delivery';
 import { tryOnApi } from './tryOn';
 import { bookingsAdminApi } from './services';
 import { commissionApi } from './commission';
+import { refundsApi } from './refunds';
 import { journeysAdminApi } from './journeys';
 import bodies from './request-bodies.json';
 
@@ -81,6 +82,7 @@ const WRITES: [string, () => Promise<unknown>][] = [
   ['journey admin end', () => journeysAdminApi.end(ID, 'misleading content')],
   ['platform commission rate', () => commissionApi.setRate(ID, 12.5)],
   ['platform commission rate clear', () => commissionApi.setRate(ID, null)],
+  ['refund mark refunded', () => refundsApi.markRefunded(ID, { reference: 'ESW-REF-1', note: 'paid from the merchant portal' })],
 ];
 
 describe('what a write sends is what the endpoint accepts', () => {
