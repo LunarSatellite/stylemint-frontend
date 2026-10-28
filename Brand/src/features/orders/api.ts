@@ -231,6 +231,14 @@ export interface SubOrderLine {
   lineKind?: number;
   /** Service lines only: the booking (for a service line `lineSubtotalAmount` is the part paid now). */
   booking?: OrderBooking | null;
+  /**
+   * StyleMint's platform commission on this line (platform-commission contract v1.0 §3): charged on the full line
+   * price at the category's rate, snapshotted when the order was placed. Absent on an older backend.
+   */
+  platformCommissionAmount?: number | null;
+  platformCommissionRatePercent?: number | null;
+  /** What the seller receives for this line after StyleMint's (and any creator's) commission, when the server sends it. */
+  vendorNetAmount?: number | null;
 }
 
 export type RiderRatingTag =
@@ -314,6 +322,37 @@ export interface SubOrderDetail {
    */
   cashToCollectAmount?: number | null;
   cashToCollectCurrency?: string | null;
+  /** StyleMint's platform commission over all lines (contract v1.0 §3). Absent on an older backend. */
+  platformCommissionAmount?: number | null;
+  /** The rate when every line has the same one; null when the lines differ. */
+  platformCommissionRatePercent?: number | null;
+  /** What the seller receives for the items after StyleMint's (and any creator's) commission, when the server sends it. */
+  vendorNetAmount?: number | null;
+}
+
+/** "12.5%" — up to two decimals. */
+export const formatRate = (n: number) => `${Number(n.toFixed(2))}%`;
+
+/** "StyleMint commission (10%)", or without the rate when it is unknown or differs between lines. */
+export function commissionLabel(rate: number | null | undefined): string {
+  return typeof rate === 'number' && Number.isFinite(rate) ? `StyleMint commission (${formatRate(rate)})` : 'StyleMint commission';
+}
+
+/**
+ * The commission and "you receive" for an amount, or null when the server does not send the commission (an older
+ * backend) — the screen then hides both lines. "You receive" is the server's vendor net when it sends one, else the
+ * amount less StyleMint's commission (`computed`: a creator's commission, if any, is not in it).
+ */
+export function commissionBreakdown(
+  amount: number,
+  fields: { platformCommissionAmount?: number | null; platformCommissionRatePercent?: number | null; vendorNetAmount?: number | null },
+): { commission: number; rate: number | null; receive: number; computed: boolean } | null {
+  const c = fields.platformCommissionAmount;
+  if (typeof c !== 'number' || !Number.isFinite(c)) return null;
+  const rate = typeof fields.platformCommissionRatePercent === 'number' ? fields.platformCommissionRatePercent : null;
+  const net = fields.vendorNetAmount;
+  if (typeof net === 'number' && Number.isFinite(net)) return { commission: c, rate, receive: net, computed: false };
+  return { commission: c, rate, receive: Math.round((amount - c) * 100) / 100, computed: true };
 }
 
 export interface PackingSlip {

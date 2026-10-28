@@ -229,3 +229,10 @@ Collaborative journey reels — contract `D:\Stylemint\wt\journey-reels-contract
 - Money via `formatMoney` ("Rs 1,234"), never hand-formatted.
 - No `dangerouslySetInnerHTML`. No auth tokens in localStorage unless "keep me signed in".
 - Do not touch `../Admin/` (separate app, separate branch).
+
+## Platform commission
+
+Contract `D:\Stylemint\wt\platform-commission-contract.md` (v1.0 §3). Order detail shows per line and in the totals
+"StyleMint commission (x%)" and "You receive" (`commissionBreakdown` in `orders/api.ts`: server `vendorNetAmount`, else
+amount − commission); earnings rows show the commission deducted (`platformCommissionText`). Every field is optional —
+absent (older API) hides the lines.

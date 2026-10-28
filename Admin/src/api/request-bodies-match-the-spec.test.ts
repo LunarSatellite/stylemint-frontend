@@ -13,6 +13,7 @@ import { configApi, flagsApi } from './platform';
 import { deliveryApi } from './delivery';
 import { tryOnApi } from './tryOn';
 import { bookingsAdminApi } from './services';
+import { commissionApi } from './commission';
 import { journeysAdminApi } from './journeys';
 import bodies from './request-bodies.json';
 
@@ -78,6 +79,8 @@ const WRITES: [string, () => Promise<unknown>][] = [
   ['booking commission category', () => bookingsAdminApi.setCategory(1, 12)],
   ['booking commission vendor', () => bookingsAdminApi.setVendor(ID, 8, 'launch partner')],
   ['journey admin end', () => journeysAdminApi.end(ID, 'misleading content')],
+  ['platform commission rate', () => commissionApi.setRate(ID, 12.5)],
+  ['platform commission rate clear', () => commissionApi.setRate(ID, null)],
 ];
 
 describe('what a write sends is what the endpoint accepts', () => {

@@ -39,3 +39,7 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
   city / business / id, status, vendor id; page-numbered), drawer with members and every step (closed ones too), "End
   journey…" with a required reason (3–500). Behind `viewModeration` / `decideModeration` (server also lets SupportAgent read).
 - Build, lint and test only on the VPS in Docker (see README) - never on the Windows workstation.
+- Platform commission (`api/commission.ts`, `features/commission/`, `platform-commission-contract.md` v1.0 §1, §3, §4):
+  `/commission` under Orders & money — category tree with per-row rate (0–50, 2 decimals, `PUT {ratePercent}`, null
+  clears; optimistic + rollback + toast), effective rate / "inherited from", history drawer, summary tiles for a date
+  range. Read `viewPayouts`; edit `holdPayouts` (SuperAdmin + PayoutsOps, as the endpoint). Bare 404 → not deployed.

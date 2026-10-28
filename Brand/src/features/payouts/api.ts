@@ -42,6 +42,21 @@ export interface LedgerEntry {
   occurredUtc: string;
   settledUtc: string | null;
   note: string | null;
+  /**
+   * On a sale (VendorNet) row: StyleMint's platform commission already taken out of `amountValue`, and its rate
+   * (platform-commission contract v1.0). Absent on an older backend, and on rows without one.
+   */
+  platformCommissionAmount?: number | null;
+  platformCommissionRatePercent?: number | null;
+}
+
+/** "StyleMint commission (10%) deducted: Rs 250.00", or null when the row carries none. */
+export function platformCommissionText(e: Pick<LedgerEntry, 'platformCommissionAmount' | 'platformCommissionRatePercent' | 'amountCurrency'>, format: (amount: number, currency: string) => string): string | null {
+  const c = e.platformCommissionAmount;
+  if (typeof c !== 'number' || !Number.isFinite(c) || c === 0) return null;
+  const r = e.platformCommissionRatePercent;
+  const rate = typeof r === 'number' && Number.isFinite(r) ? ` (${Number(r.toFixed(2))}%)` : '';
+  return `StyleMint commission${rate} deducted: ${format(Math.abs(c), e.amountCurrency)}`;
 }
 
 export const PayoutState = { Requested: 1, Processing: 2, Paid: 3, Failed: 4, Held: 5 } as const;

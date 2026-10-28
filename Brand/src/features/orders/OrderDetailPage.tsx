@@ -7,7 +7,7 @@ import { PageHeader } from '../../components/PageHeader';
 import { SectionCard } from '../../components/SectionCard';
 import { ErrorBlock, ListSkeleton } from '../../components/StateBlocks';
 import { formatDateTime, formatMoney, humanize } from '../../lib/format';
-import { ordersApi, isMoving, SubOrderState, type SubOrderDetail } from './api';
+import { commissionBreakdown, commissionLabel, ordersApi, isMoving, SubOrderState, type SubOrderDetail } from './api';
 import { ChannelBadge, OrderStateBadge } from './components';
 import { DeliveryPartnerDrawer } from './DeliveryPartner';
 import { OrderActionBar } from './OrderActions';
@@ -131,6 +131,8 @@ export default function OrderDetailPage() {
   // A service (booking) sub-order: no shipping, no fulfilment actions, no rider, no address or phone.
   const service = isServiceOrder(o);
   const productLines = o.lines.filter((l) => !isServiceLine(l));
+  // StyleMint's commission over the items; null on an older backend (both lines hidden).
+  const totalCut = commissionBreakdown(o.lineSubtotalAmount, o);
   const guests = [...new Set(o.lines.flatMap((l) => (l.booking ? guestNames(l.booking) : [])))];
 
   return (
@@ -191,31 +193,56 @@ export default function OrderDetailPage() {
             ) : (
               <SectionCard title="Items" description={`${o.itemCount} ${o.itemCount === 1 ? 'item' : 'items'}`}>
                 <Stack gap="sm">
-                  {productLines.map((l) => (
-                    <Group key={l.id} wrap="nowrap" align="flex-start" justify="space-between">
-                      <Group wrap="nowrap" align="flex-start" gap="sm" style={{ minWidth: 0 }}>
-                        <Avatar src={l.thumbnailUrlSnapshot ?? undefined} radius="md" size={56} color="forest">
-                          <IconPhoto size={20} />
-                        </Avatar>
-                        <div style={{ minWidth: 0 }}>
-                          <Text size="sm" fw={600}>
-                            {l.productTitleSnapshot}
+                  {productLines.map((l) => {
+                    const cut = commissionBreakdown(l.lineSubtotalAmount, l);
+                    return (
+                      <Stack key={l.id} gap={4}>
+                        <Group wrap="nowrap" align="flex-start" justify="space-between">
+                          <Group wrap="nowrap" align="flex-start" gap="sm" style={{ minWidth: 0 }}>
+                            <Avatar src={l.thumbnailUrlSnapshot ?? undefined} radius="md" size={56} color="forest">
+                              <IconPhoto size={20} />
+                            </Avatar>
+                            <div style={{ minWidth: 0 }}>
+                              <Text size="sm" fw={600}>
+                                {l.productTitleSnapshot}
+                              </Text>
+                              {(l.optionLabel || l.variantLabelSnapshot) && (
+                                <Text size="xs" c="dimmed">
+                                  {l.optionLabel ?? l.variantLabelSnapshot}
+                                </Text>
+                              )}
+                              <Text size="xs" c="dimmed">
+                                {l.quantity} × {formatMoney({ amount: l.unitPriceAmount, currency: l.unitPriceCurrency })}
+                              </Text>
+                            </div>
+                          </Group>
+                          <Text size="sm" fw={600} style={{ flexShrink: 0 }}>
+                            {formatMoney({ amount: l.lineSubtotalAmount, currency: l.lineSubtotalCurrency })}
                           </Text>
-                          {(l.optionLabel || l.variantLabelSnapshot) && (
-                            <Text size="xs" c="dimmed">
-                              {l.optionLabel ?? l.variantLabelSnapshot}
-                            </Text>
-                          )}
-                          <Text size="xs" c="dimmed">
-                            {l.quantity} × {formatMoney({ amount: l.unitPriceAmount, currency: l.unitPriceCurrency })}
-                          </Text>
-                        </div>
-                      </Group>
-                      <Text size="sm" fw={600} style={{ flexShrink: 0 }}>
-                        {formatMoney({ amount: l.lineSubtotalAmount, currency: l.lineSubtotalCurrency })}
-                      </Text>
-                    </Group>
-                  ))}
+                        </Group>
+                        {cut && (
+                          <Stack gap={0} pl={68} data-testid={`line-commission-${l.id}`}>
+                            <Group justify="space-between" wrap="nowrap">
+                              <Text size="xs" c="dimmed">
+                                {commissionLabel(cut.rate)}
+                              </Text>
+                              <Text size="xs" c="dimmed">
+                                −{formatMoney({ amount: cut.commission, currency: l.lineSubtotalCurrency }, { decimals: 2 })}
+                              </Text>
+                            </Group>
+                            <Group justify="space-between" wrap="nowrap">
+                              <Text size="xs" fw={600}>
+                                You receive
+                              </Text>
+                              <Text size="xs" fw={600}>
+                                {formatMoney({ amount: cut.receive, currency: l.lineSubtotalCurrency }, { decimals: 2 })}
+                              </Text>
+                            </Group>
+                          </Stack>
+                        )}
+                      </Stack>
+                    );
+                  })}
                   <Divider />
                   <Group justify="space-between">
                     <Text size="sm" c="dimmed">
@@ -233,6 +260,30 @@ export default function OrderDetailPage() {
                     <Text fw={700}>{o.paymentPlan ? 'Total (paid by EMI)' : 'Total'}</Text>
                     <Text fw={700}>{formatMoney({ amount: o.subtotalAmount, currency: o.subtotalCurrency })}</Text>
                   </Group>
+                  {totalCut && (
+                    <Stack gap={4} data-testid="order-commission">
+                      <Divider />
+                      <Group justify="space-between">
+                        <Text size="sm" c="dimmed">
+                          {commissionLabel(totalCut.rate)}
+                        </Text>
+                        <Text size="sm" data-testid="order-commission-amount">
+                          −{formatMoney({ amount: totalCut.commission, currency: o.lineSubtotalCurrency }, { decimals: 2 })}
+                        </Text>
+                      </Group>
+                      <Group justify="space-between">
+                        <Text fw={700}>You receive</Text>
+                        <Text fw={700} data-testid="order-you-receive">
+                          {formatMoney({ amount: totalCut.receive, currency: o.lineSubtotalCurrency }, { decimals: 2 })}
+                        </Text>
+                      </Group>
+                      <Text size="xs" c="dimmed">
+                        StyleMint’s commission is charged on the full price of the items, at the category’s rate when the order was placed.
+                        {totalCut.computed ? ' A creator’s commission, if the sale came through a creator, is taken separately.' : ''}
+                        {o.paymentPlan ? ' On EMI orders it is taken from every payment, not at the start.' : ''}
+                      </Text>
+                    </Stack>
+                  )}
                 </Stack>
               </SectionCard>
             )}

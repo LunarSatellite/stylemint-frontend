@@ -39,9 +39,11 @@ import {
   PAYOUT_MIN,
   payoutFee,
   payoutsApi,
+  platformCommissionText,
   PayoutState,
   payoutStateColor,
   payoutStateLabel,
+  type LedgerEntry,
   type PayoutDestination,
 } from './api';
 
@@ -325,6 +327,17 @@ function PayoutsList() {
   );
 }
 
+/** On a sale row: how much StyleMint's platform commission took out of it. Nothing when the row has none (or an older API). */
+function PlatformCommissionNote({ entry }: { entry: LedgerEntry }) {
+  const text = platformCommissionText(entry, (amount, currency) => formatMoney({ amount, currency }, { decimals: 2 }));
+  if (!text) return null;
+  return (
+    <Text size="xs" c="dimmed" data-testid="entry-platform-commission">
+      {text}
+    </Text>
+  );
+}
+
 function EntriesList() {
   const list = useCursorList({ key: ['payouts', 'entries'], fetchPage: payoutsApi.entries });
   if (list.query.isPending) return <ListSkeleton rows={4} height={44} />;
@@ -346,6 +359,7 @@ function EntriesList() {
                 <Text size="xs" c="dimmed">
                   {formatDateTime(e.occurredUtc)} · {ledgerStateLabel[e.state] ?? ''}
                 </Text>
+                <PlatformCommissionNote entry={e} />
               </div>
               <Text size="sm" fw={650} c={e.amountValue < 0 ? 'var(--sm-danger-text)' : 'var(--sm-good-text)'} style={{ flexShrink: 0 }}>
                 {e.amountValue > 0 ? '+' : ''}
