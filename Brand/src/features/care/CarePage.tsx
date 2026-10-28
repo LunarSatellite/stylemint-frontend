@@ -111,8 +111,17 @@ export function ReceiveReturnModal({ item, onClose }: { item: ReturnItem | null;
       void qc.invalidateQueries({ queryKey: ['care', 'returns'] });
       onClose();
     },
-    // A rider return not yet handed to the seller answers 409: say so in plain words.
-    onError: (e) => setError(pickupErrorMessage(e)),
+    onError: (e) => {
+      // 409 return.pickup_not_received: the rider has not handed this return over yet. Say so,
+      // re-read the pickup (which then gates "Item received") and close.
+      if (isPickupNotReceived(e)) {
+        void qc.invalidateQueries({ queryKey: ['care', 'returns'] });
+        toastError(new Error(PICKUP_NOT_RECEIVED_TEXT));
+        onClose();
+        return;
+      }
+      setError(pickupErrorMessage(e));
+    },
   });
   const what = item?.resolution === 2 ? 'replacement' : 'refund';
   return (
