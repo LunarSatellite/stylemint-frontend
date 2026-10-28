@@ -148,7 +148,7 @@ const COUNTERS: Counter[] = [
     capability: 'viewSupport',
     to: '/returns',
     icon: <IconReceiptRefund size={16} />,
-    load: async (signal) => ({ count: (await returnsApi.queue('1', 1, 1, signal)).total ?? 0 }),
+    load: async (signal) => ({ count: (await returnsApi.queue({ state: '1', page: 1, pageSize: 1 }, signal)).total ?? 0 }),
     tone: busy,
   },
   {

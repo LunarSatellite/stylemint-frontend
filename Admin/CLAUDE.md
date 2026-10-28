@@ -54,3 +54,10 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
   optional note (≤500); the Idempotency-Key is kept for a retried identical submission (`request({ idempotencyKey })`).
   409 `REFUND_ALREADY_SETTLED` → toast + refresh; 422 `REFUND_NOT_MANUAL` → inline. Drawer shows the attempt history.
   `viewRefunds` / `settleRefunds` (SuperAdmin + PayoutsOps). Bare 404 → not deployed.
+- Returns overview (`api/support.ts` `returnsApi`, `features/support/ReturnsPage.tsx`): `/returns` opens on **All** (no
+  `state` sent; the server lists every state) with tabs All / Requested (1) / Accepted - waiting for item (2) / Returned (4)
+  / Rejected (3) / Cancelled (5), each counted from `GET v1/admin/support/returns/summary` (same `search`, `fromUtc`,
+  `toUtc`; bare 404 → tabs without counts). `?state=` keeps an explicit filter; `?q=` = order number; `?from=&to=` (local
+  days) → half-open `fromUtc`/`toUtc`. Rows: item × qty, order, buyer, seller, reason, wants, state, pickup, refund (or the
+  returned items' value), dates. Drawer: timeline, request, money, buyer photos, rider pickup + "Open in rider pickups"
+  (`?view=pickups&open=<returnId>`), evidence. Behind `viewSupport`.

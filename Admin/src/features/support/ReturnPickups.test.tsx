@@ -73,7 +73,7 @@ describe('return pickups (read-only)', () => {
     expect(within(facts).getByRole('img', { name: 'Collection photo' })).toBeInTheDocument();
     expect(within(facts).getByRole('table', { name: 'Hops' })).toHaveTextContent('Failed');
     expect(within(facts).getByRole('table', { name: 'Proofs' })).toHaveTextContent('Buyer hand-over');
-    expect(screen.getByText('Changed mind')).toBeInTheDocument();
+    expect(screen.getAllByText('Changed mind').length).toBeGreaterThan(0);
   });
 
   it('says the pickup is not available yet when the endpoint is not deployed', async () => {

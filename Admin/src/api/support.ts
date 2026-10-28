@@ -3,8 +3,26 @@ import { buildUrl, http } from './client';
 import { toPage, type Page } from './paging';
 
 export const RETURN_STATE: Record<number, string> = { 1: 'Submitted', 2: 'Approved', 3: 'Rejected', 4: 'Completed', 5: 'Cancelled' };
+/** What the overview calls each state (the owner's words: asked to return, waiting for the item, returned). */
+export const RETURN_STATE_LABEL: Record<number, string> = { 1: 'Requested', 2: 'Accepted', 3: 'Rejected', 4: 'Returned', 5: 'Cancelled' };
 export const RETURN_TONE: Record<number, string> = { 1: 'amber', 2: 'blue', 3: 'signal', 4: 'forest', 5: 'gray' };
 export const RETURN_RESOLUTION: Record<number, string> = { 1: 'Refund', 2: 'Replacement' };
+
+/** The overview tabs, in workflow order. `''` = every state (the default). */
+export const RETURN_TABS: { value: string; label: string; key: string | null }[] = [
+  { value: '', label: 'All', key: null },
+  { value: '1', label: 'Requested', key: 'requested' },
+  { value: '2', label: 'Accepted (waiting for item)', key: 'accepted' },
+  { value: '4', label: 'Returned', key: 'returned' },
+  { value: '3', label: 'Rejected', key: 'rejected' },
+  { value: '5', label: 'Cancelled', key: 'cancelled' },
+];
+
+export const CANCEL_REASON: Record<string, string> = {
+  buyer_cancelled: 'Buyer cancelled',
+  buyer_unavailable: 'Buyer unavailable',
+  handover_refused: 'Hand-over refused',
+};
 
 export interface ReturnItem {
   id: string;
@@ -27,6 +45,45 @@ export interface ReturnItem {
   reasonCategory?: string | null;
   pickupFarePayer?: string | null;
   pickupStage?: string | null;
+  /** Admin returns overview (additive; absent on older servers). */
+  reasonCategoryLabel?: string | null;
+  reasonCode?: string | null;
+  buyerDisplayName?: string | null;
+  vendorDisplayName?: string | null;
+  unitPriceAmount?: number | null;
+  lineAmount?: number | null;
+  currency?: string | null;
+  refundAmount?: number | null;
+  refundStatus?: string | null;
+  refundCompletedUtc?: string | null;
+  refundBreakdown?: { lineAmount: number | null; pickupFareDeducted: number; refundAmount: number; currency: string | null } | null;
+  pickupMode?: string | null;
+  pickupFareAmount?: number | null;
+  receivedUtc?: string | null;
+  completedUtc?: string | null;
+  restocked?: boolean | null;
+  cancelledUtc?: string | null;
+  cancelReason?: string | null;
+  cancelNote?: string | null;
+  photoUrls?: string[] | null;
+}
+
+export interface ReturnsSummary {
+  total: number;
+  refundTotal: number;
+  refundedTotal: number;
+  currency: string;
+  states: { state: number; key: string; label: string; count: number; refundTotal: number }[];
+}
+
+export interface ReturnsQuery {
+  /** `''` = every state. */
+  state?: string;
+  search?: string;
+  fromUtc?: string;
+  toUtc?: string;
+  page: number;
+  pageSize: number;
 }
 
 export interface ReturnEvidence {
@@ -95,8 +152,20 @@ export interface Ticket extends TicketSummary {
 const enc = encodeURIComponent;
 
 export const returnsApi = {
-  queue: async (state: string, page: number, pageSize: number, signal?: AbortSignal): Promise<Page<ReturnItem>> =>
-    toPage<ReturnItem>(await http.get('/v1/admin/support/returns', { state: state || undefined, skip: (page - 1) * pageSize, take: pageSize }, signal), page, pageSize),
+  /** Every state when `state` is blank; newest first. `search` = order number (any part). Dates bound the submitted date, half-open. */
+  queue: async (q: ReturnsQuery, signal?: AbortSignal): Promise<Page<ReturnItem>> =>
+    toPage<ReturnItem>(
+      await http.get(
+        '/v1/admin/support/returns',
+        { state: q.state || undefined, search: q.search || undefined, fromUtc: q.fromUtc, toUtc: q.toUtc, skip: (q.page - 1) * q.pageSize, take: q.pageSize },
+        signal,
+      ),
+      q.page,
+      q.pageSize,
+    ),
+  /** Counts per state for the overview tabs (same range and search as the list). Bare 404 on older servers. */
+  summary: (q: { search?: string; fromUtc?: string; toUtc?: string }, signal?: AbortSignal) =>
+    http.get<ReturnsSummary>('/v1/admin/support/returns/summary', { search: q.search || undefined, fromUtc: q.fromUtc, toUtc: q.toUtc }, signal),
   evidence: (id: string, signal?: AbortSignal) => http.get<ReturnEvidence>(`/v1/admin/support/returns/${enc(id)}/evidence`, undefined, signal),
 };
 
