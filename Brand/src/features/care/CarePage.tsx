@@ -44,7 +44,7 @@ import {
   type WarrantyClaim,
 } from './api';
 import { ReturnPickupPanel, useReturnPickups } from './ReturnPickupPanel';
-import { isPickupNotReceived, PICKUP_NOT_RECEIVED_TEXT } from './returnPickup';
+import { isPickupNotReceived, PICKUP_NOT_RECEIVED_TEXT, pickupErrorMessage } from './returnPickup';
 
 // ---------------------------------------------------------------- returns
 
@@ -111,7 +111,8 @@ export function ReceiveReturnModal({ item, onClose }: { item: ReturnItem | null;
       void qc.invalidateQueries({ queryKey: ['care', 'returns'] });
       onClose();
     },
-    onError: (e) => setError(messageOf(e)),
+    // A rider return not yet handed to the seller answers 409: say so in plain words.
+    onError: (e) => setError(pickupErrorMessage(e)),
   });
   const what = item?.resolution === 2 ? 'replacement' : 'refund';
   return (
