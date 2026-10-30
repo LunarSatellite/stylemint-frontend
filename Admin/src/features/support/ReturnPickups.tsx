@@ -1,8 +1,31 @@
-import { useEffect } from 'react';
-import { Anchor, Badge, Image, Select, SimpleGrid, Skeleton, Stack, Table, Text } from '@mantine/core';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
-import { ApiError } from '@/api/errors';
-import { FAILURE_CODE, FARE_PAYER, label, PICKUP_STAGE, PICKUP_STAGE_TONE, returnPickupsApi, type ReturnPickupDto, type WireMoney } from '@/api/returnPickups';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Anchor, Badge, Button, Group, Image, Modal, Select, SimpleGrid, Skeleton, Stack, Table, Text, Textarea } from '@mantine/core';
+import { notifications } from '@mantine/notifications';
+import { IconAlertTriangle } from '@tabler/icons-react';
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query';
+import { newIdempotencyKey } from '@/api/client';
+import { ApiError, messageOf } from '@/api/errors';
+import {
+  ACTION_NOT_ALLOWED,
+  ACTION_NOT_ALLOWED_TEXT,
+  FAILURE_CODE,
+  FARE_PAYER,
+  isPickupAction,
+  label,
+  needsAction,
+  PICKUP_ACTION_ORDER,
+  PICKUP_ACTIONS,
+  PICKUP_STAGE,
+  PICKUP_STAGE_TONE,
+  RESOLVE_NOTE_MAX,
+  returnPickupsApi,
+  type PickupAction,
+  type ReturnPickupDetail,
+  type ReturnPickupDto,
+  type WireMoney,
+} from '@/api/returnPickups';
+import { useAuth } from '@/auth/guards';
+import { withStepUp } from '@/auth/stepUp';
 import { FieldGrid, TwoLine, When } from '@/components/Bits';
 import { DataTable, type Column } from '@/components/DataTable';
 import { DetailDrawer } from '@/components/DetailDrawer';
@@ -23,6 +46,176 @@ export function PickupStageBadge({ stage }: { stage: string | null | undefined }
   );
 }
 
+/** NeedsSupport / AttemptFailed / NoRiders: support has to unblock it (return-fixes contract §B). */
+export function NeedsActionBadge() {
+  return (
+    <Badge variant="filled" color="signal" data-testid="needs-action">
+      Needs action
+    </Badge>
+  );
+}
+
+const detailKey = (returnRequestId: string) => ['return-pickups', 'detail', returnRequestId] as const;
+
+/**
+ * Confirm a support action: says what happens, takes the required note (1–500) the audit row keeps. The same
+ * submission retried keeps its Idempotency-Key; another action or a changed note is a new write with a new key.
+ */
+export function ResolvePickupModal({
+  returnRequestId,
+  action,
+  onClose,
+  onMissing,
+}: {
+  returnRequestId: string;
+  action: PickupAction | null;
+  onClose: () => void;
+  /** The resolve route answered a bare 404: this server does not have it yet. */
+  onMissing: () => void;
+}) {
+  const qc = useQueryClient();
+  const [note, setNote] = useState('');
+  const [touched, setTouched] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const keyFor = useRef<{ body: string; key: string } | null>(null);
+
+  useEffect(() => {
+    setNote('');
+    setTouched(false);
+    setBusy(false);
+    setError(null);
+    keyFor.current = null;
+  }, [action, returnRequestId]);
+
+  const spec = action ? PICKUP_ACTIONS[action] : null;
+  const trimmed = note.trim();
+  const noteError = !trimmed ? 'Write a note for the audit log' : trimmed.length > RESOLVE_NOTE_MAX ? `Keep the note under ${RESOLVE_NOTE_MAX} characters` : null;
+
+  const refresh = () => {
+    void qc.invalidateQueries({ queryKey: ['return-pickups'] });
+    void qc.invalidateQueries({ queryKey: ['returns'] });
+  };
+  const close = () => {
+    if (!busy) onClose();
+  };
+
+  const submit = async () => {
+    if (!action || !spec) return;
+    setTouched(true);
+    if (noteError) return;
+    const body = { action, note: trimmed };
+    const bodyKey = JSON.stringify(body);
+    if (!keyFor.current || keyFor.current.body !== bodyKey) keyFor.current = { body: bodyKey, key: newIdempotencyKey() };
+    const key = keyFor.current.key;
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await withStepUp(() => returnPickupsApi.resolve(returnRequestId, body, key));
+      if (result) qc.setQueryData(detailKey(returnRequestId), result);
+      notifications.show({ color: 'forest', title: 'Done', message: `${spec.label}: recorded.` });
+      refresh();
+      onClose();
+    } catch (caught) {
+      if (caught instanceof ApiError && caught.isMissingEndpoint) {
+        notifications.show({ color: 'amber', title: 'Not available yet', message: 'Support actions for return pickups are not on this server yet.' });
+        onMissing();
+        onClose();
+      } else if (caught instanceof ApiError && caught.code === ACTION_NOT_ALLOWED) {
+        setError(ACTION_NOT_ALLOWED_TEXT);
+        refresh();
+      } else if (caught instanceof ApiError && caught.code === 'mfa.step_up_cancelled') {
+        setError('Cancelled - nothing was changed.');
+      } else {
+        const cid = caught instanceof ApiError && caught.correlationId ? ` (reference ${caught.correlationId})` : '';
+        setError(`${messageOf(caught)}${cid}`);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <Modal opened={action !== null} onClose={close} title={<Text fw={650}>{spec?.label}</Text>} size="md" closeOnClickOutside={!busy}>
+      {spec && (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void submit();
+          }}
+          noValidate
+        >
+          <Stack gap="md">
+            <Text size="sm">{spec.consequence}</Text>
+            <Textarea
+              label="Note"
+              description={`Why - kept in the audit log. Up to ${RESOLVE_NOTE_MAX} characters.`}
+              required
+              autosize
+              minRows={3}
+              maxRows={8}
+              value={note}
+              onChange={(e) => setNote(e.currentTarget.value)}
+              error={touched ? noteError : null}
+              data-autofocus
+            />
+            {error && (
+              <Alert color="signal" variant="light" icon={<IconAlertTriangle size={16} />} role="alert">
+                {error}
+              </Alert>
+            )}
+            <Group justify="flex-end" gap="sm">
+              <Button variant="default" onClick={close} disabled={busy}>
+                Back
+              </Button>
+              <Button type="submit" color={spec.danger ? 'signal' : undefined} loading={busy}>
+                {spec.label}
+              </Button>
+            </Group>
+          </Stack>
+        </form>
+      )}
+    </Modal>
+  );
+}
+
+/** Set once the resolve route answered a bare 404, so the buttons stay hidden for the rest of this visit. */
+let resolveMissing = false;
+/** Tests only. */
+export function __resetResolveMissingForTests() {
+  resolveMissing = false;
+}
+
+/** One button per `allowedActions` entry, for SupportAgent / SuperAdmin. Nothing on an older server. */
+function PickupActions({ returnRequestId, pickup }: { returnRequestId: string; pickup: ReturnPickupDetail }) {
+  const { can } = useAuth();
+  const [action, setAction] = useState<PickupAction | null>(null);
+  const [missing, setMissing] = useState(resolveMissing);
+  const allowed = new Set((pickup.allowedActions ?? []).filter(isPickupAction));
+  const actions = PICKUP_ACTION_ORDER.filter((a) => allowed.has(a));
+  if (!can('resolveReturnPickups') || missing || actions.length === 0) return null;
+  return (
+    <>
+      <Group gap="xs" data-testid="pickup-actions">
+        {actions.map((a) => (
+          <Button key={a} size="xs" variant={PICKUP_ACTIONS[a].danger ? 'light' : 'filled'} color={PICKUP_ACTIONS[a].danger ? 'signal' : undefined} onClick={() => setAction(a)}>
+            {PICKUP_ACTIONS[a].label}
+          </Button>
+        ))}
+      </Group>
+      <ResolvePickupModal
+        returnRequestId={returnRequestId}
+        action={action}
+        onClose={() => setAction(null)}
+        onMissing={() => {
+          resolveMissing = true;
+          setMissing(true);
+        }}
+      />
+    </>
+  );
+}
+
 function fareText(p: ReturnPickupDto) {
   if (!p.fare) return null;
   const amount = money(p.fare.amount);
@@ -30,10 +223,13 @@ function fareText(p: ReturnPickupDto) {
   return null;
 }
 
-/** The pickup's facts (stage, rider, fare, payer, attempts, photos, hops, proofs). Read-only. */
+/**
+ * The pickup's facts (stage, rider, fare, payer, attempts, photos, hops, proofs), a "Needs action" badge, and the
+ * support actions the server allows (return-fixes contract §B).
+ */
 export function ReturnPickupFacts({ returnRequestId }: { returnRequestId: string }) {
   const q = useQuery({
-    queryKey: ['return-pickups', 'detail', returnRequestId],
+    queryKey: detailKey(returnRequestId),
     queryFn: ({ signal }) => returnPickupsApi.get(returnRequestId, signal),
     staleTime: 30_000,
   });
@@ -54,6 +250,15 @@ export function ReturnPickupFacts({ returnRequestId }: { returnRequestId: string
   const proofs = p.proofs ?? [];
   return (
     <Stack gap="md" data-testid="admin-return-pickup">
+      {needsAction(p) && (
+        <Alert color="signal" variant="light" icon={<IconAlertTriangle size={16} />} p="xs">
+          <Group gap="xs">
+            <NeedsActionBadge />
+            <Text size="sm">This pickup is stuck. Check with the seller and the rider, then choose what happens next.</Text>
+          </Group>
+        </Alert>
+      )}
+      <PickupActions returnRequestId={returnRequestId} pickup={p} />
       <FieldGrid
         fields={[
           { label: 'Stage', value: <PickupStageBadge stage={p.stage} /> },
@@ -151,7 +356,7 @@ export function ReturnPickupFacts({ returnRequestId }: { returnRequestId: string
   );
 }
 
-/** Every return pickup, filterable by stage (cursor list). Read-only: support works through tickets. */
+/** Every return pickup, filterable by stage (cursor list). Stuck ones carry "Needs action"; the drawer has the actions. */
 export function ReturnPickupsList() {
   const list = useListState(['view', 'stage'] as const, { pageSize: 25 });
   const cursors = useCursorPages(`${list.filters.stage}|${list.pageSize}`, list.page, list.setPage);
@@ -174,7 +379,16 @@ export function ReturnPickupsList() {
       header: 'Parcel',
       render: (p) => <TwoLine primary={<span className="sm-mono">{p.trackingNumber ?? '—'}</span>} secondary={p.mode ? humanize(p.mode) : undefined} />,
     },
-    { key: 'stage', header: 'Stage', render: (p) => <PickupStageBadge stage={p.stage} /> },
+    {
+      key: 'stage',
+      header: 'Stage',
+      render: (p) => (
+        <Group gap={6} wrap="wrap">
+          <PickupStageBadge stage={p.stage} />
+          {needsAction(p) && <NeedsActionBadge />}
+        </Group>
+      ),
+    },
     { key: 'rider', header: 'Rider', visibleFrom: 'sm', render: (p) => p.rider?.displayName ?? '—' },
     { key: 'payer', header: 'Fare payer', visibleFrom: 'md', render: (p) => (p.fare?.payer ? label(FARE_PAYER, p.fare.payer) : '—') },
     { key: 'fare', header: 'Fare', visibleFrom: 'md', render: (p) => fareText(p) ?? (money(p.fare?.upTo) ? `up to ${money(p.fare?.upTo)}` : '—') },
@@ -217,10 +431,17 @@ export function ReturnPickupsList() {
         opened={!!list.selected}
         onClose={() => list.open(null)}
         title={selected?.trackingNumber ?? 'Return pickup'}
-        badges={selected && <PickupStageBadge stage={selected.stage} />}
+        badges={
+          selected && (
+            <>
+              <PickupStageBadge stage={selected.stage} />
+              {needsAction(selected) && <NeedsActionBadge />}
+            </>
+          )
+        }
       >
         {list.selected && (
-          <SectionCard title="Return pickup" description="Read-only. Codes are never shown.">
+          <SectionCard title="Return pickup" description="Codes are never shown.">
             <ReturnPickupFacts returnRequestId={list.selected} />
           </SectionCard>
         )}

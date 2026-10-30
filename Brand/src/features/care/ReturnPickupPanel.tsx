@@ -5,7 +5,14 @@ import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/rea
 import { formatDateTime, formatMoney, fromNow, humanize, initialsOf } from '../../lib/format';
 import { confirmAction, toastSuccess } from '../../lib/notify';
 import { Countdown, RiderRow } from '../orders/DeliveryPartner';
-import type { DeliveryRequest, InterestedRider } from '../orders/api';
+import {
+  NO_PRO_RIDER_HIGH_VALUE,
+  NO_VERIFIED_RIDER_HIGH_VALUE,
+  offersVerifiedRider,
+  VERIFIED_RIDER_NOTE,
+  type DeliveryRequest,
+  type InterestedRider,
+} from '../orders/api';
 import { ReturnState, type ReturnItem } from './api';
 import {
   CONFIRM_STAGES,
@@ -181,14 +188,28 @@ function ReturnRiderPicker({ returnId, pickup, legacy }: { returnId: string; pic
   const refresh = () => void qc.invalidateQueries({ queryKey: pickupKey(returnId) });
 
   const open = useMutation({
-    mutationFn: () => returnPickupApi.openRequest(returnId),
-    onSuccess: (data) => {
+    mutationFn: (vars: { allowVerifiedNonPro?: boolean } | void) =>
+      returnPickupApi.openRequest(returnId, vars ? { allowVerifiedNonPro: vars.allowVerifiedNonPro } : undefined),
+    onSuccess: (data, vars) => {
       setError(null);
       qc.setQueryData(key, data);
       refresh();
+      // A high-value return found no Pro rider: ask straight away whether a verified rider may collect it.
+      if (!(vars && vars.allowVerifiedNonPro) && offersVerifiedRider(data)) void askVerifiedRider();
     },
     onError: (e) => setError(pickupErrorMessage(e)),
   });
+
+  /** Routing is never widened without this explicit yes; the backend records who agreed and when. */
+  const askVerifiedRider = async () => {
+    const ok = await confirmAction({
+      title: 'Use a verified rider instead?',
+      body: VERIFIED_RIDER_NOTE,
+      confirmLabel: 'Use a verified rider',
+      cancelLabel: 'Not now',
+    });
+    if (ok) open.mutate({ allowVerifiedNonPro: true });
+  };
   const select = useMutation({
     mutationFn: (offerId: string) => returnPickupApi.selectRider(returnId, offerId),
     onSuccess: (data) => {
@@ -276,6 +297,11 @@ function ReturnRiderPicker({ returnId, pickup, legacy }: { returnId: string; pic
             {req.notifiedCount} notified within {req.radiusKm} km · <Countdown until={req.expiresUtc} />
           </Text>
         </Group>
+        {req.verifiedRiderConsent && (
+          <Text size="xs" c="dimmed" data-testid="verified-rider-consent">
+            High-value return: you agreed to a verified rider {fromNow(req.verifiedRiderConsent.consentedUtc)}.
+          </Text>
+        )}
         {req.interested.length === 0 ? (
           <Text size="xs" c="dimmed">
             Riders who can collect it appear here. This updates by itself — opened {fromNow(req.openedUtc)}.
@@ -285,6 +311,36 @@ function ReturnRiderPicker({ returnId, pickup, legacy }: { returnId: string; pic
             <RiderRow key={r.offerId} rider={r} onChoose={() => void choose(r)} choosing={select.isPending && select.variables === r.offerId} />
           ))
         )}
+      </Stack>
+    );
+  } else if (req?.state === 'NoRiders' && req.noRidersReason === NO_PRO_RIDER_HIGH_VALUE) {
+    body = (
+      <Stack gap="xs">
+        <Alert color="amber" variant="light" p="xs" title="No Pro rider is available for this high-value return" data-testid="no-pro-rider">
+          <Stack gap="xs">
+            <Text size="sm">
+              High-value parcels go to Pro riders only.
+              {req.canUseVerifiedRider ? ' You can let a verified rider collect it instead, or try again later.' : ' Try again later.'}
+            </Text>
+            {req.canUseVerifiedRider && (
+              <Group>
+                <Button size="xs" variant="light" loading={open.isPending} onClick={() => void askVerifiedRider()}>
+                  Use a verified rider
+                </Button>
+              </Group>
+            )}
+          </Stack>
+        </Alert>
+        {tryAgain}
+      </Stack>
+    );
+  } else if (req?.state === 'NoRiders' && req.noRidersReason === NO_VERIFIED_RIDER_HIGH_VALUE) {
+    body = (
+      <Stack gap="xs">
+        <Alert color="amber" variant="light" p="xs" data-testid="no-verified-rider">
+          You agreed to a verified rider for this high-value return, but none is nearby right now. Try again in a few minutes.
+        </Alert>
+        {tryAgain}
       </Stack>
     );
   } else if (stage === 'AttemptFailed') {

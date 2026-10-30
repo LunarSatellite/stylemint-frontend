@@ -232,6 +232,10 @@ rider assigned; confirm by code (`POST v1/customer/deliveries/confirm {packageNu
 "Item received" is hidden in the card and shown disabled with a hint while a `mode: "Rider"` return is not
 `ReceivedBySeller` (`useReturnPickups`); a 409 `return.pickup_not_received` is explained and re-reads the pickup.
 Bare 404 on the pickup read while the list item has no `pickupStage` key = backend not deployed → nothing shown.
+High-value return with no Pro rider (`return-fixes-contract.md` §D): a NoRiders request with `noRidersReason ==
+"delivery.no_pro_rider_high_value"` and `canUseVerifiedRider` shows "Use a verified rider" (and asks at once after the
+seller's own Try again); only on yes `openRequest` posts `{ allowVerifiedNonPro: true }`. Same helper
+(`offersVerifiedRider`, `VERIFIED_RIDER_NOTE` in `orders/api.ts`) as the forward delivery page.
 
 ## Rules
 

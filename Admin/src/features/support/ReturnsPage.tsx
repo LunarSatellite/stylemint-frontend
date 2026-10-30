@@ -39,7 +39,7 @@ export function ReturnsPage() {
         title="Returns"
         description={
           view === 'pickups'
-            ? 'Rider pickups for returns: stage, rider, fare and who pays. Read-only.'
+            ? 'Rider pickups for returns: stage, rider, fare and who pays. Stuck ones are marked "Needs action".'
             : 'Every return across all vendors — requested, accepted and waiting for the item, returned, rejected or cancelled. Newest first.'
         }
       />
@@ -466,7 +466,7 @@ function ReturnDrawer({ item: r, opened, onClose }: { item: ReturnItem | null; o
             </SectionCard>
           )}
           {(r.state === 2 || r.state === 4 || r.state === 5 || r.pickupStage || r.pickupMode) && (
-            <SectionCard title="Rider pickup" description="Read-only. Codes are never shown.">
+            <SectionCard title="Rider pickup" description="Codes are never shown.">
               <Stack gap="sm">
                 <ReturnPickupFacts returnRequestId={r.id} />
                 <Anchor component={Link} to={`/returns?view=pickups&open=${encodeURIComponent(r.id)}`} size="sm">

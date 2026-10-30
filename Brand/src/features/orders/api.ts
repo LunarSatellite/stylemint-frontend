@@ -415,6 +415,14 @@ export interface DeliveryRequest {
 export const NO_PRO_RIDER_HIGH_VALUE = 'delivery.no_pro_rider_high_value';
 export const NO_VERIFIED_RIDER_HIGH_VALUE = 'delivery.no_verified_rider_high_value';
 
+/** Shown in the confirm dialog: what agreeing to a verified rider means (forward delivery and return pickup). */
+export const VERIFIED_RIDER_NOTE =
+  'A verified rider has had their identity checked by StyleMint but is not a Pro rider. Your choice is recorded for this parcel only.';
+
+/** A high-value parcel found no Pro rider and the seller may hand it to a verified rider instead. */
+export const offersVerifiedRider = (r: DeliveryRequest | null | undefined) =>
+  r?.state === 'NoRiders' && r.noRidersReason === NO_PRO_RIDER_HIGH_VALUE && !!r.canUseVerifiedRider;
+
 export interface RiderProfile {
   courierId: string;
   offerId: string | null;

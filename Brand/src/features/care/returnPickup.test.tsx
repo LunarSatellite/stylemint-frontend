@@ -260,6 +260,85 @@ describe('return pickup by rider (Seller Center)', () => {
     expect(screen.queryByTestId('return-pickup')).not.toBeInTheDocument();
   });
 
+  describe('high-value return with no Pro rider', () => {
+    const noPro = () =>
+      request({ state: 'NoRiders', interested: [], noRidersReason: 'delivery.no_pro_rider_high_value', canUseVerifiedRider: true });
+    const searchingWithConsent = () =>
+      request({
+        state: 'Searching',
+        interested: [],
+        notifiedCount: 3,
+        verifiedRiderConsent: { consentedByAccountId: 'v-1', consentedUtc: new Date().toISOString() },
+      });
+    const confirmButton = async () =>
+      within(await screen.findByRole('dialog', { name: /use a verified rider instead/i })).getByRole('button', {
+        name: /^use a verified rider$/i,
+      });
+    const posts = (calls: ReturnType<typeof mockApi>) =>
+      calls.filter((c) => c.method === 'POST' && c.path === '/v1/vendor/returns/rr-1/pickup-requests');
+
+    it('a stuck NoRiders return offers a verified rider and re-opens with allowVerifiedNonPro only after yes', async () => {
+      const user = userEvent.setup();
+      let consented = false;
+      const calls = mockApi({
+        [LIST]: page([item({ pickupStage: 'NoRiders' })]),
+        [PICKUP]: () => ({ body: pickup({ stage: consented ? 'SearchingRider' : 'NoRiders' }) }),
+        [CURRENT]: () => ({ body: consented ? searchingWithConsent() : noPro() }),
+        [OPEN]: (c) => {
+          consented = !!(c.body as { allowVerifiedNonPro?: boolean }).allowVerifiedNonPro;
+          return { body: consented ? searchingWithConsent() : noPro() };
+        },
+      });
+      renderWithProviders(<CarePage />);
+
+      expect(await screen.findByTestId('no-pro-rider')).toHaveTextContent(/no pro rider is available for this high-value return/i);
+      await user.click(screen.getByRole('button', { name: /^use a verified rider$/i }));
+      expect(await screen.findByText(/identity checked by stylemint but is not a pro rider/i)).toBeInTheDocument();
+      await user.click(await confirmButton());
+
+      await waitFor(() => expect(posts(calls)).toHaveLength(1));
+      expect(posts(calls)[0].body).toEqual({ allowVerifiedNonPro: true });
+      expect(posts(calls)[0].headers['Idempotency-Key']).toBeTruthy();
+      expect(await screen.findByTestId('verified-rider-consent')).toHaveTextContent(/you agreed to a verified rider/i);
+    });
+
+    it('Try again that comes back with no Pro rider asks at once; "Not now" keeps it Pro-only', async () => {
+      const user = userEvent.setup();
+      const calls = mockApi({
+        [LIST]: page([item({ pickupStage: 'NoRiders' })]),
+        [PICKUP]: () => ({ body: pickup({ stage: 'NoRiders' }) }),
+        [CURRENT]: () => ({ body: request({ state: 'NoRiders', interested: [] }) }),
+        [OPEN]: () => ({ body: noPro() }),
+      });
+      renderWithProviders(<CarePage />);
+
+      await user.click(await screen.findByRole('button', { name: /try again/i }));
+      expect(await screen.findByRole('dialog', { name: /use a verified rider instead/i })).toBeInTheDocument();
+      expect(posts(calls)).toHaveLength(1);
+      expect(posts(calls)[0].body).toEqual({});
+
+      await user.click(screen.getByRole('button', { name: /not now/i }));
+      await waitFor(() => expect(screen.queryByRole('dialog', { name: /use a verified rider instead/i })).not.toBeInTheDocument());
+      expect(posts(calls)).toHaveLength(1);
+      expect(await screen.findByTestId('no-pro-rider')).toBeInTheDocument();
+    });
+
+    it('without canUseVerifiedRider, or after consent with nobody nearby, never offers the choice', async () => {
+      mockApi({
+        [LIST]: page([item({ pickupStage: 'NoRiders' })]),
+        [PICKUP]: () => ({ body: pickup({ stage: 'NoRiders' }) }),
+        [CURRENT]: () => ({
+          body: request({ state: 'NoRiders', interested: [], noRidersReason: 'delivery.no_verified_rider_high_value', canUseVerifiedRider: false }),
+        }),
+      });
+      renderWithProviders(<CarePage />);
+
+      expect(await screen.findByTestId('no-verified-rider')).toHaveTextContent(/none is nearby right now/i);
+      expect(screen.queryByRole('button', { name: /^use a verified rider$/i })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+    });
+  });
+
   it('labels unknown stages and modes without breaking', () => {
     expect(labelOfStage('RiderAtTheMoon')).toBe('Rider at the moon');
     expect(isReceiptPending({ status: 'ok', pickup: pickup({ mode: 'Drone', stage: 'Collected' }) })).toBe(false);

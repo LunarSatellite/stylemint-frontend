@@ -135,8 +135,13 @@ export const returnPickupApi = {
       throw e;
     }
   },
-  /** Open or re-open ("Try again" / "Find a rider"). A Legacy return also gets its reverse package. */
-  openRequest: (id: string) => api.post<DeliveryRequest>(`${base(id)}/pickup-requests`, {}),
+  /**
+   * Open or re-open ("Try again" / "Find a rider"). A Legacy return also gets its reverse package.
+   * `allowVerifiedNonPro` records the seller's yes to a verified rider for a high-value return that found no Pro
+   * rider (`delivery.no_pro_rider_high_value` + `canUseVerifiedRider`); never sent without that explicit yes.
+   */
+  openRequest: (id: string, opts?: { allowVerifiedNonPro?: boolean }) =>
+    api.post<DeliveryRequest>(`${base(id)}/pickup-requests`, opts?.allowVerifiedNonPro ? { allowVerifiedNonPro: true } : {}),
   /** null when no request is open (404 is the normal "not yet" answer). */
   currentRequest: async (id: string): Promise<DeliveryRequest | null> => {
     try {

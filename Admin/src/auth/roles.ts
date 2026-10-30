@@ -67,6 +67,8 @@ export const CAPABILITIES = {
   // support
   viewSupport: ['SuperAdmin', 'SupportAgent'],
   workSupport: ['SuperAdmin', 'SupportAgent'],
+  /** Mark received / search again / cancel on a stuck return pickup (Delivery return-pickups `resolve`, return-fixes contract §B). */
+  resolveReturnPickups: ['SuperAdmin', 'SupportAgent'],
 
   // payouts
   viewPayouts: ['SuperAdmin', 'PayoutsOps', 'Readonly'],

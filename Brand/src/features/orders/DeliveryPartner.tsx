@@ -27,21 +27,16 @@ import { SealForm } from './SealForm';
 import {
   NO_PRO_RIDER_HIGH_VALUE,
   NO_VERIFIED_RIDER_HIGH_VALUE,
+  offersVerifiedRider,
   ordersApi,
   tagLabel,
+  VERIFIED_RIDER_NOTE,
   type DeliveryRequest,
   type InterestedRider,
   type SubOrderDetail,
 } from './api';
 
 const tierLabel: Record<string, string> = { Neighbor: 'Neighbour rider', Traveler: 'Traveller rider', Pro: 'Pro rider' };
-
-/** Shown in the confirm dialog: what agreeing to a verified rider means. */
-const VERIFIED_RIDER_NOTE =
-  'A verified rider has had their identity checked by StyleMint but is not a Pro rider. Your choice is recorded for this parcel only.';
-
-const offersVerifiedRider = (r: DeliveryRequest | null | undefined) =>
-  r?.state === 'NoRiders' && r.noRidersReason === NO_PRO_RIDER_HIGH_VALUE && !!r.canUseVerifiedRider;
 
 const isNotSealed = (e: unknown) => e instanceof ApiError && e.code === 'delivery_request.parcel_not_sealed';
 

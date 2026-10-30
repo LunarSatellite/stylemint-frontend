@@ -42,6 +42,12 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
   read-only. `/returns?view=pickups` = cursor list of `v1/admin/delivery/return-pickups` (stage filter) with a drawer; the
   return drawer shows "Rider pickup" (stage, rider, fare, payer, attempts, photos, hops, proofs - never codes) for approved /
   completed / cancelled returns, plus reason type and fee payer. Behind `viewSupport`. Bare 404 → not deployed.
+  Support actions (`return-fixes-contract.md` §B, §D): "Needs action" badge (list `needsAction`; detail = stage NeedsSupport /
+  AttemptFailed / NoRiders when `allowedActions` is sent) and one button per `allowedActions` entry ("Mark item received",
+  "Search riders again", "Cancel return") in `ReturnPickupFacts` (both drawers) → `ResolvePickupModal`: consequence + required
+  note (1–500) → `POST …/return-pickups/{id}/resolve {action, note}` with a kept Idempotency-Key for an identical retry;
+  success → detail replaced + `['return-pickups']` / `['returns']` refreshed; 409 `return_pickup.action_not_allowed` → plain
+  copy + refresh; bare 404 → buttons hidden. Capability `resolveReturnPickups` (SupportAgent + SuperAdmin).
 - Build, lint and test only on the VPS in Docker (see README) - never on the Windows workstation.
 - Platform commission (`api/commission.ts`, `features/commission/`, `platform-commission-contract.md` v1.0 §1, §3, §4):
   `/commission` under Orders & money — category tree with per-row rate (0–50, 2 decimals, `PUT {ratePercent}`, null
