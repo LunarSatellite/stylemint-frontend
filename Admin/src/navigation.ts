@@ -19,6 +19,7 @@ import {
   IconReceipt,
   IconReceiptRefund,
   IconRoute,
+  IconPackages,
   IconSearch,
   IconShieldCheck,
   IconShieldLock,
@@ -110,6 +111,7 @@ export const MENU: MenuSection[] = [
     items: [
       { id: 'content', path: '/content', label: 'Reels & content', icon: IconVideo, capability: 'viewContent' },
       { id: 'journeys', path: '/journeys', label: 'Journeys', icon: IconRoute, capability: 'viewModeration' },
+      { id: 'bundles', path: '/bundles', label: 'Bundles', icon: IconPackages, capability: 'viewBundles' },
       { id: 'campaigns', path: '/campaigns', label: 'Campaigns', icon: IconSpeakerphone, capability: 'viewCatalogOps' },
       { id: 'collections', path: '/collections', label: 'Collections', icon: IconStack2, capability: 'viewCatalogOps' },
       { id: 'discovery', path: '/discovery', label: 'Discovery', icon: IconSearch, capability: 'viewCatalogOps' },

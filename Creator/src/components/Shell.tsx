@@ -32,6 +32,7 @@ import {
   IconHeartHandshake,
   IconHome,
   IconLayoutGrid,
+  IconPackages,
   IconLogout,
   IconMoon,
   IconMovie,
@@ -98,6 +99,7 @@ export const NAV: { section?: string; items: NavItem[] }[] = [
     items: [
       { to: '/profile', label: 'Public profile', icon: IconUser },
       { to: '/collections', label: 'Collections', icon: IconLayoutGrid },
+      { to: '/bundles', label: 'Bundles', icon: IconPackages },
       { to: '/social', label: 'Social accounts', icon: IconPlugConnected },
       { to: '/growth', label: 'Tier & milestones', icon: IconTrophy },
     ],

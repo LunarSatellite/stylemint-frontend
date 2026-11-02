@@ -42,6 +42,7 @@ const DeliveryPage = page(() => import('@/features/delivery/DeliveryPage'), 'Del
 const ModerationPage = page(() => import('@/features/moderation/ModerationPage'), 'ModerationPage');
 const ContentPage = page(() => import('@/features/content/ContentPage'), 'ContentPage');
 const JourneysPage = page(() => import('@/features/journeys/JourneysPage'), 'JourneysPage');
+const BundlesPage = page(() => import('@/features/bundles/BundlesPage'), 'BundlesPage');
 const CampaignsPage = page(() => import('@/features/catalog/CampaignsPage'), 'CampaignsPage');
 const CollectionsPage = page(() => import('@/features/catalog/CollectionsPage'), 'CollectionsPage');
 const DiscoveryPage = page(() => import('@/features/catalog/DiscoveryPage'), 'DiscoveryPage');
@@ -111,6 +112,7 @@ export const routes: RouteObject[] = [
       { path: 'moderation', element: guarded('viewModeration', <ModerationPage />) },
       { path: 'content', element: guarded('viewContent', <ContentPage />) },
       { path: 'journeys', element: guarded('viewModeration', <JourneysPage />) },
+      { path: 'bundles', element: guarded('viewBundles', <BundlesPage />) },
       { path: 'campaigns', element: guarded('viewCatalogOps', <CampaignsPage />) },
       { path: 'collections', element: guarded('viewCatalogOps', <CollectionsPage />) },
       { path: 'discovery', element: guarded('viewCatalogOps', <DiscoveryPage />) },
