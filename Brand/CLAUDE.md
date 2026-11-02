@@ -258,3 +258,21 @@ Contract `D:\Stylemint\wt\refunds-desk-contract.md` (v1.0 §4–5). "Item receiv
 `ReceiveReturnModal` with "Put the item back in stock" (ticked by default) and sends
 `POST v1/vendor/returns/{id}/complete { restock }`. Completed returns show "Put back in stock" / "Not put back in
 stock" only when the server sends `restocked`.
+
+## Bundles (`src/features/bundles/`)
+
+Multi-shop bundles — contract `D:\Stylemint\wt\shop-bundles-contract.md` §B (Seller Center task list). Sidebar "Bundles" in Sell.
+
+- `/bundles` (`?as=shop` = other owners' bundles I am invited to / part of, `?state=` server filter; cursor list) and
+  `/bundles/:id`; notifications deep-link `/vendor/bundles/:id`. Create = title, description, cover (link or upload via
+  `vendor/products/images`), discount 0–50 % (2 decimals), my own active products (local filter of a 100-item page) × qty 1–5.
+- `normalizeBundle` accepts enum names or numbers. `bundlePermissions()` decides the buttons; `submitBlocker` (2–12 items,
+  ≤ 6 shops) gates "Send for acceptance" (the bundle goes live by itself when the last shop accepts); `resumeBlocker`
+  (all shops accepted, not an admin takedown) gates Resume. Items / discount changes after a draft confirm with
+  `termsChangeWarning` (terms version +1, every other shop accepts again, off sale meanwhile).
+- Shop side: accept shows what the shop funds (`myShopFunds`, else Σ own items' `shopFunds`) and sends
+  `{termsVersion}`; 409 `bundle_terms_changed` re-reads. Decline / withdraw take an optional reason (≤ 500). An invited
+  shop of a vendor bundle adds its own products first. Invite search: `GET /v1/bundles/vendors?q=`, falling back to the
+  journeys vendor directory on a bare 404. Share link `/shop/b/{id}` (Live / Paused).
+- Bare 404 → `BundlesSettingUp`; 404 with a code → "Bundle not found". `bundleErrorMessage` maps `bundle_*` codes
+  (dots or underscores).

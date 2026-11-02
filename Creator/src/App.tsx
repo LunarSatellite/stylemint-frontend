@@ -31,6 +31,9 @@ const PayoutsPage = lazy(() => import('./features/money/PayoutsPage'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 const CollectionsPage = lazy(() => import('./features/profile/CollectionsPage'));
 const CollectionDetailPage = lazy(() => import('./features/profile/CollectionDetailPage'));
+// Multi-shop bundles (shop-bundles-contract §B, Creator Studio).
+const BundlesPage = lazy(() => import('./features/bundles/BundlesPage'));
+const BundleDetailPage = lazy(() => import('./features/bundles/BundleDetailPage'));
 const SocialAccountsPage = lazy(() => import('./features/profile/SocialAccountsPage'));
 const GrowthPage = lazy(() => import('./features/profile/GrowthPage'));
 const CommunityPage = lazy(() => import('./features/community/CommunityPage'));
@@ -149,6 +152,8 @@ export function AppRoutes() {
         <Route path="profile" element={<ProfilePage />} />
         <Route path="collections" element={<CollectionsPage />} />
         <Route path="collections/:id" element={<CollectionDetailPage />} />
+        <Route path="bundles" element={<BundlesPage />} />
+        <Route path="bundles/:id" element={<BundleDetailPage />} />
         <Route path="social" element={<SocialAccountsPage />} />
         <Route path="growth" element={<GrowthPage />} />
         <Route path="community" element={<CommunityPage />} />

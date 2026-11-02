@@ -22,6 +22,8 @@ const ROUTES = [
   '/payouts',
   '/profile',
   '/collections',
+  '/bundles',
+  '/bundles/aaaaaaaa-0000-0000-0000-000000000001',
   '/social',
   '/growth',
   '/community',

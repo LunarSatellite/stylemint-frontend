@@ -103,3 +103,15 @@ src/features/<area> api.ts + pages + tests
 - Uploads: the site caps request bodies at 25 MB; check size client-side before sending.
 - No `dangerouslySetInnerHTML`. No auth tokens in localStorage unless "keep me signed in".
 - All pages are lazy routes.
+
+## Bundles (`src/features/bundles/`)
+
+Multi-shop bundles — contract `D:\Stylemint\wt\shop-bundles-contract.md` §B (Creator Studio task list). Sidebar "Bundles"
+under Profile; `/bundles` (`?state=`, `GET /v1/bundles/mine?as=owner`, cursor) and `/bundles/:id`.
+
+- Products come from the tag picker (`scope=all&kind=product`) + `creator/tag-products/commission`: only `Applies` rows
+  can be picked (others greyed "No active partnership"); the server re-checks on add and on every acceptance.
+- Detail: shop acceptance per terms version, commission per item (`commissionRatePercent`, snapshotted when the shop
+  accepts) and "You earn about …" per bundle, out-of-stock items, send for acceptance (≥ 2 items), pause / resume (all
+  shops accepted, not an admin takedown) / archive, "Copy share link" (`/shop/b/{id}`, Live or Paused). No invites — shops
+  only accept or decline. Bare 404 → "being set up". Reel bundle tags are not built here yet.

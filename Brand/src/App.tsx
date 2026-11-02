@@ -72,6 +72,9 @@ const BankAppointmentsPage = lazy(() => import('./features/services/bank/Appoint
 // Collaborative journey reels (journey-reels-contract v1): every vendor, product or service.
 const JourneysPage = lazy(() => import('./features/journeys/JourneysPage'));
 const JourneyDetailPage = lazy(() => import('./features/journeys/JourneyDetailPage'));
+// Multi-shop bundles (shop-bundles-contract §B, Seller Center).
+const BundlesPage = lazy(() => import('./features/bundles/BundlesPage'));
+const BundleDetailPage = lazy(() => import('./features/bundles/BundleDetailPage'));
 
 export function createQueryClient() {
   return new QueryClient({
@@ -188,6 +191,10 @@ export function AppRoutes() {
         <Route path="journeys/:id" element={<JourneyDetailPage />} />
         {/* Journey notifications deep-link to /vendor/journeys/{id} (journey-reels-contract v1 §6). */}
         <Route path="vendor/journeys/:id" element={<DeepLink to={(id) => `/journeys/${encodeURIComponent(id)}`} />} />
+        <Route path="bundles" element={<BundlesPage />} />
+        <Route path="bundles/:id" element={<BundleDetailPage />} />
+        {/* Bundle notifications deep-link to /vendor/bundles/{id} (shop-bundles-contract §B4). */}
+        <Route path="vendor/bundles/:id" element={<DeepLink to={(id) => `/bundles/${encodeURIComponent(id)}`} />} />
         <Route path="bank/products" element={<BankProductsPage />} />
         <Route path="bank/branches" element={<BankBranchesPage />} />
         <Route path="bank/branches/:id" element={<BankBranchDetailPage />} />

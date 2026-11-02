@@ -97,6 +97,10 @@ export const CAPABILITIES = {
   // catalog & growth
   viewCatalogOps: ['SuperAdmin', 'ContentMod'],
   manageCatalogOps: ['SuperAdmin', 'ContentMod'],
+  /** Multi-shop bundles (Catalog admin BundlesController, shop-bundles-contract §B5). Reads follow catalog + support. */
+  viewBundles: ['SuperAdmin', 'ContentMod', 'SupportAgent', 'Readonly'],
+  /** Create / edit StyleMint bundles, take down, resume a takedown, archive. */
+  manageBundles: ['SuperAdmin', 'ContentMod'],
 
   // virtual try-on (premium access). The admin try-on controller uses the admin policy; until its
   // [RequireAdminRole] list is confirmed, reads follow money (payouts) and every write is Super Admin.

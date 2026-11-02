@@ -60,6 +60,13 @@ TanStack Query 5 · zod · Vitest + Testing Library. No axios, no zustand, no Ta
   optional note (≤500); the Idempotency-Key is kept for a retried identical submission (`request({ idempotencyKey })`).
   409 `REFUND_ALREADY_SETTLED` → toast + refresh; 422 `REFUND_NOT_MANUAL` → inline. Drawer shows the attempt history.
   `viewRefunds` / `settleRefunds` (SuperAdmin + PayoutsOps). Bare 404 → not deployed.
+- Bundles (`api/bundles.ts`, `features/bundles/`, `shop-bundles-contract.md` §B5 admin): `/bundles` under Content & growth —
+  cursor list of `v1/admin/bundles` (search `q`, `state`, `ownerKind`), drawer with shops (state + accepted terms version),
+  items (bundle / list price, out of stock, creator rate), totals. "New StyleMint bundle" (any active product from
+  `v1/admin/products`), edit / add / remove items / send / pause on platform-owned bundles; "Take down…" (required note
+  3–500, `POST …/takedown {note}`) on any live / pending / paused bundle, "Resume…" after a takedown, "Archive…".
+  `viewBundles` (SuperAdmin, ContentMod, SupportAgent, Readonly) / `manageBundles` (SuperAdmin, ContentMod) — chosen
+  before the backend; align with its `[RequireAdminRole]`. Bare 404 → not deployed.
 - Returns overview (`api/support.ts` `returnsApi`, `features/support/ReturnsPage.tsx`): `/returns` opens on **All** (no
   `state` sent; the server lists every state) with tabs All / Requested (1) / Accepted - waiting for item (2) / Returned (4)
   / Rejected (3) / Cancelled (5), each counted from `GET v1/admin/support/returns/summary` (same `search`, `fromUtc`,
