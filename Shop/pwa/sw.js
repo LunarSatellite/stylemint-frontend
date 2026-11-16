@@ -2,7 +2,10 @@
  * - Precaches the app shell only (index.html, hashed assets, offline page, manifest, icons).
  * - `/v1/*` and `/payments/*` are network-only (never touched here).
  * - Navigations under /shop/: network first, then the cached shell, then the offline page.
- * - Images: stale-while-revalidate, capped at 60 entries.
+ * - Same-origin images: stale-while-revalidate, capped at 60 entries. Cross-origin images (R2 product media) are
+ *   never intercepted: a fetch() made here is checked against the CSP connect-src served with sw.js, which does
+ *   not list the R2 host, so intercepting them made every product image fail with ERR_FAILED once the worker
+ *   controlled the page. The browser loads them directly under img-src instead.
  * - No push, no background sync.
  */
 const VERSION = '__SHOP_VERSION__';
@@ -55,7 +58,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (req.destination === 'image') {
+  if (sameOrigin && req.destination === 'image') {
     event.respondWith(
       caches.open(IMAGES).then(async (cache) => {
         const hit = await cache.match(req);
@@ -64,7 +67,7 @@ self.addEventListener('fetch', (event) => {
             if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone()).then(trimImages);
             return res;
           })
-          .catch(() => hit);
+          .catch(() => hit || Response.error());
         return hit || network;
       }),
     );
